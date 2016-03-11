@@ -7,6 +7,9 @@ Author: Daniel Cameron
 Maintainer: Who to complain to <yourfault@somewhere.net>
 Description: More about what it does (maybe more than one line)
 License: GPL-3
-Depends: assertthat,
+Depends:
+    assertthat,
     VariantAnnotation
-Suggests: testthat
+Suggests:
+    testthat
+RoxygenNote: 5.0.1

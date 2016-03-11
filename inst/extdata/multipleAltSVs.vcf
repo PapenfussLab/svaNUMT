@@ -17,13 +17,7 @@
 ##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">
 ##contig=<ID=chr1,length=249250621>
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
-chr1	1	SNV	A	C	.	.	
-chr1	1	MNV	AC	CA	.	.	
-chr1	1	INS	A	AT	.	.	
-chr1	1	DEL	AT	A	.	.	
-chr1	1	SYMINS	A	<INS>	.	.	SVTYPE=INS;SVLEN=1
-chr1	1	SYMDEL	A	<DEL>	.	.	SVTYPE=DEL;SVLEN=-2
-chr1	1	BNDFB	A	A[chr1:1[	.	.	SVTYPE=BND
-chr1	1	BNDFF	A	A]chr1:1]	.	.	SVTYPE=BND
-chr1	1	BNDBB	A	[chr1:1[A	.	.	SVTYPE=BND
-chr1	1	BNDBF	A	]chr1:1]A	.	.	SVTYPE=BND
+chr1	1	.	A	<DEL>	.	.	
+chr1	1	.	A	C,<DEL>	.	.	
+chr1	1	.	A	<DEL>,<INS>	.	.	
+chr1	1	.	A	A[chr1:1[,A]chr1:1]	.	.	SVTYPE=BND
