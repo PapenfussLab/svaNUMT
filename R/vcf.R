@@ -75,15 +75,7 @@ svLen <- function(vcf) {
 }
 
 .hasSingleAllelePerRecord <- function(vcf) {
+    assert_that(is(vcf, "VCF"))
     all(elementLengths(alt(vcf)) == 1)
 }
 
-#' Converts all structural variant calls to paired GRanges intervals.
-#' 
-#' @param vcf VCF object
-#' 
-#' @export
-vcfSVToBreakendGRanges <- function(vcf) {
-    assert_that(is(vcf, "ExpandedVCF"))
-    vcf <- vcf[isStructural(vcf),]
-}
