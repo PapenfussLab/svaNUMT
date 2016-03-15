@@ -17,3 +17,5 @@ expect_equal(
     c(0, 0, 1, -1, 1, -2, NA, NA, NA, NA),
     svLen(simple))
 
+expect_true(isStructural(.testrecord("chr1	1	.	ATT	AGGA	.	.	")))
+expect_false(isStructural(.testrecord("chr1	1	.	ATT	NNN	.	.	")))

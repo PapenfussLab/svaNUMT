@@ -55,8 +55,14 @@ setMethod("isStructural", "ExpandedVCF",
               .dispatchPerAllele_ExpandedVCF(.isStructural, x) 
 )
 .isStructural <- function(ref, alt) {
-    as.logical(alt != "<NON_REF>" & #gVCF no-call site
-        (elementLengths(ref) != IRanges::nchar(alt) | .isSymbolic(ref, alt)))
+	lengthDiff <- elementLengths(ref) != IRanges::nchar(alt)
+	if (is(alt, "DNAStringSet")) {
+		# don't break if there are no symbolic alleles in the VCF
+		return(lengthDiff)
+	}
+    return(as.logical(
+        # exclude gVCF no-call sites
+        alt != "<NON_REF>" & (lengthDiff | .isSymbolic(ref, alt))))
 }
 
 

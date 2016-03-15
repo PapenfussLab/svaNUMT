@@ -26,6 +26,8 @@
         record), collapse="\n"),
         file=filename)
     vcf <- readVcf(.testfile(filename), "")
-    file.remove(filename)
+	# readVcf holds a file handle open so we won't be able to delete the
+	# file even if we tried
+    #file.remove(filename)
     return(vcf)
 }

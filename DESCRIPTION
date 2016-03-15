@@ -14,7 +14,8 @@ Depends:
     VariantAnnotation (>= 1.16.4)
 Imports:
     assertthat,
-    stringr
+    BioStrings (>= 2.38.4)
+    stringr,
 Suggests:
     testthat
 RoxygenNote: 5.0.1

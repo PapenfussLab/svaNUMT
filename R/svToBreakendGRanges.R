@@ -24,127 +24,117 @@ svToBreakendGRanges <- function(vcf, suffix="_bp") {
     assert_that(noNA(row.names(vcf)))
     assert_that(!any(duplicated(row.names(vcf))))
     gr <- rowRanges(vcf)
-    gr$REF <- NULL
-    gr$ALT <- NULL
+    gr$REF <- as.character(ref(vcf))
+    gr$ALT <- as.character(.elementExtract(alt(vcf), 1))
     gr$vcfId <- row.names(vcf)
-    gr$mateId <- row.names(gr)
-    gr$svtype <- info(vcf)$SVTYPE
+    gr$partner <- rep(NA_character_, length(gr))
+    gr$svtype <- rep(NA_integer_, length(gr))
+    if (!is.null(info(vcf)$SVTYPE)) {
+        gr$svtype <- info(vcf)$SVTYPE
+    }
     gr$svLen <- svLen(vcf)
-    gr$insSeq <- DNAStringSet("")
-    gr$insLen <- 0
+    gr$insSeq <- rep(NA_character_, length(gr))
+    gr$insLen <- rep(0, length(gr))
     gr$cistartoffset <- rep(0, length(gr))
     gr$ciwidth <- rep(0, length(gr))
-    if (.hasMetadataInfo(vcf, "CIPOS")) {
+    if (!is.null(info(vcf)$CIPOS)) {
         .expectMetadataInfo(vcf, "CIPOS", 2, header.Type.Integer)
-        # Expand call position by CIPOS
-        offsets <- matrix(unlist(info(vcf)$CIPOS), ncol = 2, byrow = TRUE)
-        offsets[is.na(offsets)] <- 0
-        gr$cistartoffset <- offsets[,1]
-        gr$ciwidth <- offsets[,2] - offsets[,1]
+        gr$cistartoffset <- .elementExtract(info(vcf)$CIPOS, 1)
+        gr$ciwidth <- .elementExtract(info(vcf)$CIPOS, 2) -
+            .elementExtract(info(vcf)$CIPOS, 1)
     }
-    outgr <- NULL
+    gr$processed <- rep(FALSE, length(gr))
+    outgr <- gr[FALSE,]
     
-    rows <- !isSymbolic(vcf)
+    rows <- !gr$processed & !isSymbolic(vcf)
     if (any(rows)) {
         cgr <- gr[rows,]
-        gr <- gr[!rows,]
-        cvcf <- vcf[rows,]
+        gr$processed[rows] <- TRUE
         
-        # TODO: match more than just the first base
-        commonPrefixLength <- ifelse(subseq(ref(cvcf), start=1, width=1)
-            == subseq(DNAStringSet(IRanges::drop(alt(cvcf))), start=1, width=1),
-            1, 0)
+        commonPrefixLength <- mapply(Biostrings::lcprefix, cgr$REF, cgr$ALT, USE.NAMES=FALSE)
+        cgr$svLen <- nchar(cgr$ALT) - nchar(cgr$REF)
+        cgr$insSeq <- subseq(cgr$ALT, start=commonPrefixLength + 1, width=cgr$insLen)
+        cgr$insLen <- nchar(cgr$insSeq)
         start(cgr) <- start(cgr) - 1 + commonPrefixLength
+        width(cgr) <- 1
+        strand(cgr) <- "+"
+        mategr <- cgr
+        strand(mategr) <- "-"
+        ranges(mategr) <- IRanges(start=start(cgr) + 1 + pmax(-cgr$svLen, 0), width=1)
+                
+        cgr$partner <- paste0(names(cgr), suffix, 2)
+        names(cgr) <- paste0(names(cgr), suffix, 1)
+        names(mategr) <- cgr$partner
+        mategr$partner <- names(cgr)
+        outgr <- c(outgr, cgr, mategr)
+    }
+    rows <- !gr$processed & !is.na(gr$svtype) & gr$svtype %in% c("DEL", "INS")
+    if (any(rows)) {
+        cgr <- gr[rows,]
+        gr$processed[rows] <- TRUE
+        assert_that(!any(cgr$svtype == "DEL" & cgr$svLen > 0))
+        assert_that(!any(cgr$svtype == "INS" & cgr$svLen < 0))
+        
         strand(cgr) <- "+"
         width(cgr) <- 1
-        cgr$svLen <- elementLengths(IRanges::drop(alt(cvcf))) - elementLengths(ref(cvcf))
         mategr <- cgr
         strand(mategr) <- "-"
         ranges(mategr) <- IRanges(start=start(cgr) + pmax(0, -cgr$svLen) + 1, width=1)
-        cgr$insLen <- pmax(0, cgr$svLen)
-        cgr$insSeq <- subseq(DNAStringSet(IRanges::drop(alt(cvcf))), start=commonPrefixLength + 1, width=cgr$insLen)
+    	cgr$insLen <- pmax(0, cgr$svLen)
         
-        cgr$mateId <- paste0(names(cgr), suffix, 2)
+        cgr$partner <- paste0(names(cgr), suffix, 2)
         names(cgr) <- paste0(names(cgr), suffix, 1)
-        names(mategr) <- cgr$mateId
-        mategr$mateId <- names(cgr)
+        names(mategr) <- cgr$partner
+        mategr$partner <- names(cgr)
         outgr <- c(outgr, cgr, mategr)
     }
-    rows <- gr$svtype %in% c("DEL")
+    rows <- !gr$processed & !is.na(gr$svtype) & gr$svtype %in% c("BND")
     if (any(rows)) {
         cgr <- gr[rows,]
-        gr <- gr[!rows,]
-        
-        width(cgr) <- 1
-        mategr <- cgr
-        strand(cgr) <- "+"
-        
-        mategr <- cgr
-        strand(mategr) <- "-"
-        ranges(mategr) <- IRanges(start=start(cgr) + pmax(0, -cgr$svLen) + 1, width=1)
-        
-        cgr$mateId <- paste0(names(cgr), suffix, 2)
-        names(cgr) <- paste0(names(cgr), suffix, 1)
-        names(mategr) <- cgr$mateId
-        mategr$mateId <- names(cgr)
-        outgr <- c(outgr, cgr, mategr)
-    }
-    rows <- gr$svtype %in% c("INS")
-    if (any(rows)) {
-        cgr <- gr[rows,]
-        gr <- gr[!rows,]
-        
-        width(cgr) <- 1
-        mategr <- cgr
-        strand(cgr) <- "+"
-        
-        mategr <- cgr
-        strand(mategr) <- "-"
-        ranges(mategr) <- IRanges(start=start(cgr) + pmax(0, -cgr$svLen) + 1, width=1)
-        
-        cgr$mateId <- paste0(names(cgr), suffix, 2)
-        names(cgr) <- paste0(names(cgr), suffix, 1)
-        names(mategr) <- cgr$mateId
-        mategr$mateId <- names(cgr)
-        outgr <- c(outgr, cgr, mategr)
-    }
-    rows <- gr$svtype %in% c("BND")
-    if (any(rows)) {
-        cgr <- gr[rows,]
-        gr <- gr[!rows,]
+        gr$processed[rows] <- TRUE
         cvcf <- vcf[rows,]
         
-        
-        bndMatches <- str_match(as.character(IRanges::drop(alt(cvcf)), "(.*)(\\[|])(.*)(\\[|])(.*)")
+        bndMatches <- stringr::str_match(cgr$ALT, "(.*)(\\[|])(.*)(\\[|])(.*)")
         preBases <- bndMatches[,2]
         bracket <- bndMatches[,3]
         remoteLocation <- bndMatches[,4]
         postBases <- bndMatches[,6]
         strand(cgr) <- ifelse(preBases == "", "-", "+")
         
+        cgr$partner <- NA_character_
+        if (!is.null(info(cvcf)$PARID)) {
+            cgr$partner <- .elementExtract(info(cvcf)$PARID, 1)
+        }
+        if (!is.null(info(cvcf)$MATEID) & any(is.na(cgr$partner))) {
+            cgr$partner <- ifelse(is.na(cgr$partner), .elementExtract(info(cvcf)$MATEID, 1), cgr$partner)
+            multimates <- elementLengths(info(cvcf)$partner) > 1 & is.na(cgr$partner)
+            if (any(multimates)) {
+                warning(paste("Ignoring additional mate breakends for variants", names(cgr)[multimates]))
+            }
+        }
+        reflen <- elementLengths(cgr$REF)
+        cgr$insSeq <- paste0(stringr::str_sub(preBases, reflen + 1), stringr::str_sub(postBases, end=-(reflen + 1)))
+        cgr$insLen <- nchar(cgr$insSeq)
         
-        if (!is.null(info(cvcf)$MATEID)) {
-            cgr$mateId <- as.character(info(cvcf)$MATEID
-        } else if (!is.null(info(vcf)$PARID)) {
-            grcall[rows,]$mateIndex <- match(info(vcf)$PARID[rows], names(rowRanges(vcf)))
+        toRemove <- is.na(cgr$partner) | !(cgr$partner %in% names(cgr))
+        if (any(toRemove)) {
+            warning(paste("Removing", sum(toRemove), "unpaired breakend variants", paste0(names(cgr)[toRemove], collapse=", ")))
+            cgr <- cgr[!toRemove,]
         }
-        grcall[rows,]$untemplated <- str_length(preBases) + str_length(postBases) - str_length(as.character(rowRanges(vcf)$REF)[rows])
-        if (any(rows & is.na(grcall$mateIndex))) {
-            warning(paste0("Unpaired breakends ", as.character(paste(names(grcall[is.na(grcall[rows,]$mateIndex),]), collapse=", "))))
-            grcall[rows & is.na(grcall$mateIndex),]$mateIndex <- seq_along(grcall)[rows & is.na(grcall$mateIndex)]
-        }
-        mateBnd <- grcall[grcall[rows,]$mateIndex,]
-        grcall[rows,]$size <- ifelse(seqnames(mateBnd)==seqnames(grcall[rows,]), abs(start(grcall[rows,]) - start(mateBnd)) - 1 + grcall[rows,]$untemplated, NA_integer_)
+        mategr <- cgr[cgr$partner,]
+        cgr$svLen <- ifelse(seqnames(cgr)==seqnames(mategr), abs(start(cgr) - start(mategr)) - 1 + cgr$insLen, NA_integer_)
+        outgr <- c(outgr, cgr)
     }
-    if (length(gr) > 0) {
-       stop(paste("Unrecognised format for variants ", paste(names(gr), collapse=", ")))
+    
+    if (!all(gr$processed)) {
+       stop(paste("Unrecognised format for variants", paste(names(gr)[!gr$processed,], collapse=", ")))
     }
     return(outgr)
 }
 
-mateBreakend <- function(begr) {
-    assert_that(begr$mateId %in% row.names(begr))
-    return(begr[begr$mateId,])
+partner <- function(begr) {
+    assert_that(all(begr$partner %in% names(begr)))
+    return(begr[begr$partner,])
 }
 .hasMetadataInfo <- function(vcf, field) {
     return(field %in% row.names(info(header(vcf))))

@@ -1,6 +1,7 @@
 
 example <- readVcf(.testfile("vcf4.2.example.sv.vcf"), "")
 simple <- readVcf(.testfile("simple.vcf"), "")
+breakend <- readVcf(.testfile("breakend.vcf"), "")
 
 breakdancer <- readVcf(.testfile("breakdancer-1.4.5.vcf"), "")
 #cortex <- readVcf(.testfile("cortex-1.0.5.14.vcf"), "")
@@ -25,18 +26,44 @@ pindel <- readVcf(.testfile("pindel-0.2.5b6.vcf"), "")
 
 
 # unpaired breakend
-test_that("mateBreakend fails if missing mate", {
-    expect_error(mateBreakend(svToBreakendGRanges(simple)[1,]))
+test_that("partner fails if missing mate", {
+    expect_error(partner(svToBreakendGRanges(breakend)[1,]))
 })
 
 test_that("svToBreakendGRanges convert to breakend pairs", {
     gr <- svToBreakendGRanges(simple)
     pairId <- c("INS", "DEL", "SYMINS", "SYMDEL")
-    expect_equal(mateBreakend(gr[paste0(pairId, "_bp1"),], gr[paste0(pairId, "_bp2"),]))
-    #expect_equal(mateBreakend(gr[c("BNDFB", "BNDBF"),], gr[c("BNDBF", "BNDFB"),]))
+    expect_true(all(paste0(pairId, "_bp1") %in% names(gr)))
+    expect_true(all(paste0(pairId, "_bp2") %in% names(gr)))
+    expect_equal(names(partner(gr))[names(gr) %in% paste0(pairId, "_bp1")], paste0(pairId, "_bp2"))
+	expect_equal(names(partner(gr))[names(gr) %in% c("BNDFB", "BNDBF")], c("BNDBF", "BNDFB"))
 })
 
 test_that("svToBreakendGRanges non-symbolic alleles", {
     gr <- svToBreakendGRanges(simple[c("INS", "DEL"),])
     expect_equal(4, length(gr))
+    
+    gr <- svToBreakendGRanges(.testrecord("chr1	1	.	ATT	AGGA	.	.	"))
+    expect_equal(start(gr), c(1, 4))
+    expect_equal(gr$insSeq, c("GGA", "GGA"))
+    expect_equal(gr$svLen, 1)
+    
+    gr <- svToBreakendGRanges(.testrecord("chr1	2	.	TTT	AGGA	.	.	"))
+    expect_equal(start(gr), c(1, 4))
+    expect_equal(gr$insSeq, c("AGGA", "AGGA"))
+    expect_equal(gr$svLen, 1)
+    
+    gr <- svToBreakendGRanges(.testrecord("chr1	2	.	AGT	AGGA	.	.	"))
+    expect_equal(start(gr), c(3, 5))
+    expect_equal(gr$insSeq, c("GA", "GA"))
+    expect_equal(gr$svLen, 1)
+})
+
+test_that("svToBreakendGRanges breakend", {
+    gr <- svToBreakendGRanges(breakend)
+    expect_equal("parid_b", gr["parid_a",]$partner)
+    expect_equal("mateid_b", gr["mateid_a",]$partner)
+    expect_equal(partner(gr[c("parid_a", "parid_b"),], gr[c("parid_b", "parid_a"),]))
+    expect_warning(svToBreakendGRanges(breakend[c("mateid_a","mateid_b","multi_mateid", )]), "Ignoring additional mate breakends")
+    expect_warning(svToBreakendGRanges(breakend[c("unpaired", )]), "Removing [0-9]+ unpaired breakend variants")
 })
