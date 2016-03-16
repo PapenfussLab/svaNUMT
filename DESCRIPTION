@@ -11,11 +11,13 @@ Description: The description of a package is usually long,
 License: GPL-3
 Depends:
     R (>= 3.2.2),
-    VariantAnnotation (>= 1.16.4)
+    methods,
+    VariantAnnotation (>= 1.16.3)
 Imports:
     assertthat,
-    BioStrings (>= 2.38.4)
-    stringr,
+    Biostrings (>= 2.38.0),
+    stringr (>= 1.0.0)
 Suggests:
-    testthat
+    testthat,
+    rBLAST (>= 0.99.1)
 RoxygenNote: 5.0.1

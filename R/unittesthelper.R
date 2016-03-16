@@ -6,7 +6,7 @@
     if (!file.exists(f)) {
         f <- file.path(getwd(), "inst", location, filename)
     }
-    assert_that(file.exists(f))
+    assertthat::assert_that(file.exists(f))
     return(f)
 }
 #' loads a VCF containing the given records
@@ -21,6 +21,12 @@
         "##ALT=<ID=TRA,Description=\"Translocation\">",
         "##ALT=<ID=INS,Description=\"Insertion\">",
         "##INFO=<ID=CIPOS,Number=2,Type=Integer,Description=\"PE confidence interval around POS\">",
+        "##INFO=<ID=HOMSEQ,Number=.,Type=String,Description=\"Sequence of base pair identical micro-homology at event breakpoints\">",
+        "##INFO=<ID=HOMLEN,Number=.,Type=Integer,Description=\"Length of base pair identical micro-homology at event breakpoints\">",
+        "##INFO=<ID=CIEND,Number=2,Type=Integer,Description=\"Confidence interval around END for imprecise variants\">",
+        "##INFO=<ID=END,Number=1,Type=Integer,Description=\"Stop position of the interval\">",
+        "##INFO=<ID=SVLEN,Number=.,Type=Integer,Description=\"Difference in length between REF and ALT alleles\">",
+        "##INFO=<ID=SVTYPE,Number=1,Type=String,Description=\"Type of structural variant\">",
         "##contig=<ID=chr1,length=249250621>",
         "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT",
         record), collapse="\n"),
