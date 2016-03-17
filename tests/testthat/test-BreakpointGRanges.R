@@ -42,35 +42,65 @@ expect_equal(start(.constrict(breakpointRanges(.testrecord(c(
 
 hg19 <- BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19
 
-expect_equal(breakpointSequence(breakpointRanges(.testrecord(c(
-	# CTC>   <TGC
-	"chr1	100000	a	N	N[chr1:100100[	.	.	SVTYPE=BND;PARID=b",
-	"chr1	100100	b	N	]chr1:100000]N	.	.	SVTYPE=BND;PARID=a"
-	))), hg19, anchoredBases=3), c("CTCTGC", "GCAGAG"))
-expect_equal(breakpointSequence(breakpointRanges(.testrecord(c(
-	# CTC> AC  <TGC
-	"chr1	100000	a	N	NAC[chr1:100100[	.	.	SVTYPE=BND;PARID=b",
-	"chr1	100100	b	N	]chr1:100000]ACN	.	.	SVTYPE=BND;PARID=a"
-	))), hg19, anchoredBases=3), c("CTCACTGC", "GCAGTGAG"))
-expect_equal(breakpointSequence(breakpointRanges(.testrecord(c(
-	"chr12	1000000	a	N	[chr12:2000000[N	.	.	SVTYPE=BND;PARID=b", #GGATA
-	"chr12	2000000	b	N	[chr12:1000000[N	.	.	SVTYPE=BND;PARID=a"  #GAGAA
-	))), hg19, anchoredBases=5), c("TATCCGAGAA", "TTCTCGGATA"))
+test_that("breakpointSequence", {
+	expect_equal(breakpointSequence(breakpointRanges(.testrecord(c(
+		# CTC>   <TGC
+		"chr1	100000	a	N	N[chr1:100100[	.	.	SVTYPE=BND;PARID=b",
+		"chr1	100100	b	N	]chr1:100000]N	.	.	SVTYPE=BND;PARID=a"
+		))), hg19, anchoredBases=3), c("CTCTGC", "GCAGAG"))
+	expect_equal(breakpointSequence(breakpointRanges(.testrecord(c(
+		# CTC> AC  <TGC
+		"chr1	100000	a	N	NAC[chr1:100100[	.	.	SVTYPE=BND;PARID=b",
+		"chr1	100100	b	N	]chr1:100000]ACN	.	.	SVTYPE=BND;PARID=a"
+		))), hg19, anchoredBases=3), c("CTCACTGC", "GCAGTGAG"))
+	expect_equal(breakpointSequence(breakpointRanges(.testrecord(c(
+		"chr12	1000000	a	N	[chr12:2000000[N	.	.	SVTYPE=BND;PARID=b", #GGATA
+		"chr12	2000000	b	N	[chr12:1000000[N	.	.	SVTYPE=BND;PARID=a"  #GAGAA
+		))), hg19, anchoredBases=5), c("TATCCGAGAA", "TTCTCGGATA"))
+	expect_equal(breakpointSequence(breakpointRanges(.testrecord(c(
+		"chr12	1000000	a	N	[chr12:2000000[N	.	.	SVTYPE=BND;PARID=b;CIPOS=-115,115",
+		"chr12	2000000	b	N	[chr12:1000000[N	.	.	SVTYPE=BND;PARID=a;CIPOS=-115,115"
+		))), hg19, anchoredBases=5), c("TATCCGAGAA", "TTCTCGGATA"))
 
-expect_equal(referenceSequence(breakpointRanges(.testrecord(c(
-	"chr1	100000	a	N	N[chr1:100100[	.	.	SVTYPE=BND;PARID=b",
-	"chr1	100100	b	N	]chr1:100000]N	.	.	SVTYPE=BND;PARID=a"
-	))), hg19, anchoredBases=3), c("CTCACT", "GCATGG"))
-expect_equal(referenceSequence(breakpointRanges(.testrecord(c(
-	"chr1	100000	a	N	NAC[chr1:100100[	.	.	SVTYPE=BND;PARID=b",
-	"chr1	100100	b	N	]chr1:100000]ACN	.	.	SVTYPE=BND;PARID=a"
-	))), hg19, anchoredBases=3), c("CTCACT", "GCATGG"))
-expect_equal(referenceSequence(breakpointRanges(.testrecord(c(
-	"chr1	100000	a	N	NAC[chr1:100100[	.	.	SVTYPE=BND;PARID=b",
-	"chr1	100100	b	N	]chr1:100000]ACN	.	.	SVTYPE=BND;PARID=a"
-	))), hg19, anchoredBases=3, followingBases=5), c("CTCACTAA", "GCATGGCG"))
+	expect_equal(breakpointSequence(breakpointRanges(.testrecord(c(
+		"chr1	9595627	a	A	A[chr1:9597590[	.	.	MATEID=b;SVTYPE=BND",
+		"chr1	9597590	b	C	]chr1:9595627]C	.	.	MATEID=a;SVTYPE=BND"
+		))), hg19, anchoredBases=5)[1], "CTCCAAATCC")
+})
+test_that("referenceSequence", {
+	expect_equal(referenceSequence(breakpointRanges(.testrecord(c(
+		"chr1	100000	a	N	N[chr1:100100[	.	.	SVTYPE=BND;PARID=b",
+		"chr1	100100	b	N	]chr1:100000]N	.	.	SVTYPE=BND;PARID=a"
+		))), hg19, anchoredBases=3), c("CTCACT", "GCATGG"))
+	expect_equal(referenceSequence(breakpointRanges(.testrecord(c(
+		"chr1	100000	a	N	NAC[chr1:100100[	.	.	SVTYPE=BND;PARID=b",
+		"chr1	100100	b	N	]chr1:100000]ACN	.	.	SVTYPE=BND;PARID=a"
+		))), hg19, anchoredBases=3), c("CTCACT", "GCATGG"))
+	expect_equal(referenceSequence(breakpointRanges(.testrecord(c(
+		"chr1	100000	a	N	NAC[chr1:100100[	.	.	SVTYPE=BND;PARID=b",
+		"chr1	100100	b	N	]chr1:100000]ACN	.	.	SVTYPE=BND;PARID=a"
+		))), hg19, anchoredBases=3, followingBases=5), c("CTCACTAA", "GCATGGCG"))
+	expect_equal(referenceSequence(breakpointRanges(.testrecord(c(
+		"chr1	100000	a	N	NAC[chr1:100100[	.	.	SVTYPE=BND;PARID=b;CIPOS=-5,5",
+		"chr1	100100	b	N	]chr1:100000]ACN	.	.	SVTYPE=BND;PARID=a;CIPOS=-5,5"
+		))), hg19, anchoredBases=3, followingBases=5), c("CTCACTAA", "GCATGGCG"))
+})
 
-"chr1	9595527	gridss43448o	A	A[chr1:9597585[ 1502.22	.	AS=1;ASCRP=3;ASCSR=25;ASQ=487.6149;ASRP=36;ASSR=25;BQ=38.23;BUM=2;BUMQ=38.227955;CIGAR=92M1X229N1X;CIPOS=-115,115;CIRPOS=-115,115;CQ=1477.48;EVENT=gridss43448;HOMLEN=230;HOMSEQ=TGGGAGGCTGAGGCAGGCAGATCACTTGAGGCCAGGAGTTCAAGACCAGCCTGGCCAACATGGTGAAACCCTGTCTCTACTAAAAATACAGAAAAATTAGCCAGGCATGGTGGCACGTGCCTGTAATCCAGCTACTCGTGAGGCAGAGGCAGGAGAATTGCTTGAACCCAGGAGGTGGAGGTTGCAGTGAGCTGAGATCATGCCACTGCACTCCAGCCTGGGTGACAGAG;MATEID=gridss43448h;RAS=1;RASQ=643.5017;REF=58;REFPAIR=28;RP=15;RPQ=371.10327;SVTYPE=BND",
-"chr1	9597585	gridss43448h	C	]chr1:9595527]C 1502.22	.	AS=1;ASCRP=3;ASCSR=25;ASQ=643.5017;ASRP=36;ASSR=25;BQ=18.71;BSC=1;BSCQ=18.707733;CIGAR=1X229N1X30M1D198M;CIPOS=-115,115;CIRPOS=-115,115;CQ=1477.48;EVENT=gridss43448;HOMLEN=230;HOMSEQ=TGGGAGGCTGAGGCAGGCAGATCACTTGAGGCCAGGAGTTCAAGACCAGCCTGGCCAACATGGTGAAACCCTGTCTCTACTAAAAATACAGAAAAATTAGCCAGGCATGGTGGCACGTGCCTGTAATCCAGCTACTCGTGAGGCAGAGGCAGGAGAATTGCTTGAACCCAGGAGGTGGAGGTTGCAGTGAGCTGAGATCATGCCACTGCACTCCAGCCTGGGTGACAGAG;MATEID=gridss43448o;RAS=1;RASQ=487.6149;REF=22;REFPAIR=11;RP=15;RPQ=371.10327;SVTYPE=BND"
+test_that("referenceHomology", {
+	# TODO: why doesn't this call position make sense? It should be to 9597590
+	expect_gte(referenceHomology(breakpointRanges(.testrecord(c(
+			"chr1	9595527	gridss43448o	A	A[chr1:9597585[	1502.22	.	CIPOS=-115,115;HOMLEN=230;HOMSEQ=TGGGAGGCTGAGGCAGGCAGATCACTTGAGGCCAGGAGTTCAAGACCAGCCTGGCCAACATGGTGAAACCCTGTCTCTACTAAAAATACAGAAAAATTAGCCAGGCATGGTGGCACGTGCCTGTAATCCAGCTACTCGTGAGGCAGAGGCAGGAGAATTGCTTGAACCCAGGAGGTGGAGGTTGCAGTGAGCTGAGATCATGCCACTGCACTCCAGCCTGGGTGACAGAG;MATEID=gridss43448h;SVTYPE=BND",
+			"chr1	9597585	gridss43448h	C	]chr1:9595527]C	1502.22	.	CIPOS=-115,115;HOMLEN=230;HOMSEQ=TGGGAGGCTGAGGCAGGCAGATCACTTGAGGCCAGGAGTTCAAGACCAGCCTGGCCAACATGGTGAAACCCTGTCTCTACTAAAAATACAGAAAAATTAGCCAGGCATGGTGGCACGTGCCTGTAATCCAGCTACTCGTGAGGCAGAGGCAGGAGAATTGCTTGAACCCAGGAGGTGGAGGTTGCAGTGAGCTGAGATCATGCCACTGCACTCCAGCCTGGGTGACAGAG;MATEID=gridss43448o;SVTYPE=BND"
+		))), hg19)$homlen[1], 230)
+
+	expect_lt(referenceHomology(breakpointRanges(.testrecord(c(
+		"chr12	1000000	a	A	A[chr12:2000000[	.	.	MATEID=b;SVTYPE=BND",
+		"chr12	2000000	b	C	]chr12:1000000]C	.	.	MATEID=a;SVTYPE=BND"
+	))), hg19)$homlen[1], 3)
+})
+
+
+
+
 
 

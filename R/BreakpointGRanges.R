@@ -4,8 +4,8 @@
 #setClass("BreakpointGRanges", contains="GRanges")
 
 #' Partner breakend for each breakend.
-#' 
-#' @details 
+#'
+#' @details
 #' All breakends must have their partner breakend included
 #' in the GRanges.
 #'
@@ -16,12 +16,12 @@ partner <- function(gr) {
 }
 
 #' Extracts the breakpoint sequence.
-#' 
+#'
 #' @details
 #' The sequence is the sequenced traversed from the reference anchor bases
 #' to the breakpoint. For backward (-) breakpoints, this corresponds to the
 #' reverse compliment of the reference sequence bases.
-#' 
+#'
 #' @param gr breakpoint GRanges
 #' @param ref Reference BSgenome
 #' @param anchoredBases Number of bases leading into breakpoint to extract
@@ -37,12 +37,12 @@ breakpointSequence <- function(gr, ref, anchoredBases, remoteBases=anchoredBases
 	return(paste0(localSeq, insSeq, remoteSeq))
 }
 #' Returns the reference sequence around the breakpoint position
-#' 
+#'
 #' @details
 #' The sequence is the sequenced traversed from the reference anchor bases
 #' to the breakpoint. For backward (-) breakpoints, this corresponds to the
 #' reverse compliment of the reference sequence bases.
-#' 
+#'
 #' @param gr breakpoint GRanges
 #' @param ref Reference BSgenome
 #' @param anchoredBases Number of bases leading into breakpoint to extract
@@ -51,6 +51,7 @@ breakpointSequence <- function(gr, ref, anchoredBases, remoteBases=anchoredBases
 referenceSequence <- function(gr, ref, anchoredBases, followingBases=anchoredBases) {
 	assertthat::assert_that(is(gr, "GRanges"))
 	assertthat::assert_that(is(ref, "BSgenome"))
+	gr <- .constrict(gr)
 	seqgr <- GRanges(seqnames=seqnames(gr), ranges=IRanges(
 		start=start(gr) - ifelse(strand(gr) == "-", followingBases, anchoredBases - 1),
 		end=end(gr) + ifelse(strand(gr) == "-", anchoredBases - 1, followingBases)))
@@ -84,18 +85,18 @@ referenceSequence <- function(gr, ref, anchoredBases, followingBases=anchoredBas
 
 #' Calculates the length of inexact homology between the breakpoint sequence
 #' and the reference
-#' 
+#'
 #' @param gr breakpoint GRanges
 #' @param ref Reference BSgenome
 #' @param flankSize Number of bases to consider for homology
 #' @param margin Number of additional reference bases include. This allows
 #'		for inexact homology to be detected even in the presence of indels.
-#' @param match alignment 
+#' @param match alignment
 #' @param mismatch see Biostrings::pairwiseAlignment
 #' @param gapOpening see Biostrings::pairwiseAlignment
 #' @param gapExtension see Biostrings::pairwiseAlignment
 #' @param match see Biostrings::pairwiseAlignment
-#'     
+#'
 #'@export
 referenceHomology <- function(gr, ref,
 		flankSize=200,
@@ -104,13 +105,13 @@ referenceHomology <- function(gr, ref,
 		#match = 1, mismatch = -4, gapOpening = 6, gapExtension = 1, # bowtie2
 		...) {
 	varseq <- breakpointSequence(gr, ref, anchoredBases=flankSize)
-	refseq <- referenceSequence(gr, ref, anchoredBases=flankSize, followingBases=nchar(varseq) - 2 * flankSize + margin)
-	aln <- pairwiseAlignment(varseq, refseq, type="global-local",
+	refseq <- referenceSequence(gr, ref, anchoredBases=flankSize, followingBases=nchar(varseq) - flankSize + margin)
+	aln <- pairwiseAlignment(varseq, refseq, type="local",
  		substitutionMatrix=nucleotideSubstitutionMatrix(match, mismatch, FALSE, "DNA"),
  		gapOpening=gapOpening, gapExtension=gapExtension)
 	partnerIndex <- match(gr$partner, names(gr))
 	homlen <- nchar(aln) - deletion(nindel(aln))[,2]- insertion(nindel(aln))[,2]
-	bphomlen <- homlen + homlen[partnerIndex]
+	bphomlen <- homlen + homlen[partnerIndex] - 2 * flankSize
 	bpscore <- score(aln) + score(aln)[partnerIndex] - 2 * flankSize * match
 	return(list(homlen=bphomlen, score=bpscore))
 }
