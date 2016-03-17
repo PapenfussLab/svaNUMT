@@ -26,8 +26,11 @@
         "##INFO=<ID=CIEND,Number=2,Type=Integer,Description=\"Confidence interval around END for imprecise variants\">",
         "##INFO=<ID=END,Number=1,Type=Integer,Description=\"Stop position of the interval\">",
         "##INFO=<ID=SVLEN,Number=.,Type=Integer,Description=\"Difference in length between REF and ALT alleles\">",
-        "##INFO=<ID=SVTYPE,Number=1,Type=String,Description=\"Type of structural variant\">",
+        "##INFO=<ID=PARID,Number=1,Type=String,Description=\"ID of partner breakend\">",
+		"##INFO=<ID=MATEID,Number=.,Type=String,Description=\"ID of mate breakends\">",
+    	"##INFO=<ID=SVTYPE,Number=1,Type=String,Description=\"Type of structural variant\">",
         "##contig=<ID=chr1,length=249250621>",
+    	"##contig=<ID=chr12>",
         "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT",
         record), collapse="\n"),
         file=filename)

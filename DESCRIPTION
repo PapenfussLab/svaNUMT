@@ -12,6 +12,7 @@ License: GPL-3
 Depends:
     R (>= 3.2.2),
     methods,
+    GenomicRanges (>= 1.22.4),
     VariantAnnotation (>= 1.16.3)
 Imports:
     assertthat,
