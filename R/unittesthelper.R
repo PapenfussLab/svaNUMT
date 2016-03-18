@@ -31,6 +31,7 @@
     	"##INFO=<ID=SVTYPE,Number=1,Type=String,Description=\"Type of structural variant\">",
         "##contig=<ID=chr1,length=249250621>",
     	"##contig=<ID=chr12>",
+    	"##contig=<ID=chrM,length=16571>",
         "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT",
         record), collapse="\n"),
         file=filename)

@@ -10,15 +10,16 @@ Description: The description of a package is usually long,
     should be indented, usually with four spaces.
 License: GPL-3
 Depends:
+	GenomicRanges (>= 1.22.4),
+	methods,
     R (>= 3.2.2),
-    methods,
-    GenomicRanges (>= 1.22.4),
     VariantAnnotation (>= 1.16.3)
 Imports:
     assertthat,
     Biostrings (>= 2.38.0),
     stringr (>= 1.0.0)
 Suggests:
-    testthat,
-    rBLAST (>= 0.99.1)
+    BSgenome.Hsapiens.UCSC.hg19,
+    rBLAST (>= 0.99.1),
+    testthat
 RoxygenNote: 5.0.1

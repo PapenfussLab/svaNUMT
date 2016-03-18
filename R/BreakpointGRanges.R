@@ -55,13 +55,17 @@ referenceSequence <- function(gr, ref, anchoredBases, followingBases=anchoredBas
 	seqgr <- GRanges(seqnames=seqnames(gr), ranges=IRanges(
 		start=start(gr) - ifelse(strand(gr) == "-", followingBases, anchoredBases - 1),
 		end=end(gr) + ifelse(strand(gr) == "-", anchoredBases - 1, followingBases)))
+	startPad <- pmax(0, 1 - start(seqgr))
+	endPad <- pmax(0, end(seqgr) - seqlengths(ref)[as.character(seqnames(seqgr))])
+	ranges(seqgr) <- IRanges(start=start(seqgr) + startPad, end=end(seqgr) - endPad)
 	seq <- Biostrings::getSeq(ref, seqgr)
+	seq <- paste0(stringr::str_pad("", startPad, pad="N"), as.character(seq), stringr::str_pad("", endPad, pad="N"))
 	# DNAStringSet doesn't like out of bounds subsetting
-	seq <- ifelse(strand(gr) == "-", as.character(Biostrings::reverseComplement(seq)), as.character(seq))
+	seq <- ifelse(strand(gr) == "-", as.character(Biostrings::reverseComplement(DNAStringSet(seq))), seq)
 	return(seq)
 }
 #' constrict
-.constrict <- function(gr, position="middle") {
+.constrict <- function(gr, ref=NULL,position="middle") {
 	isLower <- start(gr) < start(partner(gr))
 	# Want to call a valid breakpoint
 	#  123 456
@@ -77,9 +81,14 @@ referenceSequence <- function(gr, ref, anchoredBases, followingBases=anchoredBas
 		ranges(gr) <- IRanges(
 			start=ifelse(roundDown,floor(pos), ceiling(pos)),
 			width=1, names=names(gr))
-		return(gr)
+
+	} else {
+		stop(paste("Unrecognised position", position))
 	}
-	stop(paste("Unrecognised position", position))
+	if (!is.null(ref)) {
+		ranges(gr) <- IRanges(start=pmin(pmax(1, start(gr)), seqlengths(ref)[as.character(seqnames(gr))]), width=1)
+	}
+	return(gr)
 }
 
 
@@ -88,7 +97,7 @@ referenceSequence <- function(gr, ref, anchoredBases, followingBases=anchoredBas
 #'
 #' @param gr breakpoint GRanges
 #' @param ref Reference BSgenome
-#' @param flankSize Number of bases to consider for homology
+#' @param anchorLength Number of bases to consider for homology
 #' @param margin Number of additional reference bases include. This allows
 #'		for inexact homology to be detected even in the presence of indels.
 #' @param match alignment
@@ -99,21 +108,57 @@ referenceSequence <- function(gr, ref, anchoredBases, followingBases=anchoredBas
 #'
 #'@export
 referenceHomology <- function(gr, ref,
-		flankSize=200,
+		anchorLength=300,
 		margin=5,
-		match = 2, mismatch = -6, gapOpening = 5, gapExtension = 3, # bwa
+		match=2, mismatch=-6, gapOpening=5, gapExtension=3, # bwa
 		#match = 1, mismatch = -4, gapOpening = 6, gapExtension = 1, # bowtie2
 		...) {
-	varseq <- breakpointSequence(gr, ref, anchoredBases=flankSize)
-	refseq <- referenceSequence(gr, ref, anchoredBases=flankSize, followingBases=nchar(varseq) - flankSize + margin)
-	aln <- pairwiseAlignment(varseq, refseq, type="local",
- 		substitutionMatrix=nucleotideSubstitutionMatrix(match, mismatch, FALSE, "DNA"),
- 		gapOpening=gapOpening, gapExtension=gapExtension)
+	# shrink anchor for small events to prevent spanning alignment
+	aLength <- pmin(anchorLength, abs(gr$svLen) + 1) %na% anchorLength
+	anchorSeq <- referenceSequence(gr, ref, aLength, 0)
+	anchorSeq <- sub(".*N", "", anchorSeq)
+	# shrink anchor with Ns
+	aLength <- nchar(anchorSeq)
+	varseq <- breakpointSequence(gr, ref, aLength)
+	varseq <- sub("N.*", "", varseq)
+	bpLength <- nchar(varseq) - aLength
+	nonbpseq <- referenceSequence(gr, ref, 0, bpLength + margin)
+	nonbpseq <- sub("N.*", "", nonbpseq)
+	refseq <- paste0(anchorSeq, nonbpseq)
+
 	partnerIndex <- match(gr$partner, names(gr))
-	homlen <- nchar(aln) - deletion(nindel(aln))[,2]- insertion(nindel(aln))[,2]
-	bphomlen <- homlen + homlen[partnerIndex] - 2 * flankSize
-	bpscore <- score(aln) + score(aln)[partnerIndex] - 2 * flankSize * match
-	return(list(homlen=bphomlen, score=bpscore))
+
+	if (all(refseq=="") && all(varseq=="")) {
+		# Workaround of Biostrings::pairwiseAlignment bug
+		return(data.frame(
+			exacthomlen=rep(NA, length(gr)),
+			inexacthomlen=rep(NA, length(gr)),
+			inexactscore=rep(NA, length(gr))))
+	}
+
+	aln <- Biostrings::pairwiseAlignment(varseq, refseq, type="local",
+ 		substitutionMatrix=nucleotideSubstitutionMatrix(match, mismatch, FALSE, "DNA"),
+ 		gapOpening=gapOpening, gapExtension=gapExtension, scoreOnly=FALSE)
+	ihomlen <- nchar(aln) - aLength -deletion(nindel(aln))[,2]- insertion(nindel(aln))[,2]
+	ibphomlen <- ihomlen + ihomlen[partnerIndex]
+	ibpscore <- score(aln) + score(aln)[partnerIndex] - 2 * aLength * match
+
+	# TODO: replace this with an efficient longest common substring function
+	# instead of S/W with a massive mismatch/gap penalty
+	penalty <- anchorLength * match
+	matchLength <- Biostrings::pairwiseAlignment(varseq, refseq, type="local",
+ 		substitutionMatrix=nucleotideSubstitutionMatrix(match, -penalty, FALSE, "DNA"),
+ 		gapOpening=penalty, gapExtension=0, scoreOnly=TRUE) / match
+	ehomlen <- matchLength - aLength
+	ebphomlen <- ehomlen + ehomlen[partnerIndex]
+
+	ebphomlen[aLength == 0] <- NA
+	ibphomlen[aLength == 0] <- NA
+	ibpscore[aLength == 0] <- NA
+	return(data.frame(
+		exacthomlen=ebphomlen,
+		inexacthomlen=ibphomlen,
+		inexactscore=ibpscore))
 }
 
 blastHomology <- function(gr, ...) {

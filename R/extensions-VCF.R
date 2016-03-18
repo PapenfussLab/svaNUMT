@@ -22,13 +22,13 @@ setGeneric("isSymbolic", signature="x",
            function(x, ...)
                standardGeneric("isSymbolic")
 )
-setMethod("isSymbolic", "CollapsedVCF", 
-          function(x, ..., singleAltOnly=TRUE) 
-              .dispatchPerAllele_CollapsedVCF(.isSymbolic, x, singleAltOnly) 
+setMethod("isSymbolic", "CollapsedVCF",
+          function(x, ..., singleAltOnly=TRUE)
+              .dispatchPerAllele_CollapsedVCF(.isSymbolic, x, singleAltOnly)
 )
-setMethod("isSymbolic", "ExpandedVCF", 
-          function(x, ...) 
-              .dispatchPerAllele_ExpandedVCF(.isSymbolic, x) 
+setMethod("isSymbolic", "ExpandedVCF",
+          function(x, ...)
+              .dispatchPerAllele_ExpandedVCF(.isSymbolic, x)
 )
 .isSymbolic <- function(r, a) {
     result <- grepl("<", a, fixed=TRUE) |
@@ -44,13 +44,13 @@ setGeneric("isStructural", signature="x",
            function(x, ...)
                standardGeneric("isStructural")
 )
-setMethod("isStructural", "CollapsedVCF", 
-          function(x, ..., singleAltOnly=TRUE) 
-              .dispatchPerAllele_CollapsedVCF(.isStructural, x, singleAltOnly) 
+setMethod("isStructural", "CollapsedVCF",
+          function(x, ..., singleAltOnly=TRUE)
+              .dispatchPerAllele_CollapsedVCF(.isStructural, x, singleAltOnly)
 )
-setMethod("isStructural", "ExpandedVCF", 
-          function(x, ...) 
-              .dispatchPerAllele_ExpandedVCF(.isStructural, x) 
+setMethod("isStructural", "ExpandedVCF",
+          function(x, ...)
+              .dispatchPerAllele_ExpandedVCF(.isStructural, x)
 )
 .isStructural <- function(ref, alt) {
 	lengthDiff <- elementLengths(ref) != IRanges::nchar(alt)
@@ -60,21 +60,21 @@ setMethod("isStructural", "ExpandedVCF",
 	}
     return(as.logical(
     	# exclude no-call sites
-    	!is.na(alt) & alt != "<NON_REF>" & 
+    	!is.na(alt) & alt != "<NON_REF>" &
         (lengthDiff | .isSymbolic(ref, alt))))
 }
 
 
 #' Returns the structural variant length of the first allele
-#' 
+#'
 #' @param vcf VCF object
-#' 
+#'
 #' @export
 .svLen <- function(vcf) {
 	assertthat::assert_that(.hasSingleAllelePerRecord(vcf))
     r <- ref(vcf)
     a <- .elementExtract(alt(vcf))
-    result <- ifelse(!isStructural(vcf), 0, 
+    result <- ifelse(!isStructural(vcf), 0,
 		.elementExtract(info(vcf)$SVLEN) %na%
 		(.elementExtract(info(vcf)$END) - start(rowRanges(vcf))) %na%
 		(ifelse(isSymbolic(vcf), NA_integer_, IRanges::nchar(a) - IRanges::nchar(r))))
@@ -85,30 +85,30 @@ setMethod("isStructural", "ExpandedVCF",
 	assertthat::assert_that(is(vcf, "VCF"))
     all(elementLengths(alt(vcf)) == 1)
 }
-setMethod("isStructural", "VCF", 
-		  function(x, ...) 
-		  	.dispatchPerAllele_ExpandedVCF(.isStructural, x) 
+setMethod("isStructural", "VCF",
+		  function(x, ...)
+		  	.dispatchPerAllele_ExpandedVCF(.isStructural, x)
 )
 
 
 #' Extracts the structural variants as a BreakendGRanges
-#' 
+#'
 #' @details
 #' Structural variants are converted to breakend notation.
-#' 
+#'
 #' Due to ambiguities in the VCF specifications, structural variants
 #' with multiple alt alleles are not supported.
-#' 
+#'
 #' If HOMLEN or HOMSEQ is defined without CIPOS, it is assumed that
 #' the variant position is left aligned.
-#' 
+#'
 #' @export
 setGeneric("breakpointRanges", signature="x",
 		   function(x, ...)
 		   		standardGeneric("breakpointRanges")
 )
-setMethod("breakpointRanges", "VCF", 
-		  function(x, ...) 
+setMethod("breakpointRanges", "VCF",
+		  function(x, ...)
 		  	.breakpointRanges(x, suffix="_bp")
 )
 #' @param vcf VCF object
@@ -116,7 +116,7 @@ setMethod("breakpointRanges", "VCF",
 #'    nominal VCF position, or to call the confidence interval (incorporating
 #'    any homology present).
 #' @param prefix variant name prefix to assign to unnamed variants
-#' @param suffix suffix to append 
+#' @param suffix suffix to append
 .breakpointRanges <- function(vcf, nominalPosition=FALSE, placeholderName="svrecord", suffix="_bp") {
 	vcf <- vcf[isStructural(vcf),]
 	assertthat::assert_that(.hasSingleAllelePerRecord(vcf))
@@ -144,7 +144,7 @@ setMethod("breakpointRanges", "VCF",
 	gr$insLen <- rep(0, length(gr))
 	gr$cistartoffset <- rep(0, length(gr))
 	gr$ciwidth <- rep(0, length(gr))
-	
+
 	if (!is.null(info(vcf)$HOMSEQ)) {
 		seq <- .elementExtract(info(vcf)$HOMSEQ, 1)
 		gr$ciwidth <- ifelse(is.na(seq), gr$ciwidth, nchar(seq))
@@ -162,12 +162,12 @@ setMethod("breakpointRanges", "VCF",
 	}
 	gr$processed <- rep(FALSE, length(gr))
 	outgr <- gr[FALSE,]
-	
+
 	rows <- !gr$processed & !isSymbolic(vcf)
 	if (any(rows)) {
 		cgr <- gr[rows,]
 		gr$processed[rows] <- TRUE
-		
+
 		commonPrefixLength <- mapply(Biostrings::lcprefix, cgr$REF, cgr$ALT, USE.NAMES=FALSE)
 		cgr$svLen <- nchar(cgr$ALT) - nchar(cgr$REF)
 		cgr$insSeq <- subseq(cgr$ALT, start=commonPrefixLength + 1)
@@ -178,7 +178,7 @@ setMethod("breakpointRanges", "VCF",
 		mategr <- cgr
 		strand(mategr) <- "-"
 		ranges(mategr) <- IRanges(start=start(cgr) + nchar(cgr$REF) - commonPrefixLength + 1, width=1)
-		
+
 		names(mategr) <- paste0(names(cgr), suffix, 2)
 		names(cgr) <- paste0(names(cgr), suffix, 1)
 		cgr$partner <- names(mategr)
@@ -195,7 +195,7 @@ setMethod("breakpointRanges", "VCF",
 		#assertthat::assert_that(!any(cgr$svtype == "DEL" & cgr$svLen > 0))
 		#assertthat::assert_that(!any(cgr$svtype == "INS" & cgr$svLen < 0))
 		dup <- cgr$svtype == "DUP"
-		
+
 		strand(cgr) <- "+"
 		width(cgr) <- 1
 		mategr <- cgr
@@ -207,17 +207,17 @@ setMethod("breakpointRanges", "VCF",
 		}
 		ranges(mategr) <- IRanges(start=end + ifelse(dup, 0, 1), width=1)
 		cgr$insLen <- pmax(0, cgr$svLen)
-		
+
 		cistartoffset <- .elementExtract(info(cvcf)$CIEND, 1)
 		ciendoffset <- .elementExtract(info(cvcf)$CIEND, 2)
 		ciwidth <- ciendoffset - cistartoffset
 		mategr$cistartoffset <- cistartoffset %na% mategr$cistartoffset
 		mategr$ciwidth <- ciwidth %na% mategr$ciwidth
-		
-		
+
+
 		strand(cgr)[dup] <- "-"
 		strand(mategr)[dup] <- "+"
-		
+
 		names(mategr) <- paste0(names(cgr), suffix, 2)
 		names(cgr) <- paste0(names(cgr), suffix, 1)
 		cgr$partner <- names(mategr)
@@ -230,13 +230,13 @@ setMethod("breakpointRanges", "VCF",
 	if (any(rows)) {
 		cgr1 <- gr[rows,]
 		gr$processed[rows] <- TRUE
-		
+
 		width(cgr1) <- 1
 		end <- .elementExtract(info(vcf)$END[rows], 1) %na% (start(cgr1) + abs(cgr1$svLen) - 1)
 		if (any(is.na(end))) {
 			stop(paste("Variant of undefined length: ", paste(names(cgr1)[is.na(end),], collapse=", ")))
 		}
-		
+
 		cgr2 <- cgr1
 		cistartoffset <- .elementExtract(info(vcf)$CIEND[rows], 1)
 		ciendoffset <- .elementExtract(info(vcf)$CIEND[rows], 2)
@@ -245,7 +245,7 @@ setMethod("breakpointRanges", "VCF",
 		cgr2$ciwidth <- ciwidth %na% cgr2$ciwidth
 		cgr3 <- cgr1
 		cgr4 <- cgr2
-		
+
 		ranges(cgr2) <- IRanges(start=end + 1, width=1)
 		ranges(cgr3) <- IRanges(start=start(cgr1) - 1, width=1)
 		ranges(cgr4) <- IRanges(start=end, width=1)
@@ -253,7 +253,7 @@ setMethod("breakpointRanges", "VCF",
 		strand(cgr2) <- "-"
 		strand(cgr3) <- "+"
 		strand(cgr4) <- "+"
-		
+
 		names(cgr4) <- paste0(names(cgr1), suffix, 4)
 		names(cgr3) <- paste0(names(cgr1), suffix, 3)
 		names(cgr2) <- paste0(names(cgr1), suffix, 2)
@@ -273,14 +273,14 @@ setMethod("breakpointRanges", "VCF",
 		cgr <- gr[rows,]
 		gr$processed[rows] <- TRUE
 		cvcf <- vcf[rows,]
-		
+
 		bndMatches <- stringr::str_match(cgr$ALT, "(.*)(\\[|])(.*)(\\[|])(.*)")
 		preBases <- bndMatches[,2]
 		bracket <- bndMatches[,3]
 		remoteLocation <- bndMatches[,4]
 		postBases <- bndMatches[,6]
 		strand(cgr) <- ifelse(preBases == "", "-", "+")
-		
+
 		cgr$partner <- NA_character_
 		if (!is.null(info(cvcf)$PARID)) {
 			cgr$partner <- .elementExtract(info(cvcf)$PARID, 1)
@@ -295,7 +295,7 @@ setMethod("breakpointRanges", "VCF",
 		reflen <- elementLengths(cgr$REF)
 		cgr$insSeq <- paste0(stringr::str_sub(preBases, reflen + 1), stringr::str_sub(postBases, end=-(reflen + 1)))
 		cgr$insLen <- nchar(cgr$insSeq)
-		
+
 		toRemove <- is.na(cgr$partner) | !(cgr$partner %in% names(cgr))
 		if (any(toRemove)) {
 			warning(paste("Removing", sum(toRemove), "unpaired breakend variants", paste0(names(cgr)[toRemove], collapse=", ")))
@@ -303,6 +303,11 @@ setMethod("breakpointRanges", "VCF",
 		}
 		mategr <- cgr[cgr$partner,]
 		cgr$svLen <- ifelse(seqnames(cgr)==seqnames(mategr), abs(start(cgr) - start(mategr)) - 1 + cgr$insLen, NA_integer_)
+		# make deletion-like events have a -ve svLen
+		cgr$svLen <- ifelse(strand(cgr) != strand(mategr) &
+				((start(cgr) < start(mategr) & strand(cgr) == "+") |
+				 (start(cgr) > start(mategr) & strand(cgr) == "-")),
+			-cgr$svLen, cgr$svLen)
 		outgr <- c(outgr, cgr)
 		cgr <- NULL
 		mategr <- NULL
