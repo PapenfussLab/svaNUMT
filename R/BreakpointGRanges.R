@@ -91,7 +91,6 @@ referenceSequence <- function(gr, ref, anchoredBases, followingBases=anchoredBas
 	return(gr)
 }
 
-
 #' Calculates the length of inexact homology between the breakpoint sequence
 #' and the reference
 #'
@@ -110,9 +109,9 @@ referenceSequence <- function(gr, ref, anchoredBases, followingBases=anchoredBas
 referenceHomology <- function(gr, ref,
 		anchorLength=300,
 		margin=5,
-		match=2, mismatch=-6, gapOpening=5, gapExtension=3, # bwa
+		match=2, mismatch=-6, gapOpening=5, gapExtension=3 # bwa
 		#match = 1, mismatch = -4, gapOpening = 6, gapExtension = 1, # bowtie2
-		...) {
+		) {
 	# shrink anchor for small events to prevent spanning alignment
 	aLength <- pmin(anchorLength, abs(gr$svLen) + 1) %na% anchorLength
 	anchorSeq <- referenceSequence(gr, ref, aLength, 0)
@@ -161,7 +160,23 @@ referenceHomology <- function(gr, ref,
 		inexactscore=ibpscore))
 }
 
-blastHomology <- function(gr, ...) {
+#' Identifies breakpoint sequences with signficant homology to BLAST database
+#' sequences. Apparent breakpoints containing such sequence are better explained
+#' by the sequence from the BLAST database such as by alternate assemblies.
+#'
+#' @details
+#' See https://github.com/mhahsler/rBLAST for rBLAST package installation
+#' instructions
+#' Download and install the package from AppVeyor or install via install_github("mhahsler/rBLAST") (requires the R package devtools)
+blastHomology <- function(gr, ref, db, anchorLength=150) {
 	requireNamespace("rBLAST", quietly=FALSE)
+	blastseq <- DNAStringSet(breakpointSequence(gr, ref, anchorLength))
+	bl <- rBLAST::blast(db=db)
+	cl <- predict(bl, blastseq)
+	cl$index <- as.integer(substring(cl$QueryID, 7))
+	cl$leftOverlap <- anchorLength - cl$Q.start + 1
+	cl$rightOverlap <- cl$Q.end - (nchar(blastseq) - anchorLength)
+	cl$minOverlap <- pmin(cl$leftOverlap, cl$rightOverlap)
+	return(cl)
 }
 

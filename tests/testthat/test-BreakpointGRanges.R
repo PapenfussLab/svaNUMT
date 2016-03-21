@@ -29,7 +29,7 @@ delly <- readVcf(.testfile("delly-0.6.8.vcf"), "")
 test_that("partner fails if missing mate", {
     expect_error(partner(breakpointRanges(breakend)[1,]))
 })
-
+requireNamespace("BSgenome.Hsapiens.UCSC.hg19", quietly=FALSE)
 hg19 <- BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19
 
 test_that(".constrict", {
@@ -129,6 +129,18 @@ test_that("referenceHomology", {
 		"chr12	2000000	bb	C	]chr12:1000000]C	.	.	MATEID=aa;SVTYPE=BND"
 	))), hg19, 5)$inexacthomlen[1]))
 })
+
+test_that("blastHomology", {
+	#Sys.setenv(PATH=paste(Sys.getenv("PATH"), "/usr/local/bioinf/bin", sep=":"))
+	#bh <- blastHomology(gr, hg19, "~/blastdb/16SMicrobial")
+
+})
+
+
+
+#bh <- blastHomology(gr[c("gridss14536o", "gridss14536h"),], hg19, "~/blastdb/16SMicrobial")
+
+
 
 
 

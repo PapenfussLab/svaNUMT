@@ -2,9 +2,10 @@
 
 export(.svLen)
 export(breakpointRanges)
+export(breakpointSequence)
 export(isStructural)
 export(isSymbolic)
-exportClasses(BreakpointGRanges)
-import(IRanges)
+export(partner)
+export(referenceHomology)
+export(referenceSequence)
 import(assertthat)
-importMethodsFrom(IRanges,nchar)

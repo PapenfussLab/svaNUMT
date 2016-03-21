@@ -69,7 +69,6 @@ setMethod("isStructural", "ExpandedVCF",
 #'
 #' @param vcf VCF object
 #'
-#' @export
 .svLen <- function(vcf) {
 	assertthat::assert_that(.hasSingleAllelePerRecord(vcf))
     r <- ref(vcf)
@@ -302,12 +301,13 @@ setMethod("breakpointRanges", "VCF",
 			cgr <- cgr[!toRemove,]
 		}
 		mategr <- cgr[cgr$partner,]
-		cgr$svLen <- ifelse(seqnames(cgr)==seqnames(mategr), abs(start(cgr) - start(mategr)) - 1 + cgr$insLen, NA_integer_)
+		cgr$svLen <- ifelse(seqnames(cgr)==seqnames(mategr), abs(start(cgr) - start(mategr)) - 1, NA_integer_)
 		# make deletion-like events have a -ve svLen
 		cgr$svLen <- ifelse(strand(cgr) != strand(mategr) &
 				((start(cgr) < start(mategr) & strand(cgr) == "+") |
 				 (start(cgr) > start(mategr) & strand(cgr) == "-")),
 			-cgr$svLen, cgr$svLen)
+		cgr$svLen <- cgr$svLen + cgr$insLen
 		outgr <- c(outgr, cgr)
 		cgr <- NULL
 		mategr <- NULL
