@@ -312,14 +312,56 @@ setMethod("breakpointRanges", "VCF",
 		cgr <- NULL
 		mategr <- NULL
 	}
+	# TODO: Does delly write two records for a full INV?
+	# DELLY TRA https://groups.google.com/forum/#!msg/delly-users/6Mq2juBraRY/BjmMrBh3GAAJ
+	rows <- !gr$processed & !is.na(gr$svtype) & gr$svtype %in% c("TRA")
+	if (any(rows)) {
+		cgr <- gr[rows,]
+		gr$processed[rows] <- TRUE
+		cvcf <- vcf[rows,]
+
+		if (is.null(info(cvcf)$CHR2) || any(is.na(info(cvcf)$CHR2))) {
+			stop(paste("Delly variants missing CHR2:", paste(names(cgr)[is.na(info(cvcf)$CHR2)], collapse=", ")))
+		}
+		if (is.null(info(cvcf)$CT) || any(is.na(info(cvcf)$CT))) {
+			stop(paste("Delly variants missing CT:", paste(names(cgr)[is.na(info(cvcf)$CT)], collapse=", ")))
+		}
+		if (is.null(info(cvcf)$INSLEN) || any(is.na(info(cvcf)$INSLEN))) {
+			stop(paste("Delly variants missing INSLEN:", paste(names(cgr)[is.na(info(cvcf)$INSLEN)], collapse=", ")))
+		}
+
+		cgr$insLen <- info(cvcf)$INSLEN
+		width(cgr) <- 1
+		mategr <- cgr
+		# Hack so we can add new seqlevels if required
+		seqlevels(mategr) <- unique(c(seqlevels(mategr), info(cvcf)$CHR2))
+		seqnames(mategr)[seq(1, length(mategr))] <- info(cvcf)$CHR2
+		ranges(mategr) <- IRanges(start=info(cvcf)$END, width=1)
+		strand(cgr) <- ifelse(info(cvcf)$CT %in% c("3to3", "3to5"), "+", "-")
+		strand(mategr) <- ifelse(info(cvcf)$CT %in% c("3to3", "5to3"), "+", "-")
+
+		mcistartoffset <- .elementExtract(info(cvcf)$CIEND, 1) %na% 0
+		mciendoffset <- .elementExtract(info(cvcf)$CIEND, 2) %na% 0
+		mciwidth <- mciendoffset - mcistartoffset
+		mategr$cistartoffset <- mategr$cistartoffset
+		mategr$ciwidth <- mategr$ciwidth
+
+		names(mategr) <- paste0(names(cgr), suffix, 2)
+		names(cgr) <- paste0(names(cgr), suffix, 1)
+		cgr$partner <- names(mategr)
+		mategr$partner <- names(cgr)
+		outgr <- c(outgr, cgr, mategr)
+		cgr <- NULL
+		mategr <- NULL
+	}
 	# TODO: handle non-standard SVTYPE for specific callers
-	# DELLY TRA
 	# PINDEL RPL
 	if (!all(gr$processed)) {
-		stop(paste("Unrecognised format for variants", paste(names(gr)[!gr$processed,], collapse=", ")))
+		stop(paste("Unrecognised format for variants", paste(names(gr)[!gr$processed], collapse=", ")))
 	}
 	# incorporate microhomology and confidence intervals
 	ranges(outgr) <- IRanges(start=start(outgr) + outgr$cistartoffset, width=outgr$ciwidth + 1, names=names(outgr))
+	outgr$processed <- NULL
 	return(outgr)
 }
 .hasMetadataInfo <- function(vcf, field) {

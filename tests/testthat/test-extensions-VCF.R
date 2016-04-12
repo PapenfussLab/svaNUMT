@@ -4,6 +4,36 @@ simple <- readVcf(.testfile("simple.vcf"), "")
 breakend <- readVcf(.testfile("breakend.vcf"), "")
 multipleAlleles <- readVcf(.testfile("multipleAltSVs.vcf"), "")
 
+
+breakdancer <- readVcf(.testfile("breakdancer-1.4.5.vcf"), "")
+#cortex <- readVcf(.testfile("cortex-1.0.5.14.vcf"), "")
+#crest <- readVcf(.testfile("crest.vcf"), "")
+delly <- readVcf(.testfile("delly-0.6.8.vcf"), "")
+#gasv <- readVcf(.testfile("gasv-20140228.vcf"), "")
+#gridss <- readVcf(.testfile("gridss-0.10.0.vcf"), "")
+#lumpy <- readVcf(.testfile("lumpy-0.2.11.vcf"), "")
+#pindel <- readVcf(.testfile("pindel-0.2.5b6.vcf"), "")
+#socrates <- readVcf(.testfile("socrates-1.13.vcf"), "")
+
+test_that("Delly TRA", {
+	# https://groups.google.com/forum/#!msg/delly-users/6Mq2juBraRY/BjmMrBh3GAAJ
+	# Sorry, I forgot to post this to the delly-users list:
+	# For a translocation, you have 2 double strand breaks, one on chrA and one on chrB.
+	# This creates 4 "dangling" ends, chrA_left, chrA_right, chrB_left, chrB_right.
+	# For a translocation you can join chrA_left with chrB_left (3to3), chrA_left with chrB_right (3to5),
+	# chrA_right with chrB_left (5to3) and chrA_right with chrB_right (5to5).
+	# In fact for a typical reciprocal translocation in prostate cancer (where two chromosomes exchange their end)
+	# Delly calls 2 translocations at the breakpoint, one 3to5 and one 5to3. But obviously not all translocations are reciprocal.
+	# -Tobias
+    gr <- breakpointRanges(.testrecord(c("chr10	2991435	TRA00000001	N	<TRA>	.	LowQual	CIEND=0,100;CIPOS=0,50;SVTYPE=TRA;CHR2=chr1;END=19357517;CT=3to5;INSLEN=0")))
+    expect_equal(2, length(gr))
+    expect_equal(c(2991435, 19357517), start(gr))
+    expect_equal(c(2991485, 19357617), end(gr))
+    expect_equal(c("+", "-"), strand(gr))
+    expect_equal(c("chr10", "chr1"), seqname(gr))
+    gr <- breakpointRanges(delly)
+})
+
 expect_false(.hasSingleAllelePerRecord(multipleAlleles))
 expect_true(.hasSingleAllelePerRecord(expand(multipleAlleles)))
 
