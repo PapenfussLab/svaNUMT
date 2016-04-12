@@ -362,6 +362,8 @@ setMethod("breakpointRanges", "VCF",
 	# incorporate microhomology and confidence intervals
 	ranges(outgr) <- IRanges(start=start(outgr) + outgr$cistartoffset, width=outgr$ciwidth + 1, names=names(outgr))
 	outgr$processed <- NULL
+	outgr$cistartoffset <- NULL
+	outgr$ciwidth <- NULL
 	return(outgr)
 }
 .hasMetadataInfo <- function(vcf, field) {
