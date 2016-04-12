@@ -52,6 +52,7 @@ test_that("isStructural", {
 test_that(".svLen", {
 	expect_equal(c(0, 0, 1, -1, 1, -2, NA, NA, NA, NA), .svLen(simple))
 	expect_equal(.svLen(.testrecord("chr1	100	.	A	<DEL>	.	.	SVLEN=-1")), c(-1))
+	expect_equal(.svLen(.testrecord("chr1	100	.	A	<DUP>	.	.	END=101")), c(1))
 })
 
 
@@ -68,6 +69,12 @@ test_that("breakpointRanges convert to breakend pairs", {
 	expect_true(all(paste0(pairId, "_bp2") %in% names(gr)))
 	expect_equal(names(partner(gr))[names(gr) %in% paste0(pairId, "_bp1")], paste0(pairId, "_bp2"))
 	expect_equal(names(partner(gr))[names(gr) %in% c("BNDFB", "BNDBF")], c("BNDBF", "BNDFB"))
+})
+
+test_that("breakpointRanges creates placeholder names", {
+	expect_named(breakpointRanges(.testrecord(c(
+		"chr1	100	.	A	<DEL>	.	.	SVLEN=-1",
+		"chr1	100	.	A	<DEL>	.	.	SVLEN=-1"))))
 })
 
 test_that("breakpointRanges non-symbolic alleles", {

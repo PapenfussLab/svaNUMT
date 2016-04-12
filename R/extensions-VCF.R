@@ -119,11 +119,15 @@ setMethod("breakpointRanges", "VCF",
 .breakpointRanges <- function(vcf, nominalPosition=FALSE, placeholderName="svrecord", suffix="_bp") {
 	vcf <- vcf[isStructural(vcf),]
 	assertthat::assert_that(.hasSingleAllelePerRecord(vcf))
+	# VariantAnnotation bug: SV row names are not unique
 	# ensure names are defined
+	if (any(duplicated(row.names(vcf)))) {
+		warning("Found ", sum(duplicated(row.names(vcf))), " duplicate row names (duplicates renamed).")
+	}
 	if (is.null(row.names(vcf))) {
-		row.names(vcf) <- paste0(placeholderName, seq_along(simple), row.names(vcf))
-	} else if (any(is.na(row.names(vcf)))) {
-		row.names(vcf) <- ifelse(is.na(row.names(vcf)), paste0(placeholderName, seq_along(simple), row.names(vcf)), row.names(vcf))
+		row.names(vcf) <- paste0(placeholderName, seq_along(vcf), row.names(vcf))
+	} else if (any(is.na(row.names(vcf)) | duplicated(row.names(vcf)))) {
+		row.names(vcf) <- ifelse(is.na(row.names(vcf)) | duplicated(row.names(vcf)), paste0(placeholderName, seq_along(vcf)), row.names(vcf))
 	}
 	assertthat::assert_that(!is.null(row.names(vcf)))
 	assertthat::assert_that(assertthat::noNA(row.names(vcf)))
