@@ -10,6 +10,7 @@ Description: The description of a package is usually long,
     should be indented, usually with four spaces.
 License: GPL-3
 Depends:
+	BiocGenerics (>= 0.16.1),
 	GenomicRanges (>= 1.22.4),
 	methods,
     R (>= 3.2.2),

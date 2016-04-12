@@ -138,7 +138,7 @@ referenceHomology <- function(gr, ref,
 	aln <- Biostrings::pairwiseAlignment(varseq, refseq, type="local",
  		substitutionMatrix=nucleotideSubstitutionMatrix(match, mismatch, FALSE, "DNA"),
  		gapOpening=gapOpening, gapExtension=gapExtension, scoreOnly=FALSE)
-	ihomlen <- nchar(aln) - aLength -deletion(nindel(aln))[,2]- insertion(nindel(aln))[,2]
+	ihomlen <- Biostrings::nchar(aln) - aLength - deletion(nindel(aln))[,2] - insertion(nindel(aln))[,2]
 	ibphomlen <- ihomlen + ihomlen[partnerIndex]
 	ibpscore <- score(aln) + score(aln)[partnerIndex] - 2 * aLength * match
 

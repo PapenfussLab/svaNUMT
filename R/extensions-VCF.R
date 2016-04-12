@@ -1,6 +1,6 @@
 .dispatchPerAllele_CollapsedVCF <- function(FUN, x, singleAltOnly) {
     alt <- alt(x)
-    flat <- unlist(alt, use.names=FALSE)
+    flat <- BiocGenerics::unlist(alt, use.names=FALSE)
     res <- FUN(rep(ref(x), elementLengths(alt(x))), flat)
     lst <- relist(res, alt)
     if (singleAltOnly)
@@ -10,7 +10,7 @@
 }
 .dispatchPerAllele_ExpandedVCF <- function(FUN, x) {
     alt <- alt(x)
-    flat <- unlist(alt, use.names=FALSE)
+    flat <- BiocGenerics::unlist(alt, use.names=FALSE)
     res <- FUN(rep(ref(x), elementLengths(alt(x))), flat)
     res
 }
