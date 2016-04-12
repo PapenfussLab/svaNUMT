@@ -15,6 +15,21 @@ partner <- function(gr) {
 	return(gr[gr$partner,])
 }
 
+#' Finds overlapping breakpoints by requiring that breakends on
+#' boths sides overlap
+#'
+#' @details
+#' See GenomicRanges::findOverlaps-methods for details of overlap calculation
+#'
+#'@export
+findBreakpointOverlaps <- function(query, subject, maxgap=0L, minoverlap=1L, ignore.strand=FALSE) {
+  dfhits <- rbind(as.data.frame(findOverlaps(query, subject, maxgap=maxgap, minoverlap=minoverlap, type="any", select="all", ignore.strand=ignore.strand), row.names=NULL),
+                  as.data.frame(findOverlaps(partner(query), partner(subject), maxgap=maxgap, minoverlap=minoverlap, type="any", select="all", ignore.strand=ignore.strand), row.names=NULL))
+  dfhits <- dfhits[duplicated(dfhits),] # both breakends match
+  row.names(dfhits) <- NULL
+  return(dfhits)
+}
+
 #' Extracts the breakpoint sequence.
 #'
 #' @details

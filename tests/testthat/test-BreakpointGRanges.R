@@ -48,6 +48,39 @@ test_that(".constrict", {
 	expect_equal(start(gr), c(1, 16571))
 })
 
+
+test_that("findBreakpointOverlaps", {
+	expect_equal(findBreakpointOverlaps(breakpointRanges(.testrecord(c(
+			"chr1	100000	a	N	N[chr1:100100[	.	.	SVTYPE=BND;PARID=b",
+			"chr1	100100	b	N	]chr1:100000]N	.	.	SVTYPE=BND;PARID=a",
+			"chr1	100000	c	N	N[chr1:100200[	.	.	SVTYPE=BND;PARID=d",
+			"chr1	100200	d	N	]chr1:100000]N	.	.	SVTYPE=BND;PARID=c"))),
+		breakpointRanges(.testrecord(c(
+			"chr1	100000	c	N	N[chr1:100200[	.	.	SVTYPE=BND;PARID=d",
+			"chr1	100200	d	N	]chr1:100000]N	.	.	SVTYPE=BND;PARID=c")))),
+		data.frame(queryHits=c(3,4), subjectHits=c(1,2)))
+
+	expect_equal(findBreakpointOverlaps(breakpointRanges(.testrecord(c(
+			"chr1	100000	a	N	N[chr1:100100[	.	.	SVTYPE=BND;PARID=b",
+			"chr1	100100	b	N	]chr1:100000]N	.	.	SVTYPE=BND;PARID=a",
+			"chr1	100000	c	N	N[chr1:100200[	.	.	SVTYPE=BND;PARID=d",
+			"chr1	100200	d	N	]chr1:100000]N	.	.	SVTYPE=BND;PARID=c"))),
+		breakpointRanges(.testrecord(c(
+			"chr1	100000	c	N	N[chr1:100200[	.	.	SVTYPE=BND;PARID=d",
+			"chr1	100200	d	N	]chr1:100000]N	.	.	SVTYPE=BND;PARID=c"))),
+		maxgap=2000),
+		data.frame(queryHits=c(1,2,3,4), subjectHits=c(1,2,1,2)))
+
+	expect_equal(findBreakpointOverlaps(breakpointRanges(.testrecord(c(
+			"chr1	1	a	N	N[chr1:100100[	.	.	SVTYPE=BND;CIPOS=0,100000;PARID=b",
+			"chr1	100100	b	N	]chr1:1]N	.	.	SVTYPE=BND;PARID=a"))),
+		breakpointRanges(.testrecord(c(
+			"chr1	100000	c	N	N[chr1:100100[	.	.	SVTYPE=BND;PARID=d",
+			"chr1	100100	d	N	]chr1:100000]N	.	.	SVTYPE=BND;PARID=c")))),
+		data.frame(queryHits=c(1,2), subjectHits=c(1,2)))
+})
+
+
 test_that("breakpointSequence", {
 	expect_equal(breakpointSequence(breakpointRanges(.testrecord(c(
 		# CTC>   <TGC
