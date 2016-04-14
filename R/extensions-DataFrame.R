@@ -9,16 +9,12 @@ setMethod("unpack", "DataFrame",
 		  function(x, ...)
 		  	.unpack.DataFrame(x)
 )
-setMethod("unpack", "data.frame",
-  	  function(x, ...)
-  	  	.unpack.DataFrame(x)
-)
-setMethod("as.matrix", "List",
+setMethod("unpack", "VCF",
 		  function(x, ...)
-		  	.as.matrix.List(x)
+		  	.unpack.DataFrame(info(x))
 )
 
-.as.matrix.List <- function(x) {
+.as.matrix.list <- function(x) {
 	ncolx <- max(lengths(x))
 	nrowx <- length(x)
 	occupiedcells <- inverse.rle(list(lengths=c(rbind(lengths(x), ncolx - lengths(x))), values=rep(c(TRUE, FALSE), length.out=2*nrowx)))
@@ -27,25 +23,52 @@ setMethod("as.matrix", "List",
 	mat <- matrix(data, nrow=nrowx, ncol=ncolx, byrow=TRUE)
 	return(mat)
 }
-
+.aggregate_functions = list(
+	"gridss" = list(
+		ASCRP=sum,
+		ASCRR=sum,
+		ASRP=sum,
+		ASSR=sum,
+		BSC=sum,
+		BSCQ=sum,
+		BUM=sum,
+		BUMQ=sum,
+		#HOMLEN=max,
+		#HOMSEQ=sum,
+		REF=sum,
+		REFPAIR=sum,
+		RP=sum,
+		RPQ=sum,
+		RSR=sum,
+		RSRQ=sum,
+		SR=sum,
+		SRQ=sum
+	)
+)
 #' Returns a list of aggegration functions for the given
 #' variant caller
+#' @export
 aggregatesFor <- function(caller) {
-
+	.aggregate_functions[[caller]]
 }
 #' Unpacks the columns of the given data frame
 #'
-unpack.data.frame(x, caller, F=aggregatesFor(caller)) {
+#'@export
+calculate_aggregates <- function(x, caller="gridss", F=aggregatesFor(caller)) {
 
 }
-.unpack.DataFrame <- function(x, ...) {
-	unpack(as.data.frame(x), ...)
-}
-.unpack.data.frame <- function(x, f=list(columnName=F)) {un
+.unpack.DataFrame <- function(x, caller="gridss", F=aggregatesFor(caller), ...) {
+	xdf <- as.data.frame(x)
 	for (cname in names(x)) {
 		cx <- x[cname]
-		if (is.list(cx)) {
-			mat <-
+		if (is.list(cx) || is(cx, "List")) {
+			mat <- .as.matrix.list(cx)
+			cdf <- as.data.frame(mat)
+			names(cdf) <- rep(cname, length(names(cdf)))
+			if (!is.null(F[[cname]]) {
+				xdf[[cname]] <- F[[cname]](mat)
+			}
+			xdf <- cbind(xdf, cdf)
 		}
 	}
 }
