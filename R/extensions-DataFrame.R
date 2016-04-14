@@ -18,7 +18,9 @@ setMethod("unpack", "VCF",
 	ncolx <- max(lengths(x))
 	nrowx <- length(x)
 	occupiedcells <- inverse.rle(list(lengths=c(rbind(lengths(x), ncolx - lengths(x))), values=rep(c(TRUE, FALSE), length.out=2*nrowx)))
-	data <- rep(NA, ncolx * nrowx)
+	occupiedData <- unlist(x)
+	# populate with NAs of the correct type
+	data <- append(occupiedData[c()], rep(NA, ncolx * nrowx))
 	data[occupiedcells] <- unlist(x)
 	mat <- matrix(data, nrow=nrowx, ncol=ncolx, byrow=TRUE)
 	return(mat)
@@ -57,19 +59,21 @@ aggregatesFor <- function(caller) {
 calculate_aggregates <- function(x, caller="gridss", F=aggregatesFor(caller)) {
 
 }
-.unpack.DataFrame <- function(x, caller="gridss", F=aggregatesFor(caller), ...) {
+.unpack.DataFrame <- function(x, caller="gridss", FUN=aggregatesFor(caller), ...) {
 	xdf <- as.data.frame(x)
 	for (cname in names(x)) {
-		cx <- x[cname]
+		cx <- x[[cname]]
 		if (is.list(cx) || is(cx, "List")) {
 			mat <- .as.matrix.list(cx)
 			cdf <- as.data.frame(mat)
 			names(cdf) <- rep(cname, length(names(cdf)))
-			if (!is.null(F[[cname]]) {
-				xdf[[cname]] <- F[[cname]](mat)
+			if (!is.null(FUN[[cname]])) {
+				xdf[[cname]] <- FUN[[cname]](mat)
 			}
 			xdf <- cbind(xdf, cdf)
 		}
 	}
+	names(xdf) <- make.unique(names(xdf))
+	return(xdf)
 }
 
