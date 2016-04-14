@@ -110,6 +110,7 @@ setMethod("breakpointRanges", "VCF",
 		  function(x, ...)
 		  	.breakpointRanges(x, suffix="_bp")
 )
+
 #' @param vcf VCF object
 #' @param nominalPosition Determines whether to call the variant at the
 #'    nominal VCF position, or to call the confidence interval (incorporating

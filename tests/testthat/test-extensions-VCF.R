@@ -29,8 +29,8 @@ test_that("Delly TRA", {
     expect_equal(2, length(gr))
     expect_equal(c(2991435, 19357517), start(gr))
     expect_equal(c(2991485, 19357617), end(gr))
-    expect_equal(c("+", "-"), strand(gr))
-    expect_equal(c("chr10", "chr1"), seqname(gr))
+    expect_equal(c("+", "-"), as.character(strand(gr)))
+    expect_equal(c("chr10", "chr1"), as.character(seqnames(gr)))
     gr <- breakpointRanges(delly)
 })
 
