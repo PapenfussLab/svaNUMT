@@ -15,13 +15,14 @@ setMethod("unpack", "VCF",
 )
 
 .as.matrix.list <- function(x) {
-	ncolx <- max(lengths(x))
+	rlens <- BiocGenerics::lengths(x)
+	ncolx <- max(rlens)
 	nrowx <- length(x)
-	occupiedcells <- inverse.rle(list(lengths=c(rbind(lengths(x), ncolx - lengths(x))), values=rep(c(TRUE, FALSE), length.out=2*nrowx)))
-	occupiedData <- unlist(x)
+	occupiedcells <- inverse.rle(list(lengths=c(rbind(rlens, ncolx - rlens)), values=rep(c(TRUE, FALSE), length.out=2*nrowx)))
+	occupiedData <- BiocGenerics::unlist(x)
 	# populate with NAs of the correct type
 	data <- append(occupiedData[c()], rep(NA, ncolx * nrowx))
-	data[occupiedcells] <- unlist(x)
+	data[occupiedcells] <- occupiedData
 	mat <- matrix(data, nrow=nrowx, ncol=ncolx, byrow=TRUE)
 	return(mat)
 }
