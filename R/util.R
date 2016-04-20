@@ -24,19 +24,28 @@
 #'
 #' @param x list-like object
 #' @param offset offset of list
-setGeneric(".elementExtract", function(x, offset=1) standardGeneric(".elementExtract"))
-setMethod(".elementExtract", "XStringSet", .elementExtract.XStringSet)
-setMethod(".elementExtract", "List", .elementExtract.List)
-setMethod(".elementExtract", "ANY", .elementExtract.ANY)
+#' @export
+setGeneric("elementExtract", function(x, offset=1) standardGeneric("elementExtract"))
+setMethod("elementExtract", "XStringSet", .elementExtract.XStringSet)
+setMethod("elementExtract", "List", .elementExtract.List)
+setMethod("elementExtract", "ANY", .elementExtract.ANY)
 
 #' converts an XStringSet to a character
 setGeneric(".unXStringSet", function(x) x)
 setMethod(".unXStringSet", "XStringSet", function(x) as.character(x))
 
 
-#' Fills in the NAs in a with the values in b
+#' Replaces the NA values in a with corresponding values in b
+#' @export
 '%na%' <- function(a, b) {
 	if (is.null(a) || length(a) == 0) return(b)
 	if (is.null(b) || length(b) == 0) return(a)
 	return(ifelse(is.na(a), b, a))
+}
+
+#' Uses b if a is NULL
+#' @export
+'%null%' <- function(a, b) {
+	if (is.null(a)) return(b)
+	return (a)
 }

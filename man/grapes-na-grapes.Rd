@@ -2,11 +2,11 @@
 % Please edit documentation in R/util.R
 \name{\%na\%}
 \alias{\%na\%}
-\title{Fills in the NAs in a with the values in b}
+\title{Replaces the NA values in a with corresponding values in b}
 \usage{
 a \%na\% b
 }
 \description{
-Fills in the NAs in a with the values in b
+Replaces the NA values in a with corresponding values in b
 }
 
