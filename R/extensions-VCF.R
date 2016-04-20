@@ -72,10 +72,10 @@ setMethod("isStructural", "ExpandedVCF",
 .svLen <- function(vcf) {
 	assertthat::assert_that(.hasSingleAllelePerRecord(vcf))
     r <- ref(vcf)
-    a <- .elementExtract(alt(vcf))
+    a <- elementExtract(alt(vcf))
     result <- ifelse(!isStructural(vcf), 0,
-		.elementExtract(info(vcf)$SVLEN) %na%
-		(.elementExtract(info(vcf)$END) - start(rowRanges(vcf))) %na%
+		elementExtract(info(vcf)$SVLEN) %na%
+		(elementExtract(info(vcf)$END) - start(rowRanges(vcf))) %na%
 		(ifelse(isSymbolic(vcf), NA_integer_, IRanges::nchar(a) - IRanges::nchar(r))))
     return(result)
 }
@@ -135,10 +135,10 @@ setMethod("breakpointRanges", "VCF",
 	assertthat::assert_that(!any(duplicated(row.names(vcf))))
 	gr <- rowRanges(vcf)
 	gr$REF <- as.character(ref(vcf))
-	gr$ALT <- as.character(.elementExtract(alt(vcf), 1))
+	gr$ALT <- as.character(elementExtract(alt(vcf), 1))
 	gr$vcfId <- names(vcf)
 	gr$partner <- rep(NA_character_, length(gr))
-	gr$svtype <- .elementExtract(info(vcf)$SVTYPE) %na%
+	gr$svtype <- elementExtract(info(vcf)$SVTYPE) %na%
 		(stringr::str_match(gr$ALT, "<(.*)>")[,2]) %na%
 		rep(NA_character_, length(gr))
 	# use the root type
@@ -150,16 +150,16 @@ setMethod("breakpointRanges", "VCF",
 	gr$ciwidth <- rep(0, length(gr))
 
 	if (!is.null(info(vcf)$HOMSEQ)) {
-		seq <- .elementExtract(info(vcf)$HOMSEQ, 1)
+		seq <- elementExtract(info(vcf)$HOMSEQ, 1)
 		gr$ciwidth <- ifelse(is.na(seq), gr$ciwidth, nchar(seq))
 	}
 	if (!is.null(info(vcf)$HOMLEN)) {
-		gr$ciwidth <- .elementExtract(info(vcf)$HOMLEN, 1) %na% gr$ciwidth
+		gr$ciwidth <- elementExtract(info(vcf)$HOMLEN, 1) %na% gr$ciwidth
 	}
 	if (!is.null(info(vcf)$CIPOS)) {
 		.expectMetadataInfo(vcf, "CIPOS", 2, header.Type.Integer)
-		cistartoffset <- .elementExtract(info(vcf)$CIPOS, 1)
-		ciendoffset <- .elementExtract(info(vcf)$CIPOS, 2)
+		cistartoffset <- elementExtract(info(vcf)$CIPOS, 1)
+		ciendoffset <- elementExtract(info(vcf)$CIPOS, 2)
 		ciwidth <- ciendoffset - cistartoffset
 		gr$cistartoffset <- cistartoffset %na% gr$cistartoffset
 		gr$ciwidth <- ciwidth %na% gr$ciwidth
@@ -205,15 +205,15 @@ setMethod("breakpointRanges", "VCF",
 		mategr <- cgr
 		strand(mategr) <- "-"
 		# use end, then fall back to calculating from length
-		end <- .elementExtract(info(cvcf)$END, 1) %na% (start(cgr) + pmax(0, -cgr$svLen))
+		end <- elementExtract(info(cvcf)$END, 1) %na% (start(cgr) + pmax(0, -cgr$svLen))
 		if (any(is.na(end))) {
 			stop(paste("Variant of undefined length: ", paste(names(cgr)[is.na(end),], collapse=", ")))
 		}
 		ranges(mategr) <- IRanges(start=end + ifelse(dup, 0, 1), width=1)
 		cgr$insLen <- pmax(0, cgr$svLen)
 
-		cistartoffset <- .elementExtract(info(cvcf)$CIEND, 1)
-		ciendoffset <- .elementExtract(info(cvcf)$CIEND, 2)
+		cistartoffset <- elementExtract(info(cvcf)$CIEND, 1)
+		ciendoffset <- elementExtract(info(cvcf)$CIEND, 2)
 		ciwidth <- ciendoffset - cistartoffset
 		mategr$cistartoffset <- cistartoffset %na% mategr$cistartoffset
 		mategr$ciwidth <- ciwidth %na% mategr$ciwidth
@@ -236,14 +236,14 @@ setMethod("breakpointRanges", "VCF",
 		gr$processed[rows] <- TRUE
 
 		width(cgr1) <- 1
-		end <- .elementExtract(info(vcf)$END[rows], 1) %na% (start(cgr1) + abs(cgr1$svLen) - 1)
+		end <- elementExtract(info(vcf)$END[rows], 1) %na% (start(cgr1) + abs(cgr1$svLen) - 1)
 		if (any(is.na(end))) {
 			stop(paste("Variant of undefined length: ", paste(names(cgr1)[is.na(end),], collapse=", ")))
 		}
 
 		cgr2 <- cgr1
-		cistartoffset <- .elementExtract(info(vcf)$CIEND[rows], 1)
-		ciendoffset <- .elementExtract(info(vcf)$CIEND[rows], 2)
+		cistartoffset <- elementExtract(info(vcf)$CIEND[rows], 1)
+		ciendoffset <- elementExtract(info(vcf)$CIEND[rows], 2)
 		ciwidth <- ciendoffset - cistartoffset
 		cgr2$cistartoffset <- cistartoffset %na% cgr2$cistartoffset
 		cgr2$ciwidth <- ciwidth %na% cgr2$ciwidth
@@ -287,11 +287,11 @@ setMethod("breakpointRanges", "VCF",
 
 		cgr$partner <- NA_character_
 		if (!is.null(info(cvcf)$PARID)) {
-			cgr$partner <- .elementExtract(info(cvcf)$PARID, 1)
+			cgr$partner <- elementExtract(info(cvcf)$PARID, 1)
 		}
 		if (!is.null(info(cvcf)$MATEID) & any(is.na(cgr$partner))) {
 			multimates <- elementLengths(info(cvcf)$MATEID) > 1 & is.na(cgr$partner)
-			cgr$partner <- ifelse(is.na(cgr$partner), .elementExtract(info(cvcf)$MATEID, 1), cgr$partner)
+			cgr$partner <- ifelse(is.na(cgr$partner), elementExtract(info(cvcf)$MATEID, 1), cgr$partner)
 			if (any(multimates)) {
 				warning(paste("Ignoring additional mate breakends for variants", names(cgr)[multimates]))
 			}
@@ -345,8 +345,8 @@ setMethod("breakpointRanges", "VCF",
 		strand(cgr) <- ifelse(info(cvcf)$CT %in% c("3to3", "3to5"), "+", "-")
 		strand(mategr) <- ifelse(info(cvcf)$CT %in% c("3to3", "5to3"), "+", "-")
 
-		mcistartoffset <- .elementExtract(info(cvcf)$CIEND, 1) %na% 0
-		mciendoffset <- .elementExtract(info(cvcf)$CIEND, 2) %na% 0
+		mcistartoffset <- elementExtract(info(cvcf)$CIEND, 1) %na% 0
+		mciendoffset <- elementExtract(info(cvcf)$CIEND, 2) %na% 0
 		mciwidth <- mciendoffset - mcistartoffset
 		mategr$cistartoffset <- mategr$cistartoffset
 		mategr$ciwidth <- mategr$ciwidth
