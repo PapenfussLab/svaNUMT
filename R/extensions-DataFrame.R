@@ -137,12 +137,14 @@ transformFunctionsFor <- function(caller) {
 			names(cdf) <- rep(cname, length(cdf))
 			xdf <- cbind(xdf, cdf)
 		}
+	}
+	names(xdf) <- make.unique(names(xdf))
+	for (cname in names(x)) {
 		# apply transform to named column
 		if (!is.null(transformFUN[[cname]]) && !is.null(xdf[[cname]])) {
 			xdf[[cname]] <- transformFUN[[cname]](xdf[[cname]])
 		}
 	}
-	names(xdf) <- make.unique(names(xdf))
 	return(xdf)
 }
 
