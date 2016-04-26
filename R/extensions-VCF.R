@@ -139,7 +139,8 @@ setMethod("breakpointRanges", "VCF",
 	gr$vcfId <- names(vcf)
 	gr$partner <- rep(NA_character_, length(gr))
 	gr$svtype <- elementExtract(info(vcf)$SVTYPE) %na%
-		(stringr::str_match(gr$ALT, "<(.*)>")[,2]) %na%
+		# hack ensure that [,2] exists even for zero record vcfs
+		(stringr::str_match(c("HACK", gr$ALT), "<(.*)>")[,2][-1]) %na%
 		rep(NA_character_, length(gr))
 	# use the root type
 	gr$svtype <- stringr::str_extract(gr$svtype, "^[^:]+")

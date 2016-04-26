@@ -39,6 +39,9 @@ test_that("pindel RPL", {
 	expect_equal(c("+", "-"), as.character(strand(gr)))
 	expect_equal(c(51, 51), gr$insLen)
 })
+test_that("empty VCF", {
+	expect_equal(0, length(breakpointRanges(.testrecord(c()))))
+})
 
 expect_false(.hasSingleAllelePerRecord(multipleAlleles))
 expect_true(.hasSingleAllelePerRecord(expand(multipleAlleles)))
