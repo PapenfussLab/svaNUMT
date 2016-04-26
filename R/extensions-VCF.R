@@ -191,7 +191,7 @@ setMethod("breakpointRanges", "VCF",
 		cgr <- NULL
 		mategr <- NULL
 	}
-	rows <- !gr$processed & !is.na(gr$svtype) & gr$svtype %in% c("DEL", "INS", "DUP")
+	rows <- !gr$processed & !is.na(gr$svtype) & gr$svtype %in% c("DEL", "INS", "DUP", "RPL")
 	if (any(rows)) {
 		cgr <- gr[rows,]
 		gr$processed[rows] <- TRUE
@@ -202,6 +202,11 @@ setMethod("breakpointRanges", "VCF",
 
 		strand(cgr) <- "+"
 		width(cgr) <- 1
+		cgr$insLen <- pmax(0, cgr$svLen)
+		if (!is.null(info(cvcf)$NTLEN)) {
+			#pindel RPL
+			cgr$insLen <- elementExtract(info(cvcf)$NTLEN) %na% cgr$insLen
+		}
 		mategr <- cgr
 		strand(mategr) <- "-"
 		# use end, then fall back to calculating from length
@@ -210,7 +215,6 @@ setMethod("breakpointRanges", "VCF",
 			stop(paste("Variant of undefined length: ", paste(names(cgr)[is.na(end),], collapse=", ")))
 		}
 		ranges(mategr) <- IRanges(start=end + ifelse(dup, 0, 1), width=1)
-		cgr$insLen <- pmax(0, cgr$svLen)
 
 		cistartoffset <- elementExtract(info(cvcf)$CIEND, 1)
 		ciendoffset <- elementExtract(info(cvcf)$CIEND, 2)
@@ -348,8 +352,8 @@ setMethod("breakpointRanges", "VCF",
 		mcistartoffset <- elementExtract(info(cvcf)$CIEND, 1) %na% 0
 		mciendoffset <- elementExtract(info(cvcf)$CIEND, 2) %na% 0
 		mciwidth <- mciendoffset - mcistartoffset
-		mategr$cistartoffset <- mategr$cistartoffset
-		mategr$ciwidth <- mategr$ciwidth
+		mategr$cistartoffset <- mcistartoffset
+		mategr$ciwidth <- mciwidth
 
 		names(mategr) <- paste0(names(cgr), suffix, 2)
 		names(cgr) <- paste0(names(cgr), suffix, 1)
@@ -359,8 +363,18 @@ setMethod("breakpointRanges", "VCF",
 		cgr <- NULL
 		mategr <- NULL
 	}
-	# TODO: handle non-standard SVTYPE for specific callers
 	# PINDEL RPL
+	rows <- !gr$processed & !is.na(gr$svtype) & gr$svtype %in% c("RPL")
+	if (any(rows)) {
+		# pindel 'replacement' SV type for handling untemplated sequence
+	    grcall[rows]$mateIndex <- length(grcall) + seq_len(sum(rows))
+	    eventgr <- grcall[rows]
+	    strand(eventgr) <- "-"
+	    eventgr$isend <- TRUE
+	    ranges(eventgr) <- IRanges(start=start(eventgr) + abs(elementLengths(ref(vcf))[rows]), width=1)
+	    eventgr$mateIndex <- seq_len(length(grcall))[rows]
+	    grcall <- c(grcall, eventgr)
+	}
 	if (!all(gr$processed)) {
 		stop(paste("Unrecognised format for variants", paste(names(gr)[!gr$processed], collapse=", ")))
 	}

@@ -12,7 +12,7 @@ delly <- readVcf(.testfile("delly-0.6.8.vcf"), "")
 #gasv <- readVcf(.testfile("gasv-20140228.vcf"), "")
 gridss <- readVcf(.testfile("gridss.vcf"), "")
 #lumpy <- readVcf(.testfile("lumpy-0.2.11.vcf"), "")
-#pindel <- readVcf(.testfile("pindel-0.2.5b6.vcf"), "")
+pindel <- readVcf(.testfile("pindel-0.2.5b6.vcf"), "")
 #socrates <- readVcf(.testfile("socrates-1.13.vcf"), "")
 
 test_that("Delly TRA", {
@@ -32,6 +32,12 @@ test_that("Delly TRA", {
     expect_equal(c("+", "-"), as.character(strand(gr)))
     expect_equal(c("chr10", "chr1"), as.character(seqnames(gr)))
     gr <- breakpointRanges(delly)
+})
+test_that("pindel RPL", {
+	gr <- breakpointRanges(pindel[5,])
+	expect_equal(c(1029142, 1029183), start(gr))
+	expect_equal(c("+", "-"), as.character(strand(gr)))
+	expect_equal(c(51, 51), gr$insLen)
 })
 
 expect_false(.hasSingleAllelePerRecord(multipleAlleles))
