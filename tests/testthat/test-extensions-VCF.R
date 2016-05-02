@@ -14,6 +14,7 @@ gridss <- readVcf(.testfile("gridss.vcf"), "")
 #lumpy <- readVcf(.testfile("lumpy-0.2.11.vcf"), "")
 pindel <- readVcf(.testfile("pindel-0.2.5b6.vcf"), "")
 #socrates <- readVcf(.testfile("socrates-1.13.vcf"), "")
+tigra <- readVcf(.testfile("tigra-0.3.7.vcf"), "")
 
 test_that("Delly TRA", {
 	# https://groups.google.com/forum/#!msg/delly-users/6Mq2juBraRY/BjmMrBh3GAAJ
@@ -32,6 +33,13 @@ test_that("Delly TRA", {
     expect_equal(c("+", "-"), as.character(strand(gr)))
     expect_equal(c("chr10", "chr1"), as.character(seqnames(gr)))
     gr <- breakpointRanges(delly)
+})
+test_that("tigra CTX", {
+	gr <- breakpointRanges(tigra[3,])
+	expect_equal(c(102520604 - 10, 70284 - 10), start(gr))
+	expect_equal(c(102520604 + 10, 70284 + 10), end(gr))
+	expect_equal(c("*", "*"), as.character(strand(gr)))
+    expect_equal(c("chr12", "chrUn_gl000223"), as.character(seqnames(gr)))
 })
 test_that("pindel RPL", {
 	gr <- breakpointRanges(pindel[5,])

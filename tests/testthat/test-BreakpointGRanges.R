@@ -56,6 +56,20 @@ test_that("findBreakpointOverlaps", {
 			"chr1	100000	c	N	N[chr1:100100[	.	.	SVTYPE=BND;PARID=d",
 			"chr1	100100	d	N	]chr1:100000]N	.	.	SVTYPE=BND;PARID=c")))),
 		data.frame(queryHits=c(1,2), subjectHits=c(1,2)))
+	expect_equal(findBreakpointOverlaps(breakpointRanges(.testrecord(c(
+			"chr1	10000	a	N	<DEL>	.	.	SVTYPE=DEL;SVLEN=-1000"))),
+		breakpointRanges(.testrecord(c(
+			"chr1	10000	c	N	N[chr1:11000[	.	.	SVTYPE=BND;PARID=d",
+			"chr1	11000	d	N	]chr1:100000]N	.	.	SVTYPE=BND;PARID=c"))),
+		maxgap=1),
+		data.frame(queryHits=c(1,2), subjectHits=c(1,2)))
+	expect_equal(findBreakpointOverlaps(breakpointRanges(.testrecord(c(
+			"chr1	10000	a	N	<DEL>	.	.	SVTYPE=DEL;SVLEN=-1000"))),
+		breakpointRanges(.testrecord(c(
+			"chr1	11000	d	N	]chr1:100000]N	.	.	SVTYPE=BND;PARID=c",
+			"chr1	10000	c	N	N[chr1:11000[	.	.	SVTYPE=BND;PARID=d"))),
+		maxgap=1),
+		data.frame(queryHits=c(1,2), subjectHits=c(2,1)))
 })
 
 

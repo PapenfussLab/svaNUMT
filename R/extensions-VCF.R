@@ -364,17 +364,40 @@ setMethod("breakpointRanges", "VCF",
 		cgr <- NULL
 		mategr <- NULL
 	}
-	# PINDEL RPL
-	rows <- !gr$processed & !is.na(gr$svtype) & gr$svtype %in% c("RPL")
+	# TIGRA CTX
+	rows <- !gr$processed & !is.na(gr$svtype) & gr$svtype %in% c("CTX")
 	if (any(rows)) {
-		# pindel 'replacement' SV type for handling untemplated sequence
-	    grcall[rows]$mateIndex <- length(grcall) + seq_len(sum(rows))
-	    eventgr <- grcall[rows]
-	    strand(eventgr) <- "-"
-	    eventgr$isend <- TRUE
-	    ranges(eventgr) <- IRanges(start=start(eventgr) + abs(elementLengths(ref(vcf))[rows]), width=1)
-	    eventgr$mateIndex <- seq_len(length(grcall))[rows]
-	    grcall <- c(grcall, eventgr)
+		# TIGRA CTX call
+		cgr <- gr[rows,]
+		gr$processed[rows] <- TRUE
+		cvcf <- vcf[rows,]
+
+		if (is.null(info(cvcf)$CHR2) || any(is.na(info(cvcf)$CHR2))) {
+			stop(paste("TIGRA variants missing CHR2:", paste(names(cgr)[is.na(info(cvcf)$CHR2)], collapse=", ")))
+		}
+		width(cgr) <- 1
+		mategr <- cgr
+		# Hack so we can add new seqlevels if required
+		seqlevels(mategr) <- unique(c(seqlevels(mategr), info(cvcf)$CHR2))
+		seqnames(mategr)[seq(1, length(mategr))] <- info(cvcf)$CHR2
+		ranges(mategr) <- IRanges(start=info(cvcf)$END, width=1)
+		# no direction information is reported
+		strand(cgr) <- "*"
+		strand(mategr) <- "*"
+
+		mcistartoffset <- elementExtract(info(cvcf)$CIEND, 1) %na% 0
+		mciendoffset <- elementExtract(info(cvcf)$CIEND, 2) %na% 0
+		mciwidth <- mciendoffset - mcistartoffset
+		mategr$cistartoffset <- mcistartoffset
+		mategr$ciwidth <- mciwidth
+
+		names(mategr) <- paste0(names(cgr), suffix, 2)
+		names(cgr) <- paste0(names(cgr), suffix, 1)
+		cgr$partner <- names(mategr)
+		mategr$partner <- names(cgr)
+		outgr <- c(outgr, cgr, mategr)
+		cgr <- NULL
+		mategr <- NULL
 	}
 	if (!all(gr$processed)) {
 		stop(paste("Unrecognised format for variants", paste(names(gr)[!gr$processed], collapse=", ")))
