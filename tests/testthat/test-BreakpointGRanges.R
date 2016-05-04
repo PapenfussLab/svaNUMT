@@ -72,6 +72,18 @@ test_that("findBreakpointOverlaps", {
 		data.frame(queryHits=c(1,2), subjectHits=c(2,1)))
 })
 
+test_that("findBreakpointOverlaps: delly vs truth", {
+	grdelly <- breakpointRanges(.testrecord(c(
+		"chr12	6905246	DEL00000292	N	<DEL>	.	PASS	PRECISE;CIEND=-52,52;CIPOS=-52,52;SVTYPE=DEL;SVMETHOD=EMBL.DELLYv0.6.8;CHR2=chr12;END=100419669;CT=3to5;INSLEN=0;PE=28;MAPQ=34;SR=30;SRQ=1;CONSENSUS=GTGCATACATTTCAGTGACCCGTTTTAGAAACAGAATTAATATGGTGAATAGAGAAAGAAGAAATCAGTGACTTTGGCCAGGCACAGTAGCTCACATCTGTAATCCCAGCACTTTGGGAGGCTGAGACAGTTGGTTGCTTGAGCCCAGGAGT"
+		)))
+	grtruth <- breakpointRanges(.testrecord(c(
+		"chr12	6905247	truth_8545_o	C	C[chr12:100419669[	.	.	EVENT=truth_8545_;MATEID=truth_8545_h;PARID=truth_8545_h;SVTYPE=BND",
+		"chr12	100419669	truth_8545_h	G	]chr12:6905247]g	.	.	EVENT=truth_8545_;MATEID=truth_8545_o;PARID=truth_8545_o;SVTYPE=BND"
+		)))
+	hits <- findBreakpointOverlaps(grdelly, grtruth, maxgap=200, ignore.strand=TRUE)
+	expect_equal(2, nrow(hits))
+})
+
 
 test_that("breakpointSequence", {
 	expect_equal(breakpointSequence(breakpointRanges(.testrecord(c(
