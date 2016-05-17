@@ -210,4 +210,12 @@ test_that("breakpointRanges DUP", {
 	expect_equal(end(gr), c(12665101, 12686204))
 
 	expect_error(breakpointRanges(.testrecord("chr1	321682	.	T	<DUP>	.	.	SVTYPE=DUP")))
+
+	gr <- breakpointRanges(.testrecord("chr12	5616362	chr12.5616362.DUP65536	A	<DUP>	.	.	SVLEN=65536;SVTYPE=DUP"))
+	expect_equal(2, length(gr))
+	expect_equal(start(gr), c(5616362, 5616362+65536))
+	expect_equal(c("-", "+"), as.character(strand(gr)))
 })
+
+
+

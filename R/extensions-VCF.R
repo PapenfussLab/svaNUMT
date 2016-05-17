@@ -211,7 +211,7 @@ setMethod("breakpointRanges", "VCF",
 		mategr <- cgr
 		strand(mategr) <- "-"
 		# use end, then fall back to calculating from length
-		end <- elementExtract(info(cvcf)$END, 1) %na% (start(cgr) + pmax(0, -cgr$svLen))
+		end <- elementExtract(info(cvcf)$END, 1) %na% (start(cgr) + ifelse(dup, cgr$svLen, pmax(0, -cgr$svLen)))
 		if (any(is.na(end))) {
 			stop(paste("Variant of undefined length: ", paste(names(cgr)[is.na(end),], collapse=", ")))
 		}
