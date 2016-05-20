@@ -49,3 +49,31 @@ setMethod(".unXStringSet", "XStringSet", function(x) as.character(x))
 	if (is.null(a)) return(b)
 	return (a)
 }
+
+#' vectorised pairwise longest common prefix
+#' Returns the length of the longest common prefix for
+#' each string pair
+#' @export
+pairwiseLCPrefix <- function(s1, s2, ignore.case=FALSE) {
+	s1 <- as.character(s1)
+	s2 <- as.character(s2)
+	if (ignore.case) {
+		s1 <- toupper(s1)
+		s2 <- toupper(s2)
+	}
+	prefixLength <- rep(0, max(length(s1), length(s2)))
+	matchi <- TRUE
+	i <- 1
+	while (any(matchi)) {
+		s1i <- substring(s1, i, i)
+		s2i <- substring(s2, i, i)
+		matchi <- s1i != "" & s1i == s2i
+		prefixLength <- prefixLength + as.integer(matchi)
+		i <- i + 1
+	}
+	return(prefixLength)
+}
+
+
+
+

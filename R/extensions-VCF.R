@@ -173,7 +173,7 @@ setMethod("breakpointRanges", "VCF",
 		cgr <- gr[rows,]
 		gr$processed[rows] <- TRUE
 
-		commonPrefixLength <- mapply(Biostrings::lcprefix, cgr$REF, cgr$ALT, USE.NAMES=FALSE)
+		commonPrefixLength <- pairwiseLCPrefix(cgr$REF, cgr$ALT, ignore.case=TRUE)
 		cgr$svLen <- nchar(cgr$ALT) - nchar(cgr$REF)
 		cgr$insSeq <- subseq(cgr$ALT, start=commonPrefixLength + 1)
 		cgr$insLen <- nchar(cgr$insSeq)
