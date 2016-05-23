@@ -111,7 +111,14 @@ test_that("breakpointRanges non-symbolic alleles", {
 	gr <- breakpointRanges(.testrecord("chr1	2	.	AGT	AGGA	.	.	"))
 	expect_equal(start(gr), c(3, 5))
 	expect_equal(gr$insSeq, c("GA", "GA"))
+	expect_equal(gr$insLen, c(2, 2))
 	expect_equal(gr$svLen, c(1, 1))
+
+	gr <- breakpointRanges(.testrecord("chr1	2	.	AGGA	AG	.	.	"))
+	expect_equal(start(gr), c(3, 6))
+	expect_equal(as.character(strand(gr)), c("+", "-"))
+	expect_equal(gr$insLen, c(0, 0))
+	expect_equal(gr$svLen, c(-2, -2))
 })
 
 test_that("breakpointRanges intervals", {
@@ -147,9 +154,10 @@ test_that("breakpointRanges intervals", {
 	expect_equal(end(gr), c(150, 151))
 })
 
-test_that("breakpointRanges simple indel", {
+test_that("breakpointRanges DEL", {
 	gr <- breakpointRanges(.testrecord("chr1	100	.	A	<DEL>	.	.	SVLEN=-1"))
 	expect_equal(start(gr), c(100, 102))
+	expect_equal(gr$insLen, c(0, 0))
 
 	gr <- breakpointRanges(.testrecord("chr1	100	.	A	<DEL>	.	.	END=101"))
 	expect_equal(start(gr), c(100, 102))
@@ -164,6 +172,7 @@ test_that("breakpointRanges simple indel", {
 test_that("breakpointRanges should fix positive DEL event size", {
 	gr <- breakpointRanges(.testrecord("chr1	100	.	A	<DEL>	.	.	SVLEN=10"))
 	expect_equal(start(gr), c(100, 111))
+	expect_equal(gr$insLen, c(0, 0))
 })
 
 test_that("breakpointRanges breakend", {

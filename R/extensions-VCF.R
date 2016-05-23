@@ -205,7 +205,7 @@ setMethod("breakpointRanges", "VCF",
 
 		strand(cgr) <- "+"
 		width(cgr) <- 1
-		cgr$insLen <- ifelse(dup, 0, pmax(0, cgr$svLen))
+		cgr$insLen <- ifelse(ins, abs(cgr$svLen), 0)
 		if (!is.null(info(cvcf)$NTLEN)) {
 			#pindel RPL
 			cgr$insLen <- elementExtract(info(cvcf)$NTLEN) %na% cgr$insLen
