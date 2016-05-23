@@ -161,6 +161,11 @@ test_that("breakpointRanges simple indel", {
 	#expect_warning(breakpointRanges(.testrecord("chr1	100	.	A	<DEL>	.	.	END=101;SVLEN=-10")), "SVLEN")
 })
 
+test_that("breakpointRanges should fix positive DEL event size", {
+	gr <- breakpointRanges(.testrecord("chr1	100	.	A	<DEL>	.	.	SVLEN=10"))
+	expect_equal(start(gr), c(100, 111))
+})
+
 test_that("breakpointRanges breakend", {
 	gr <- breakpointRanges(breakend)
 	expect_equal("parid_b", gr["parid_a",]$partner)

@@ -200,6 +200,8 @@ setMethod("breakpointRanges", "VCF",
 		#assertthat::assert_that(!any(cgr$svtype == "DEL" & cgr$svLen > 0))
 		#assertthat::assert_that(!any(cgr$svtype == "INS" & cgr$svLen < 0))
 		dup <- cgr$svtype == "DUP"
+		del <- cgr$svtype == "DEL"
+		ins <- cgr$svtype == "INS"
 
 		strand(cgr) <- "+"
 		width(cgr) <- 1
@@ -211,7 +213,7 @@ setMethod("breakpointRanges", "VCF",
 		mategr <- cgr
 		strand(mategr) <- "-"
 		# use end, then fall back to calculating from length
-		end <- elementExtract(info(cvcf)$END, 1) %na% (start(cgr) + ifelse(dup, cgr$svLen, pmax(0, -cgr$svLen)))
+		end <- elementExtract(info(cvcf)$END, 1) %na% (start(cgr) + ifelse(ins, 0, abs(cgr$svLen)))
 		if (any(is.na(end))) {
 			stop(paste("Variant of undefined length: ", paste(names(cgr)[is.na(end),], collapse=", ")))
 		}
