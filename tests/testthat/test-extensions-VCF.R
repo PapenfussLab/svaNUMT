@@ -203,6 +203,7 @@ test_that("breakpointRanges DUP", {
 	expect_equal(start(gr), c(12665100, 18665128,
 							  12686200, 18665204))
 	expect_equal(as.character(strand(gr)), c("-", "-", "+", "+"))
+	expect_equal(c(0,0,0,0), gr$insLen)
 
 	gr <- breakpointRanges(.testrecord("chr1	12665100	.	A	<DUP>	14	PASS	SVTYPE=DUP;END=12686200;SVLEN=21100;CIPOS=-2,1;CIEND=-3,4"))
 	expect_equal(2, length(gr))
