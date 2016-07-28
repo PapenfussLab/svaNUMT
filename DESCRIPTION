@@ -22,5 +22,7 @@ Imports:
 Suggests:
     BSgenome.Hsapiens.UCSC.hg19,
     rBLAST (>= 0.99.1),
-    testthat
+    devtools,
+    testthat,
+    roxygen2
 RoxygenNote: 5.0.1

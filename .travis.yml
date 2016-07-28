@@ -2,11 +2,6 @@
 # R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
 language: r
 cache: packages
-addons:
- apt:
-  packages:
-   - build-dep
-   - libxml2-dev
 r:
  - bioc-release
  - bioc-devel
