@@ -7,11 +7,11 @@ setGeneric("unpack",
 )
 setMethod("unpack", "DataFrame",
 		  function(x, ...)
-		  	.unpack.DataFrame(x)
+		  	.unpack.DataFrame(x, ...)
 )
 setMethod("unpack", "VCF",
 		  function(x, ...)
-		  	.unpack.DataFrame(info(x))
+		  	.unpack.DataFrame(info(x), ...)
 )
 
 .as.matrix.list <- function(x) {
@@ -60,14 +60,14 @@ setMethod("unpack", "VCF",
 		CIRPOS=.drop,
 		RSI=.drop,
 		SI=.drop,
-		MATEID=.first
+		MATEID=.first,
+		PARID=.first
 	)
 )
 .predefined_transforms = list(
 	"all" = list(
 		SVLEN=.first,
 		HOMLEN=.zeroFill,
-		HOMSEQ=.first,
 		CIPOS=.zeroFill,
 		CIEND=.zeroFill
 	),
@@ -82,7 +82,6 @@ setMethod("unpack", "VCF",
 		BUM=.zeroFill,
 		BUMQ=.zeroFill,
 		HOMLEN=.zeroFill,
-		HOMSEQ=function(x) { elementExtract(x) %na% "" },
 		REF=.zeroFill,
 		REFPAIR=.zeroFill,
 		RP=.zeroFill,
@@ -116,8 +115,8 @@ aggregateFunctionsFor <- function(caller) {
 transformFunctionsFor <- function(caller) {
 	c(.predefined_transforms[["all"]], .predefined_transforms[[caller]])
 }
-.unpack.DataFrame <- function(x, caller="gridss", transformFUN=transformFunctionsFor(caller), aggregateFUN=aggregateFunctionsFor(caller), ...) {
-	xdf <- as.data.frame(x)
+.unpack.DataFrame <- function(x, caller="gridss", transformFUN=transformFunctionsFor(caller), aggregateFUN=aggregateFunctionsFor(caller)) {
+	xdf <- as.data.frame(x, stringsAsFactors=FALSE)
 	for (cname in names(x)) {
 		cx <- x[[cname]]
 		if (is.list(cx) || is(cx, "List")) {
@@ -127,7 +126,7 @@ transformFunctionsFor <- function(caller) {
 			}
 			# split out list columns
 			mat <- .as.matrix.list(cx)
-			cdf <- as.data.frame(mat)
+			cdf <- as.data.frame(mat, stringsAsFactors=FALSE)
 			if (!is.null(transformFUN[[cname]])) {
 				for (i in seq_along(cdf)) {
 					# apply transform to each unpacked column

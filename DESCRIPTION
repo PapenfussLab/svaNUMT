@@ -24,5 +24,6 @@ Suggests:
     rBLAST (>= 0.99.1),
     devtools,
     testthat,
-    roxygen2
+    roxygen2,
+    covr
 RoxygenNote: 5.0.1
