@@ -56,12 +56,16 @@ setMethod("unpack", "VCF",
 		SR=sum,
 		SRQ=sum,
 		TEST=.drop,
-		IHOMPOS=.drop,
+		IHOMPOS=function(ihompos) {
+			return((abs(elementExtract(ihompos, 1)) %na% 0) +
+						 (abs(elementExtract(ihompos, 2)) %na% 0))
+		},
 		CIRPOS=.drop,
 		RSI=.drop,
 		SI=.drop,
 		MATEID=.first,
-		PARID=.first
+		PARID=.first,
+		BEID=function(beid) unstrsplit(beid, ",")
 	)
 )
 .predefined_transforms = list(
@@ -101,8 +105,8 @@ setMethod("unpack", "VCF",
 		RASQ=.zeroFill,
 		SC=.zeroFill,
 		# interval fields
-		IHOMPOS=.zeroFill,
-		CIRPOS=.zeroFill
+		IHOMPOS=.zeroFill
+		#CIRPOS=.zeroFill
 	)
 )
 #' Returns a list of aggegration functions for the given variant caller
