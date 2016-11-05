@@ -1,13 +1,16 @@
 Package: StructuralVariantAnnotation
 Type: Package
-Title: What The Package Does (one line, title case required)
-Version: 0.1
-Date: 2016-03-10
+Title: VariantionAnnoration for Structural Variants
+Version: 0.2
+Date: 2016-06-11
 Author: Daniel Cameron
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: The description of a package is usually long,
-    spanning multiple lines. The second and subsequent lines
-    should be indented, usually with four spaces.
+Maintainer: Daniel Cameron <daniel.l.cameron@gmail.com>
+Description: StructuralVariantAnnotation contains useful helper
+	functions for dealing with structural variants in VCF format.
+	The packages contains functions for parsing VCFs from a number
+	of popular callers as well as functions for dealing with 
+	breakpoints involving two separate genomic loci encoded as
+	GRanges objects.
 License: GPL-3
 Depends:
 	BiocGenerics (>= 0.20.0),
