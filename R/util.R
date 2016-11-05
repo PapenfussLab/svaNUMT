@@ -1,5 +1,5 @@
 .elementExtract.List <- function(x, offset=1) {
-	lengths <- elementLengths(x)
+	lengths <- S4Vectors::elementNROWS(x)
 	flat <- BiocGenerics::unlist(x)
 	hasValue <- lengths >= offset
 	flatOffset <- head(c(1, 1 + cumsum(lengths)), -1) + offset - 1

@@ -1,17 +1,17 @@
 .dispatchPerAllele_CollapsedVCF <- function(FUN, x, singleAltOnly) {
     alt <- alt(x)
     flat <- BiocGenerics::unlist(alt, use.names=FALSE)
-    res <- FUN(rep(ref(x), elementLengths(alt(x))), flat)
+    res <- FUN(rep(ref(x), S4Vectors::elementNROWS(alt(x))), flat)
     lst <- relist(res, alt)
     if (singleAltOnly)
-        all(lst) & elementLengths(lst) == 1
+        all(lst) & S4Vectors::elementNROWS(lst) == 1
     else
         any(lst)
 }
 .dispatchPerAllele_ExpandedVCF <- function(FUN, x) {
     alt <- alt(x)
     flat <- BiocGenerics::unlist(alt, use.names=FALSE)
-    res <- FUN(rep(ref(x), elementLengths(alt(x))), flat)
+    res <- FUN(rep(ref(x), S4Vectors::elementNROWS(alt(x))), flat)
     res
 }
 
@@ -53,7 +53,7 @@ setMethod("isStructural", "ExpandedVCF",
               .dispatchPerAllele_ExpandedVCF(.isStructural, x)
 )
 .isStructural <- function(ref, alt) {
-	lengthDiff <- elementLengths(ref) != IRanges::nchar(alt)
+	lengthDiff <- S4Vectors::elementNROWS(ref) != IRanges::nchar(alt)
 	if (is(alt, "DNAStringSet")) {
 		# don't break if there are no symbolic alleles in the VCF
 		return(lengthDiff)
@@ -82,7 +82,7 @@ setMethod("isStructural", "ExpandedVCF",
 
 .hasSingleAllelePerRecord <- function(vcf) {
 	assertthat::assert_that(is(vcf, "VCF"))
-    all(elementLengths(alt(vcf)) == 1)
+    all(S4Vectors::elementNROWS(alt(vcf)) == 1)
 }
 setMethod("isStructural", "VCF",
 		  function(x, ...)
@@ -297,13 +297,13 @@ setMethod("breakpointRanges", "VCF",
 			cgr$partner <- elementExtract(info(cvcf)$PARID, 1)
 		}
 		if (!is.null(info(cvcf)$MATEID) & any(is.na(cgr$partner))) {
-			multimates <- elementLengths(info(cvcf)$MATEID) > 1 & is.na(cgr$partner)
+			multimates <- S4Vectors::elementNROWS(info(cvcf)$MATEID) > 1 & is.na(cgr$partner)
 			cgr$partner <- ifelse(is.na(cgr$partner), elementExtract(info(cvcf)$MATEID, 1), cgr$partner)
 			if (any(multimates)) {
 				warning(paste("Ignoring additional mate breakends for variants", names(cgr)[multimates]))
 			}
 		}
-		reflen <- elementLengths(cgr$REF)
+		reflen <- S4Vectors::elementNROWS(cgr$REF)
 		cgr$insSeq <- paste0(stringr::str_sub(preBases, reflen + 1), stringr::str_sub(postBases, end=-(reflen + 1)))
 		cgr$insLen <- nchar(cgr$insSeq)
 
