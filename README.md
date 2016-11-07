@@ -27,7 +27,7 @@ Basic R documentation is included but, as this package is still a work in progre
 
 The following are the core functions provided by this package:
 
-- `breakpointRanges(vcf)` for converting the SVs in a VCF to a GRanges object containing one entry per breakend
+- `breakpointRanges(vcf)` for converting the SVs in a VCF to a GRanges object containing one entry per breakend. Breakends on the "+" strand indicate a break immediately after the given position, and "-" indicates a break immediately before the given position. As an example, a "-" at the start of a chromosome, connected to a "+" at the end of the chromosome indicates that the chromosome is circular.
 - `findBreakpointOverlaps(gr)` the breakpoint equivalent of findOverlaps()
 - `partner(gr)` for returning the breakpoint partners for each breakend
 - `unpack(vcf)` for converting the VCF INFO columns to a data frame
