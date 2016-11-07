@@ -15,6 +15,7 @@ gridss <- readVcf(.testfile("gridss.vcf"), "")
 pindel <- readVcf(.testfile("pindel-0.2.5b6.vcf"), "")
 #socrates <- readVcf(.testfile("socrates-1.13.vcf"), "")
 tigra <- readVcf(.testfile("tigra-0.3.7.vcf"), "")
+manta <- readVcf(.testfile("manta-0.29.6.vcf"), "")
 
 test_that("Delly TRA", {
 	# https://groups.google.com/forum/#!msg/delly-users/6Mq2juBraRY/BjmMrBh3GAAJ
@@ -230,6 +231,12 @@ test_that("breakpointRanges DUP", {
 	expect_equal(2, length(gr))
 	expect_equal(start(gr), c(5616362, 5616362+65536))
 	expect_equal(c("-", "+"), as.character(strand(gr)))
+})
+
+test_that("manta merge should retain only unique events", {
+	# VCF example
+	gr <- breakpointRanges(manta)
+	expect_equal(2, length(gr))
 })
 
 

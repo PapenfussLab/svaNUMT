@@ -409,6 +409,16 @@ setMethod("breakpointRanges", "VCF",
 	outgr$processed <- NULL
 	outgr$cistartoffset <- NULL
 	outgr$ciwidth <- NULL
+	partnerpartnerisself <- partner(outgr)$partner == names(outgr)
+	if (!all(partnerpartnerisself)) {
+		warning("Multiple breakends partners for a single breakend found (Ignoring all except first). StructuralVariantAnnotation does not yet support promiscuous breakpoints. Please raise a github enhancement request at https://github.com/d-cameron/StructuralVariantAnnotation/issues if this functionality is desired.")
+		outgr <- outgr[partnerpartnerisself,]
+	}
+	# sanity check that all breakpoints partners actually exist
+	haspartner <- outgr$partner %in% names(outgr)
+	if (!all(haspartner)) {
+		stop(paste("Sanity check failure: unpaired breakends ", paste(names(gr)[!haspartner], collapse=", ")))
+	}
 	return(outgr)
 }
 .hasMetadataInfo <- function(vcf, field) {
