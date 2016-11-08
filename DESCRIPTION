@@ -13,15 +13,15 @@ Description: StructuralVariantAnnotation contains useful helper
 	GRanges objects.
 License: GPL-3
 Depends:
-	BiocGenerics (>= 0.20.0),
+	BiocGenerics (>= 0.18.0),
 	GenomicRanges (>= 1.22.4),
 	methods,
     R (>= 3.2.2),
-    S4Vectors (>= 0.12.0),
+    S4Vectors (>= 0.10.0),
     VariantAnnotation (>= 1.16.3)
 Imports:
     assertthat,
-    Biostrings (>= 2.42.0),
+    Biostrings (>= 2.40.0),
     stringr (>= 1.1.0)
 Suggests:
     BSgenome.Hsapiens.UCSC.hg19,
