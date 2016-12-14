@@ -30,6 +30,25 @@ findBreakpointOverlaps <- function(query, subject, maxgap=0L, minoverlap=1L, ign
   return(dfhits)
 }
 
+#' Loads a breakpoint GRanges from a BEDPE file
+#' @param file BEDPE file
+#' @param placeholderName prefix to use to ensure ids are unique
+#'
+#' @return breakpoint GRanges object
+#' @export
+bedpe2breakpointgr <- function(file, placeholderName="bedpe") {
+	df <- read.table(file, col.names=c("chr1", "start1", "end1", "chr2", "start2", "end2", "id", "score", "strand1", "strand2", "info"), stringsAsFactors=FALSE)
+	# ensure row names are unique
+	row.names(df) <- ifelse(duplicated(df$id), paste0(placeholderName, seq_along(df$chr1)), df$id)
+	gro <- GRanges(seqnames=df$chr1, strand=df$strand1, ranges=IRanges(df$start1, df$end1), id=df$id, score=df$score, info=df$info)
+	grh <- GRanges(seqnames=df$chr2, strand=df$strand2, ranges=IRanges(df$start2, df$end2), id=df$id, score=df$score, info=df$info)
+	names(gro) <- paste0(row.names(df), "_1")
+	names(grh) <- paste0(row.names(df), "_2")
+	gro$partner <- names(grh)
+	grh$partner <- names(gro)
+	return(c(gro, grh))
+}
+
 #' Extracts the breakpoint sequence.
 #'
 #' @details
@@ -42,7 +61,7 @@ findBreakpointOverlaps <- function(query, subject, maxgap=0L, minoverlap=1L, ign
 #' @param anchoredBases Number of bases leading into breakpoint to extract
 #' @param remoteBases Number of bases from other side of breakpoint to extract
 #' @export
-breakpointSequence <- function(gr, ref, anchoredBases, remoteBases=anchoredBases) {
+extractBreakpointSequence <- function(gr, ref, anchoredBases, remoteBases=anchoredBases) {
 	localSeq <- referenceSequence(gr, ref, anchoredBases, 0)
 	insSeq <- ifelse(strand(gr) == "-",
 		as.character(Biostrings::reverseComplement(DNAStringSet(gr$insSeq %na% ""))),
@@ -63,7 +82,7 @@ breakpointSequence <- function(gr, ref, anchoredBases, remoteBases=anchoredBases
 #' @param anchoredBases Number of bases leading into breakpoint to extract
 #' @param followingBases Number of reference bases past breakpoint to extract
 #' @export
-referenceSequence <- function(gr, ref, anchoredBases, followingBases=anchoredBases) {
+extractReferenceSequence <- function(gr, ref, anchoredBases, followingBases=anchoredBases) {
 	assertthat::assert_that(is(gr, "GRanges"))
 	assertthat::assert_that(is(ref, "BSgenome"))
 	gr <- .constrict(gr)
@@ -121,7 +140,7 @@ referenceSequence <- function(gr, ref, anchoredBases, followingBases=anchoredBas
 #' @param match see Biostrings::pairwiseAlignment
 #'
 #'@export
-referenceHomology <- function(gr, ref,
+calculateReferenceHomology <- function(gr, ref,
 		anchorLength=300,
 		margin=5,
 		match=2, mismatch=-6, gapOpening=5, gapExtension=3 # bwa
@@ -183,7 +202,7 @@ referenceHomology <- function(gr, ref,
 #' See https://github.com/mhahsler/rBLAST for rBLAST package installation
 #' instructions
 #' Download and install the package from AppVeyor or install via install_github("mhahsler/rBLAST") (requires the R package devtools)
-blastHomology <- function(gr, ref, db, anchorLength=150) {
+calculateBlastHomology <- function(gr, ref, db, anchorLength=150) {
 	requireNamespace("rBLAST", quietly=FALSE)
 	blastseq <- DNAStringSet(breakpointSequence(gr, ref, anchorLength))
 	bl <- rBLAST::blast(db=db)

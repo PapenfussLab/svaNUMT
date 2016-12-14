@@ -1,7 +1,7 @@
 Package: StructuralVariantAnnotation
 Type: Package
 Title: VariantionAnnoration for Structural Variants
-Version: 0.2
+Version: 0.3.0
 Date: 2016-06-11
 Author: Daniel Cameron
 Maintainer: Daniel Cameron <daniel.l.cameron@gmail.com>
@@ -16,6 +16,7 @@ Depends:
 	BiocGenerics (>= 0.18.0),
 	GenomicRanges (>= 1.22.4),
 	methods,
+	stats,
     R (>= 3.2.2),
     S4Vectors (>= 0.10.0),
     VariantAnnotation (>= 1.16.3)
