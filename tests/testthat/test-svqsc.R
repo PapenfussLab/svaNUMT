@@ -1,91 +1,71 @@
+library(dplyr)
+library(ggplot2)
+
+minsize <- 51
 maxgap <- 200
 ignore.strand <- TRUE
 sizemargin <- 0.25
-minlongreads <- 1
-truthgr <- bedpe2breakpointgr("C:/dev/sv_benchmark/input.na12878/lumpy-Mills2012-call-set.bedpe")
-dellyvcf <- readVcf("C:/dev/data.na12878/f37c9c1cc36a2297146c8e309bdab35d.vcf", "hg19")
+requiredSupportingReads <- 5
+#truthgr <- bedpe2breakpointgr("C:/dev/sv_benchmark/input.na12878/lumpy-Mills2012-call-set.bedpe")
+truthgr <- bedpe2breakpointgr("C:/dev/input.na12878/longread/NA12878.pacbio_fr_MountSinai.bwa-sw.20140211.bam.noid.sv.bedpe.gz")
+wgEncodeDacMapabilityConsensusExcludable <- import("C:/dev/sv_benchmark/input.na12878/wgEncodeDacMapabilityConsensusExcludable.bed")
+seqlevelsStyle(wgEncodeDacMapabilityConsensusExcludable) <- "UCSC"
+seqlevelsStyle(truthgr) <- "UCSC"
 
-
-
-vcf <- dellyvcf
-# filters: 50bp
-vcf <- vcf[abs(StructuralVariantAnnotation:::.svLen(vcf)) > 50,]
-# TODO: remove interchromosomal
-gr <- breakpointRanges(dellyvcf)
-df <- StructuralVariantAnnotation::unpack(dellyvcf) %>%
-	dplyr::select(PE, MAPQ, SR, SRQ, IMPRECISE, CIPOS)
-
-model <- svqsc_train(gr, df, truthgr, maxgap=maxgap, ignore.strand=ignore.strand, requiredSupportingReads=minlongreads)
-allpred <- svqsc_score(model, df)
-library(dplyr)
-library(ggplot2)
-df <- .svqsc_annotate_tp(gr, df, truthgr, countAllMatchingCalls, requiredSupportingReads, allowsPartialHits, maxgap=maxgap, ignore.strand=ignore.strand)
-df$QUAL <- df$PE + df$SR
-
-pred <- df %>%
-	mutate(estimator="QUAL") %>%
-	select(estimator, QUAL, tp) %>%
-	rbind(data.frame(
-		estimator=rep(colnames(allpred), each=nrow(allpred)),
-		QUAL=as.vector(allpred),
-		tp=rep(df$tp, times=ncol(allpred))))
-roc <- pred %>%
-	group_by(estimator) %>%
-	arrange(desc(QUAL)) %>%
-	mutate(fp=!tp) %>%
-	mutate(tp=cumsum(tp), fp=cumsum(fp)) %>%
-	group_by(estimator, QUAL) %>%
-	summarise(tp=max(tp), fp=max(fp)) %>%
-	ungroup() %>%
-	mutate(precision=tp / (tp + fp), n=tp + fp)
-
-roc <- roc %>%
-  group_by(estimator) %>%
-  arrange(n) %>%
-  filter(
-    # keep start/end
-    is.na(lag(tp)) | is.na(lead(tp)) |
-      # keep group transitions (TODO: is there a way to make lead/lag across group_by return NA?)
-      estimator != lag(estimator) |
-      estimator != lead(estimator) |
-      # slopes not equal dx1/dy1 != dx2/dy2 -> dx1*dy2 != dx2*dy1
-      (tp - lag(tp))*(lead(fp) - lag(fp)) != (lead(tp) - lag(tp))*(fp - lag(fp)) |
-      # less than 10 calls wide
-      lead(tp) - lag(tp) > 10 |
-      # keep every 5th row
-      row_number() %% 10 == 0)
-# lossy removal of points with least change (shinyCache.R)
-for (k in c(4, 16, 32, 64)) {
-	roc <- roc %>%
-		group_by(estimator) %>%
-		arrange(n) %>%
-		filter(
-			is.na(lag(tp)) | is.na(lead(tp)) |
-			estimator != lag(estimator) |
-			estimator != lead(estimator) |
-			# remove points with least amount of change
-			lead(tp) - lag(tp) + lead(fp) - lag(fp) > k |
-			# keep every 5th to prevent removal of large segments
-			row_number() %% 5 == 0
-		) %>%
-		ungroup()
+encodeAnnotate <- function(df, gr) {
+	df$wgEncodeDacMapabilityConsensusExcludable <- FALSE
+	df[gr$vcfId[overlapsAny(gr, truthgr)],]$wgEncodeDacMapabilityConsensusExcludable <- TRUE
+	return(df)
 }
+go <- function(vcf, dftransform) {
+	return(.svqsc_precision_recall(vcf, truthgr, requiredSupportingReads, dftransform=function(df, gr) return(encodeAnnotate(dftransform(df, gr), gr))))
+}
+result <- list()
 
-ggplot(roc) +
-	aes(y=precision, x=tp, color=estimator) +
-	geom_line() +
-	geom_line(data=roc %>% filter(estimator=="QUAL"), size=2)
+breakdancervcf <- readVcf("C:/dev/svqsc/breakdancer.vcf.gz", "hg19")
+info(breakdancervcf)[!is.na(info(breakdancervcf)$EVENT)]$Chr1
+
+result[["breakdancer"]] <- go(breakdancervcf, dftransform=function(df, gr) df %>%
+		dplyr::select(IMPRECISE, SVLEN, Size, Score, num_Reads))
+
+dellyvcf <- readVcf("C:/dev/svqsc/delly.vcf.gz", "hg19")
+fixed(dellyvcf)$QUAL <- (info(dellyvcf)$PE %na% 0) + (info(dellyvcf)$SR %na% 0)
+result[["delly"]] <- go(dellyvcf, dftransform=function(df, gr) df %>%
+		dplyr::select(PE, MAPQ, SR, SRQ, IMPRECISE, CIPOS))
+
+socratesvcf <- readVcf("C:/dev/svqsc/socrates.vcf.gz", "hg19")
+result[["socrates"]] <- go(socratesvcf, dftransform=function(df, gr) df %>%
+		# todo mutate(ANCHCONSLEN=nchar(ANCHCONS), REALNCONSLEN=nchar(REALNCONS))
+		dplyr::select(QUAL, NLSC, NSSC, BLSC, BSSC, LSSC))
+
+
 
 
 
 
 # debug
-countAllMatchingCalls <- FALSE
-requiredSupportingReads <- 1
+remove(vcf, df, gr)
+considerDuplicateCallsTrue <- FALSE
+requiredSupportingReads <- 3
 allowsPartialHits <- TRUE
+intrachromosomalOnly <- TRUE
 traininggr <- gr
 trainingdf <- df
-callgr <- gr
-hitscounts <- .svqsc_long_read_hits(traininggr, truthgr, countAllMatchingCalls, maxgap=maxgap, ignore.strand=ignore.strand)
-trainingdf <- .svqsc_annotate_tp(traininggr, trainingdf, truthgr, countAllMatchingCalls, requiredSupportingReads, allowsPartialHits, maxgap=maxgap, ignore.strand=ignore.strand)
+hitscounts <- .svqsc_long_read_hits(traininggr, truthgr, considerDuplicateCallsTrue, maxgap=maxgap, ignore.strand=ignore.strand)
+trainingdf <- .svqsc_annotate_tp(traininggr, trainingdf, truthgr, considerDuplicateCallsTrue, requiredSupportingReads, allowsPartialHits, maxgap=maxgap, ignore.strand=ignore.strand)
+vcf <- socratesvcf
+
+
+cv <- cv.glmnet(as.matrix(trainingdf %>% select(-tp)), trainingdf$tp, alpha=1, family='binomial')
+pred <- predict(cv, newx=as.matrix(df), type="response", s="lambda.1se")
+
+
+
+library(caret) #install.packages('caret', dependencies=TRUE)
+x <- as.matrix(trainingdf %>% select(-tp))
+y <- trainingdf$tp
+trc = trainControl(method="cv", number=10)
+fitM = train(x, y, trControl=trc, method="glmnet", family="binomial", metric="Accuracy")
+
+
 

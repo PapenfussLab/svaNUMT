@@ -15,6 +15,7 @@ License: GPL-3
 Depends:
 	BiocGenerics (>= 0.18.0),
 	GenomicRanges (>= 1.22.4),
+	glmnet (>= 2.0),
 	methods,
 	stats,
     R (>= 3.2.2),
