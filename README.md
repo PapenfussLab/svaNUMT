@@ -29,12 +29,12 @@ The following are the core functions provided by this package:
 
 - `breakpointRanges(vcf)` for converting the SVs in a VCF to a GRanges object containing one entry per breakend. Breakends on the "+" strand indicate a break immediately after the given position, and "-" indicates a break immediately before the given position. As an example, a "-" at the start of a chromosome, connected to a "+" at the end of the chromosome indicates that the chromosome is circular.
 - `findBreakpointOverlaps(gr)` the breakpoint equivalent of findOverlaps()
+- `countBreakpointOverlaps(gr)` the breakpoint equivalent of countOverlaps()
 - `partner(gr)` for returning the breakpoint partners for each breakend
 - `unpack(vcf)` for converting the VCF INFO columns to a data frame
 - `bedpe2breakpointgr(file)` for processing BEDPE files
-- `svqsc_train()` and `svqsc_score()` for generating meaningful phred-scaled variant quality scores
 
-NB: partner() as it is current implement is quite brittle and is merely a GRanges column gr$partner that requires the partner breakend to exist in the same GRanges object. Not only is directly user-visible, but any operation that subsets (eg extract only breakends at genes) without including or excluding both breakends will break the GRanges for breakpoint purposes (as will changing gr$partner or names(gr)).
+NB: partner() as it is current implement is quite brittle and is merely a GRanges column gr\$partner that requires the partner breakend to exist in the same GRanges object. Not only is directly user-visible, but any operation that subsets (eg extract only breakends at genes) without including or excluding both breakends will break the GRanges for breakpoint purposes (as will changing gr\$partner or names(gr)).
 
 
 

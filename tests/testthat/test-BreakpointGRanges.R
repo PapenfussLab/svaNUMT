@@ -84,82 +84,108 @@ test_that("findBreakpointOverlaps: delly vs truth", {
 	expect_equal(2, nrow(hits))
 })
 
+test_that("countBreakpointOverlaps", {
+	expect_equal(countBreakpointOverlaps(breakpointRanges(.testrecord(c(
+			"chr1	100000	a	N	N[chr1:100100[	.	.	SVTYPE=BND;PARID=b",
+			"chr1	100100	b	N	]chr1:100000]N	.	.	SVTYPE=BND;PARID=a",
+			"chr1	100000	c	N	N[chr1:100200[	.	.	SVTYPE=BND;PARID=d",
+			"chr1	100200	d	N	]chr1:100000]N	.	.	SVTYPE=BND;PARID=c"))),
+		breakpointRanges(.testrecord(c(
+			"chr1	200000	a	N	N[chr1:200100[	.	.	SVTYPE=BND;PARID=b",
+			"chr1	200100	b	N	]chr1:200000]N	.	.	SVTYPE=BND;PARID=a",
+			"chr1	100000	c	N	N[chr1:100200[	.	.	SVTYPE=BND;PARID=d",
+			"chr1	100200	d	N	]chr1:100000]N	.	.	SVTYPE=BND;PARID=c")))),
+		c(0,0,1,1))
+})
+test_that("countBreakpointOverlaps uniqueAllocation", {
+	expect_equal(countBreakpointOverlaps(breakpointRanges(.testrecord(c(
+			"chr1	100000	a	N	N[chr1:100100[	1	.	SVTYPE=BND;PARID=b",
+			"chr1	100100	b	N	]chr1:100000]N	1	.	SVTYPE=BND;PARID=a",
+			"chr1	100000	c	N	N[chr1:100100[	2	.	SVTYPE=BND;PARID=d",
+			"chr1	100100	d	N	]chr1:100000]N	2	.	SVTYPE=BND;PARID=c"))),
+		breakpointRanges(.testrecord(c(
+			"chr1	100000	a	N	N[chr1:100100[	.	.	SVTYPE=BND;PARID=b",
+			"chr1	100100	b	N	]chr1:100000]N	.	.	SVTYPE=BND;PARID=a",
+			"chr1	100000	c	N	N[chr1:100100[	.	.	SVTYPE=BND;PARID=d",
+			"chr1	100100	d	N	]chr1:100000]N	.	.	SVTYPE=BND;PARID=c"))),
+		countOnlyBest=TRUE), c(0,0,2,2))
+})
 
-test_that("breakpointSequence", {
-	expect_equal(breakpointSequence(breakpointRanges(.testrecord(c(
+test_that("extractBreakpointSequence", {
+	expect_equal(extractBreakpointSequence(breakpointRanges(.testrecord(c(
 		# CTC>   <TGC
 		"chr1	100000	a	N	N[chr1:100100[	.	.	SVTYPE=BND;PARID=b",
 		"chr1	100100	b	N	]chr1:100000]N	.	.	SVTYPE=BND;PARID=a"
 		))), hg19, anchoredBases=3), c("CTCTGC", "GCAGAG"))
-	expect_equal(breakpointSequence(breakpointRanges(.testrecord(c(
+	expect_equal(extractBreakpointSequence(breakpointRanges(.testrecord(c(
 		# CTC> AC  <TGC
 		"chr1	100000	a	N	NAC[chr1:100100[	.	.	SVTYPE=BND;PARID=b",
 		"chr1	100100	b	N	]chr1:100000]ACN	.	.	SVTYPE=BND;PARID=a"
 		))), hg19, anchoredBases=3), c("CTCACTGC", "GCAGTGAG"))
-	expect_equal(breakpointSequence(breakpointRanges(.testrecord(c(
+	expect_equal(extractBreakpointSequence(breakpointRanges(.testrecord(c(
 		"chr12	1000000	a	N	[chr12:2000000[N	.	.	SVTYPE=BND;PARID=b", #GGATA
 		"chr12	2000000	b	N	[chr12:1000000[N	.	.	SVTYPE=BND;PARID=a"  #GAGAA
 		))), hg19, anchoredBases=5), c("TATCCGAGAA", "TTCTCGGATA"))
-	expect_equal(breakpointSequence(breakpointRanges(.testrecord(c(
+	expect_equal(extractBreakpointSequence(breakpointRanges(.testrecord(c(
 		"chr12	1000000	a	N	[chr12:2000000[N	.	.	SVTYPE=BND;PARID=b;CIPOS=-115,115",
 		"chr12	2000000	b	N	[chr12:1000000[N	.	.	SVTYPE=BND;PARID=a;CIPOS=-115,115"
 		))), hg19, anchoredBases=5), c("TATCCGAGAA", "TTCTCGGATA"))
-	expect_equal(breakpointSequence(breakpointRanges(.testrecord(c(
+	expect_equal(extractBreakpointSequence(breakpointRanges(.testrecord(c(
 		"chr1	9595627	a	A	A[chr1:9597590[	.	.	MATEID=b;SVTYPE=BND",
 		"chr1	9597590	b	C	]chr1:9595627]C	.	.	MATEID=a;SVTYPE=BND"
 		))), hg19, anchoredBases=5)[1], "CTCCAAATCC")
-	expect_equal(breakpointSequence(breakpointRanges(.testrecord(c(
+	expect_equal(extractBreakpointSequence(breakpointRanges(.testrecord(c(
 		"chr1	1	a	N	N[chr1:1[	.	.	MATEID=b;SVTYPE=BND",
 		"chr1	1	b	N	]chr1:1]N	.	.	MATEID=a;SVTYPE=BND"
 	))), hg19, anchoredBases=2), c("NNNN", "NNNN"))
-	expect_equal(breakpointSequence(breakpointRanges(.testrecord(c(
+	expect_equal(extractBreakpointSequence(breakpointRanges(.testrecord(c(
 		"chr1	1	a	N	N[chr1:1[	.	.	MATEID=b;SVTYPE=BND",
 		"chr1	1	b	N	]chr1:1]N	.	.	MATEID=a;SVTYPE=BND"
 	))), hg19, 0, 0), c("", ""))
-	expect_equal(breakpointSequence(breakpointRanges(.testrecord(c(
+	expect_equal(extractBreakpointSequence(breakpointRanges(.testrecord(c(
 		"chr1	1	a	N	N[chr1:1[	.	.	MATEID=b;SVTYPE=BND",
 		"chr1	1	b	N	]chr1:1]N	.	.	MATEID=a;SVTYPE=BND"
 	))), hg19, 0, 1), c("N", "N"))
 })
-test_that("referenceSequence", {
-	expect_equal(referenceSequence(breakpointRanges(.testrecord(c(
+test_that("extractReferenceSequence", {
+	expect_equal(extractReferenceSequence(breakpointRanges(.testrecord(c(
 		"chr1	100000	a	N	N[chr1:100100[	.	.	SVTYPE=BND;PARID=b",
 		"chr1	100100	b	N	]chr1:100000]N	.	.	SVTYPE=BND;PARID=a"
 		))), hg19, anchoredBases=3), c("CTCACT", "GCATGG"))
-	expect_equal(referenceSequence(breakpointRanges(.testrecord(c(
+	expect_equal(extractReferenceSequence(breakpointRanges(.testrecord(c(
 		"chr1	100000	a	N	NAC[chr1:100100[	.	.	SVTYPE=BND;PARID=b",
 		"chr1	100100	b	N	]chr1:100000]ACN	.	.	SVTYPE=BND;PARID=a"
 		))), hg19, anchoredBases=3), c("CTCACT", "GCATGG"))
-	expect_equal(referenceSequence(breakpointRanges(.testrecord(c(
+	expect_equal(extractReferenceSequence(breakpointRanges(.testrecord(c(
 		"chr1	100000	a	N	NAC[chr1:100100[	.	.	SVTYPE=BND;PARID=b",
 		"chr1	100100	b	N	]chr1:100000]ACN	.	.	SVTYPE=BND;PARID=a"
 		))), hg19, anchoredBases=3, followingBases=5), c("CTCACTAA", "GCATGGCG"))
-	expect_equal(referenceSequence(breakpointRanges(.testrecord(c(
+	expect_equal(extractReferenceSequence(breakpointRanges(.testrecord(c(
 		"chr1	100000	a	N	NAC[chr1:100100[	.	.	SVTYPE=BND;PARID=b;CIPOS=-5,5",
 		"chr1	100100	b	N	]chr1:100000]ACN	.	.	SVTYPE=BND;PARID=a;CIPOS=-5,5"
 		))), hg19, anchoredBases=3, followingBases=5), c("CTCACTAA", "GCATGGCG"))
 
-	expect_equal(referenceSequence(breakpointRanges(.testrecord(c(
+	expect_equal(extractReferenceSequence(breakpointRanges(.testrecord(c(
 		"chrM	1	a	G	]chrM:16571]G	.	.	SVTYPE=BND;PARID=b",
 		"chrM	16571	b	G	G[chrM:1[	.	.	SVTYPE=BND;PARID=a"
 		))), hg19, anchoredBases=2, followingBases=3), c("TCNNN", "TGNNN"))
 })
 
-test_that("referenceHomology", {
-	expect_gte(referenceHomology(breakpointRanges(.testrecord(c(
+test_that("calculateReferenceHomology", {
+	expect_gte(calculateReferenceHomology(breakpointRanges(.testrecord(c(
 			"chr1	9595527	gridss43448o	A	A[chr1:9597585[	1502.22	.	CIPOS=-115,115;HOMLEN=230;HOMSEQ=TGGGAGGCTGAGGCAGGCAGATCACTTGAGGCCAGGAGTTCAAGACCAGCCTGGCCAACATGGTGAAACCCTGTCTCTACTAAAAATACAGAAAAATTAGCCAGGCATGGTGGCACGTGCCTGTAATCCAGCTACTCGTGAGGCAGAGGCAGGAGAATTGCTTGAACCCAGGAGGTGGAGGTTGCAGTGAGCTGAGATCATGCCACTGCACTCCAGCCTGGGTGACAGAG;MATEID=gridss43448h;SVTYPE=BND",
 			"chr1	9597585	gridss43448h	C	]chr1:9595527]C	1502.22	.	CIPOS=-115,115;HOMLEN=230;HOMSEQ=TGGGAGGCTGAGGCAGGCAGATCACTTGAGGCCAGGAGTTCAAGACCAGCCTGGCCAACATGGTGAAACCCTGTCTCTACTAAAAATACAGAAAAATTAGCCAGGCATGGTGGCACGTGCCTGTAATCCAGCTACTCGTGAGGCAGAGGCAGGAGAATTGCTTGAACCCAGGAGGTGGAGGTTGCAGTGAGCTGAGATCATGCCACTGCACTCCAGCCTGGGTGACAGAG;MATEID=gridss43448o;SVTYPE=BND"
 		))), hg19)$inexacthomlen[1], 230)
 
-	expect_lt(referenceHomology(breakpointRanges(.testrecord(c(
+	expect_lt(calculateReferenceHomology(breakpointRanges(.testrecord(c(
 		"chr12	1000000	a	A	A[chr12:2000000[	.	.	MATEID=b;SVTYPE=BND",
 		"chr12	2000000	b	C	]chr12:1000000]C	.	.	MATEID=a;SVTYPE=BND"
 	))), hg19)$inexacthomlen[1], 3)
-	expect_equal(referenceHomology(breakpointRanges(.testrecord(c(
+	expect_equal(calculateReferenceHomology(breakpointRanges(.testrecord(c(
 		"chr1	1	a	A	A[chr1:1[	.	.	MATEID=b;SVTYPE=BND",
 		"chr1	1	b	C	]chr1:1]C	.	.	MATEID=a;SVTYPE=BND"
 	))), hg19, 5)$inexacthomlen, c(NA,NA))
-	expect_true(is.na(referenceHomology(breakpointRanges(.testrecord(c(
+	expect_true(is.na(calculateReferenceHomology(breakpointRanges(.testrecord(c(
 		"chr1	1	a	A	A[chr1:1[	.	.	MATEID=b;SVTYPE=BND",
 		"chr1	1	b	C	]chr1:1]C	.	.	MATEID=a;SVTYPE=BND",
 		"chr12	1000000	aa	A	A[chr12:2000000[	.	.	MATEID=bb;SVTYPE=BND",
@@ -167,15 +193,11 @@ test_that("referenceHomology", {
 	))), hg19, 5)$inexacthomlen[1]))
 })
 
-test_that("blastHomology", {
+test_that("calculateBlastHomology", {
 	#Sys.setenv(PATH=paste(Sys.getenv("PATH"), "/usr/local/bioinf/bin", sep=":"))
-	#bh <- blastHomology(gr, hg19, "~/blastdb/16SMicrobial")
+	#bh <- calculateBlastHomology(gr, hg19, "~/blastdb/16SMicrobial")
 
 })
-
-
-
-#bh <- blastHomology(gr[c("gridss14536o", "gridss14536h"),], hg19, "~/blastdb/16SMicrobial")
 
 
 

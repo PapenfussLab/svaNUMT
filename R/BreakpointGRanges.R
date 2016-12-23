@@ -29,6 +29,37 @@ findBreakpointOverlaps <- function(query, subject, maxgap=0L, minoverlap=1L, ign
   row.names(dfhits) <- NULL
   return(dfhits)
 }
+#' Finds common breakpoints between the two breakpoint sets
+#'
+#' @details
+#' See GenomicRanges::countOverlaps-methods
+#'
+#' @param countOnlyBest count each subject breakpoint as overlaping only the
+#' best overlapping query breakpoint.
+#'
+#' @param breakpointScoreColumn query column defining a score for
+#' determining which query breakpoint is considered the best when countOnlyBest=TRUE
+#' @return an integer vector containing the tabulated query overlap hits
+#' @export
+countBreakpointOverlaps <- function(querygr, subjectgr, maxgap=0L, minoverlap=1L, ignore.strand=FALSE, countOnlyBest=FALSE, breakpointScoreColumn = "QUAL") {
+	hitscounts <- rep(0, length(querygr))
+	hits <- findBreakpointOverlaps(querygr, subjectgr, maxgap, minoverlap, ignore.strand)
+	if (!countOnlyBest) {
+		hits <- hits %>%
+	      dplyr::group_by(queryHits) %>%
+	      dplyr::summarise(n=n())
+	} else {
+		# assign supporting evidence to the call with the highest QUAL
+		hits$QUAL <- mcols(querygr)[[breakpointScoreColumn]][hits$queryHits]
+	    hits <- hits %>%
+	      dplyr::arrange(desc(QUAL), queryHits) %>%
+	      dplyr::distinct(subjectHits, .keep_all=TRUE) %>%
+	      dplyr::group_by(queryHits) %>%
+	      dplyr::summarise(n=n())
+	}
+    hitscounts[hits$queryHits] <- hits$n
+    return(hitscounts)
+}
 
 #' Loads a breakpoint GRanges from a BEDPE file
 #' @param file BEDPE file
@@ -148,14 +179,14 @@ calculateReferenceHomology <- function(gr, ref,
 		) {
 	# shrink anchor for small events to prevent spanning alignment
 	aLength <- pmin(anchorLength, abs(gr$svLen) + 1) %na% anchorLength
-	anchorSeq <- referenceSequence(gr, ref, aLength, 0)
+	anchorSeq <- extractReferenceSequence(gr, ref, aLength, 0)
 	anchorSeq <- sub(".*N", "", anchorSeq)
 	# shrink anchor with Ns
 	aLength <- nchar(anchorSeq)
-	varseq <- breakpointSequence(gr, ref, aLength)
+	varseq <- extractBreakpointSequence(gr, ref, aLength)
 	varseq <- sub("N.*", "", varseq)
 	bpLength <- nchar(varseq) - aLength
-	nonbpseq <- referenceSequence(gr, ref, 0, bpLength + margin)
+	nonbpseq <- extractReferenceSequence(gr, ref, 0, bpLength + margin)
 	nonbpseq <- sub("N.*", "", nonbpseq)
 	refseq <- paste0(anchorSeq, nonbpseq)
 
