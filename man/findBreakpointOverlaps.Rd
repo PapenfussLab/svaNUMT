@@ -6,7 +6,18 @@
 boths sides overlap}
 \usage{
 findBreakpointOverlaps(query, subject, maxgap = 0L, minoverlap = 1L,
-  ignore.strand = FALSE)
+  ignore.strand = FALSE, sizemargin = 0.25,
+  restrictMarginToSizeMultiple = 0.5)
+}
+\arguments{
+\item{sizemargin}{error margin in allowable size to prevent matching of events
+of different sizes such as a 200bp event matching a 1bp event when maxgap is
+set to 200.}
+
+\item{restrictMarginToSizeMultiple}{size restriction multiplier on event size.
+The default value of 0.5 requires that the breakpoint positions can be off by
+at maximum, half the event size. This ensures that small deletion do actually
+overlap at least one base pair.}
 }
 \description{
 Finds overlapping breakpoints by requiring that breakends on

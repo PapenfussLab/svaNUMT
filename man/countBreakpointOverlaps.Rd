@@ -4,9 +4,10 @@
 \alias{countBreakpointOverlaps}
 \title{Finds common breakpoints between the two breakpoint sets}
 \usage{
-countBreakpointOverlaps(querygr, subjectgr, maxgap = 0L, minoverlap = 1L,
-  ignore.strand = FALSE, countOnlyBest = FALSE,
-  breakpointScoreColumn = "QUAL")
+countBreakpointOverlaps(querygr, subjectgr, countOnlyBest = FALSE,
+  breakpointScoreColumn = "QUAL", maxgap = 0L, minoverlap = 1L,
+  ignore.strand = FALSE, sizemargin = 0.25,
+  restrictMarginToSizeMultiple = 0.5)
 }
 \arguments{
 \item{countOnlyBest}{count each subject breakpoint as overlaping only the

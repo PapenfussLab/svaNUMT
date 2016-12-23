@@ -21,13 +21,46 @@ partner <- function(gr) {
 #' @details
 #' See GenomicRanges::findOverlaps-methods for details of overlap calculation
 #'
+#' @param sizemargin error margin in allowable size to prevent matching of events
+#' of different sizes such as a 200bp event matching a 1bp event when maxgap is
+#' set to 200.
+#' @param restrictMarginToSizeMultiple size restriction multiplier on event size.
+#' The default value of 0.5 requires that the breakpoint positions can be off by
+#' at maximum, half the event size. This ensures that small deletion do actually
+#' overlap at least one base pair.
+#'
 #'@export
-findBreakpointOverlaps <- function(query, subject, maxgap=0L, minoverlap=1L, ignore.strand=FALSE) {
-  dfhits <- rbind(as.data.frame(findOverlaps(query, subject, maxgap=maxgap, minoverlap=minoverlap, type="any", select="all", ignore.strand=ignore.strand), row.names=NULL),
-                  as.data.frame(findOverlaps(partner(query), partner(subject), maxgap=maxgap, minoverlap=minoverlap, type="any", select="all", ignore.strand=ignore.strand), row.names=NULL))
-  dfhits <- dfhits[duplicated(dfhits),] # both breakends match
-  row.names(dfhits) <- NULL
-  return(dfhits)
+findBreakpointOverlaps <- function(query, subject, maxgap=0L, minoverlap=1L, ignore.strand=FALSE, sizemargin=0.25, restrictMarginToSizeMultiple=0.5) {
+	hits <- rbind(as.data.frame(findOverlaps(query, subject, maxgap=maxgap, minoverlap=minoverlap, type="any", select="all", ignore.strand=ignore.strand), row.names=NULL),
+		as.data.frame(findOverlaps(partner(query), partner(subject), maxgap=maxgap, minoverlap=minoverlap, type="any", select="all", ignore.strand=ignore.strand), row.names=NULL))
+	hits <- hits[duplicated(hits),] # both breakends match
+	row.names(hits) <- NULL
+	if (!is.null(sizemargin)) {
+		# take into account confidence intervals when calculating event size
+		callwidth <- .distance(query, partner(query))
+		truthwidth <- .distance(subject, partner(subject))
+		callsize <- callwidth + (query$insLen %na% 0)
+		truthsize <- truthwidth + (subject$insLen %na% 0)
+		hits$sizeerror <- .distance(
+			IRanges(start=callsize$min[hits$queryHits], end=callsize$max[hits$queryHits]),
+			IRanges(start=truthsize$min[hits$subjectHits], end=truthsize$max[hits$subjectHits])
+			)$min
+		# event sizes must be within sizemargin
+		hits <- hits[hits$sizeerror - 1 < sizemargin * pmin(callsize$max[hits$queryHits], truthsize$max[hits$subjectHits]),]
+		# further restrict breakpoint positions for small events
+		hits$localbperror <- .distance(query[hits$queryHits], subject[hits$subjectHits])$min
+		hits$remotebperror <- .distance(partner(query)[hits$queryHits], partner(subject)[hits$subjectHits])$min
+		if (!is.null(restrictMarginToSizeMultiple)) {
+			allowablePositionError <- (pmin(callsize$max[hits$queryHits], truthsize$max[hits$subjectHits]) * restrictMarginToSizeMultiple + 1)
+			hits <- hits[hits$localbperror <= allowablePositionError & hits$remotebperror <= allowablePositionError, ]
+		}
+	}
+	return(hits)
+}
+.distance <- function(r1, r2) {
+	return(data.frame(
+		min=pmax(0, pmax(start(r1), start(r2)) - pmin(end(r1), end(r2))),
+		max=pmax(end(r2) - start(r1), end(r1) - start(r2))))
 }
 #' Finds common breakpoints between the two breakpoint sets
 #'
@@ -41,9 +74,9 @@ findBreakpointOverlaps <- function(query, subject, maxgap=0L, minoverlap=1L, ign
 #' determining which query breakpoint is considered the best when countOnlyBest=TRUE
 #' @return an integer vector containing the tabulated query overlap hits
 #' @export
-countBreakpointOverlaps <- function(querygr, subjectgr, maxgap=0L, minoverlap=1L, ignore.strand=FALSE, countOnlyBest=FALSE, breakpointScoreColumn = "QUAL") {
+countBreakpointOverlaps <- function(querygr, subjectgr, countOnlyBest=FALSE, breakpointScoreColumn = "QUAL", maxgap=0L, minoverlap=1L, ignore.strand=FALSE, sizemargin=0.25, restrictMarginToSizeMultiple=0.5) {
 	hitscounts <- rep(0, length(querygr))
-	hits <- findBreakpointOverlaps(querygr, subjectgr, maxgap, minoverlap, ignore.strand)
+	hits <- findBreakpointOverlaps(querygr, subjectgr, maxgap, minoverlap, ignore.strand, sizemargin=sizemargin, restrictMarginToSizeMultiple=restrictMarginToSizeMultiple)
 	if (!countOnlyBest) {
 		hits <- hits %>%
 	      dplyr::group_by(queryHits) %>%
@@ -93,12 +126,12 @@ bedpe2breakpointgr <- function(file, placeholderName="bedpe") {
 #' @param remoteBases Number of bases from other side of breakpoint to extract
 #' @export
 extractBreakpointSequence <- function(gr, ref, anchoredBases, remoteBases=anchoredBases) {
-	localSeq <- referenceSequence(gr, ref, anchoredBases, 0)
+	localSeq <- extractReferenceSequence(gr, ref, anchoredBases, 0)
 	insSeq <- ifelse(strand(gr) == "-",
 		as.character(Biostrings::reverseComplement(DNAStringSet(gr$insSeq %na% ""))),
 		gr$insSeq %na% "")
 	remoteSeq <- as.character(Biostrings::reverseComplement(DNAStringSet(
-		referenceSequence(partner(gr), ref, remoteBases, 0))))
+		extractReferenceSequence(partner(gr), ref, remoteBases, 0))))
 	return(paste0(localSeq, insSeq, remoteSeq))
 }
 #' Returns the reference sequence around the breakpoint position
