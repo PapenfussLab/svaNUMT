@@ -18,7 +18,7 @@ As the StructuralVariantAnnotation package is not yet released on CRAN or BioCon
 
 ```
 library(devtools)
-install_github("d-cameron/StructuralVariantAnnotation")
+install_github("PapenfussLab/StructuralVariantAnnotation")
 ```
 
 ## Documentation
