@@ -101,16 +101,38 @@ countBreakpointOverlaps <- function(querygr, subjectgr, countOnlyBest=FALSE, bre
 #' @return breakpoint GRanges object
 #' @export
 bedpe2breakpointgr <- function(file, placeholderName="bedpe") {
-	df <- read.table(file, col.names=c("chr1", "start1", "end1", "chr2", "start2", "end2", "id", "score", "strand1", "strand2", "info"), stringsAsFactors=FALSE)
+	return(pairs2breakpointgr(import(file), placeholderName))
+}
+#' Converts a BEDPE Pairs containing pairs of GRanges loaded using rtracklayer::import to a breakpointgr
+#' @param pairs pairs object
+#' @param placeholderName prefix to use to ensure ids are unique
+#'
+#' @return breakpoint GRanges object
+#' @export
+pairs2breakpointgr <- function(pairs, placeholderName="bedpe") {
+	n <- names(pairs)
+	if (is.null(n)) {
+		# BEDPE uses the "name" field
+		if ("name" %in% names(mcols(pairs))) {
+			n <- mcols(pairs)$name
+		} else {
+			n <- rep(NA_character_, length(pairs))
+		}
+	}
 	# ensure row names are unique
-	row.names(df) <- ifelse(duplicated(df$id), paste0(placeholderName, seq_along(df$chr1)), df$id)
-	gro <- GRanges(seqnames=df$chr1, strand=df$strand1, ranges=IRanges(df$start1, df$end1), id=df$id, score=df$score, info=df$info)
-	grh <- GRanges(seqnames=df$chr2, strand=df$strand2, ranges=IRanges(df$start2, df$end2), id=df$id, score=df$score, info=df$info)
-	names(gro) <- paste0(row.names(df), "_1")
-	names(grh) <- paste0(row.names(df), "_2")
-	gro$partner <- names(grh)
-	grh$partner <- names(gro)
-	return(c(gro, grh))
+	n <- ifelse(is.na(n) | n == "" | n =="." | duplicated(n), paste0(placeholderName, seq_along(n)), n)
+	#
+	gr <- c(S4Vectors::first(pairs), S4Vectors::second(pairs))
+	names(gr) <- c(paste0(n, "_1"), paste0(n, "_2"))
+	gr$partner <- c(paste0(n, "_2"), paste0(n, "_1"))
+	for (col in names(mcols(pairs))) {
+		if (col %in% c("name")) {
+			# drop columns we have processed
+		} else {
+			mcols(gr)[[col]] <- mcols(pairs)[[col]]
+		}
+	}
+	return(gr)
 }
 
 #' Extracts the breakpoint sequence.

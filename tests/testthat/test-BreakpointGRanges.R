@@ -3,6 +3,16 @@ example <- readVcf(.testfile("vcf4.2.example.sv.vcf"), "")
 simple <- readVcf(.testfile("simple.vcf"), "")
 breakend <- readVcf(.testfile("breakend.vcf"), "")
 
+test_that("bedpe2breakpointgr creates unique ids", {
+	gr <- bedpe2breakpointgr(.testfile("unnamed.bedpe"))
+	expect_equal(c("1", "3", "2", "4"), as.character(seqnames(gr)))
+	expect_equal(c(19356, 1300148+1, 19427, 1302837+1), start(gr))
+	expect_equal(c(19356, 1300151, 19427, 1302840), end(gr))
+	expect_equal(c("+", "+", "-", "+"), as.character(strand(gr)))
+	expect_equal(c(1, 41, 1, 41), gr$score)
+	expect_equal(c("bedpe1_1", "bedpe2_1", "bedpe1_2", "bedpe2_2"), names(gr))
+})
+
 # unpaired breakend
 test_that("partner fails if missing mate", {
     expect_error(partner(breakpointRanges(breakend)[1,]))
@@ -198,6 +208,7 @@ test_that("calculateBlastHomology", {
 	#bh <- calculateBlastHomology(gr, hg19, "~/blastdb/16SMicrobial")
 
 })
+
 
 
 
