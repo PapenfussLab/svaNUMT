@@ -27,7 +27,7 @@ test_that("Delly TRA", {
 	# In fact for a typical reciprocal translocation in prostate cancer (where two chromosomes exchange their end)
 	# Delly calls 2 translocations at the breakpoint, one 3to5 and one 5to3. But obviously not all translocations are reciprocal.
 	# -Tobias
-    gr <- breakpointRanges(.testrecord(c("chr10	2991435	TRA00000001	N	<TRA>	.	LowQual	CIEND=0,100;CIPOS=0,50;SVTYPE=TRA;CHR2=chr1;END=19357517;CT=3to5;INSLEN=0")))
+    gr <- breakpointRanges(.testrecord(c("chr10	2991435	TRA00000001	N	<TRA>	.	LowQual	CIEND=0,100;CIPOS=0,50;SVTYPE=TRA;CHR2=chr1;END=19357517;CT=3to5")))
     expect_equal(2, length(gr))
     expect_equal(c(2991435, 19357517), start(gr))
     expect_equal(c(2991485, 19357617), end(gr))

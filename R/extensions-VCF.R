@@ -338,11 +338,7 @@ setMethod("breakpointRanges", "VCF",
 		if (is.null(info(cvcf)$CT) || any(is.na(info(cvcf)$CT))) {
 			stop(paste("Delly variants missing CT:", paste(names(cgr)[is.na(info(cvcf)$CT)], collapse=", ")))
 		}
-		if (is.null(info(cvcf)$INSLEN) || any(is.na(info(cvcf)$INSLEN))) {
-			stop(paste("Delly variants missing INSLEN:", paste(names(cgr)[is.na(info(cvcf)$INSLEN)], collapse=", ")))
-		}
-
-		cgr$insLen <- info(cvcf)$INSLEN
+		cgr$insLen <- info(cvcf)$INSLEN %na% 0 # Delly no longer writes INSLEN to all TRA records
 		width(cgr) <- 1
 		mategr <- cgr
 		# Hack so we can add new seqlevels if required
