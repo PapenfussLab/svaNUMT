@@ -236,8 +236,10 @@ test_that("breakpointRanges DUP", {
 test_that("manta merge should retain only unique events", {
 	# VCF example
 	gr <- breakpointRanges(manta)
-	expect_equal(2, length(gr))
+	expect_equal(4, length(gr))
 })
-
-
-
+test_that("manta merge should retain only unique events", {
+	# VCF example
+	gr <- breakpointRanges(manta)
+	expect_equal(8, length(gr))
+})

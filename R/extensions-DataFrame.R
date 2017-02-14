@@ -51,10 +51,12 @@ setMethod("unpack", "VCF",
 		REFPAIR=sum,
 		RP=sum,
 		RPQ=sum,
-		RSR=sum,
-		RSRQ=sum,
+		RSR=sum, # deprecated
+		RSRQ=sum, # deprecated
 		SR=sum,
 		SRQ=sum,
+		IC=sum,
+		IQ=sum,
 		TEST=.drop,
 		IHOMPOS=function(ihompos) {
 			return((abs(elementExtract(ihompos, 1)) %na% 0) +
