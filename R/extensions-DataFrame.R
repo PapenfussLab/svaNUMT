@@ -96,6 +96,8 @@ setMethod("unpack", "VCF",
 		RSRQ=.zeroFill,
 		SR=.zeroFill,
 		SRQ=.zeroFill,
+		IC=.zeroFill,
+		IQ=.zeroFill,
 		# single value fields
 		AS=.zeroFill,
 		ASQ=.zeroFill,
