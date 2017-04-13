@@ -35,7 +35,7 @@ findBreakpointOverlaps <- function(query, subject, maxgap=0L, minoverlap=1L, ign
 		as.data.frame(findOverlaps(partner(query), partner(subject), maxgap=maxgap, minoverlap=minoverlap, type="any", select="all", ignore.strand=ignore.strand), row.names=NULL))
 	hits <- hits[duplicated(hits),] # both breakends match
 	row.names(hits) <- NULL
-	if (!is.null(sizemargin)) {
+	if (!is.null(sizemargin) && !is.na(sizemargin)) {
 		# take into account confidence intervals when calculating event size
 		callwidth <- .distance(query, partner(query))
 		truthwidth <- .distance(subject, partner(subject))

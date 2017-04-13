@@ -243,3 +243,19 @@ test_that("manta merge should retain only unique events", {
 	gr <- breakpointRanges(manta)
 	expect_equal(8, length(gr))
 })
+test_that("nominalPosition should ignore confidence intervals", {
+	# VCF example
+	vcfExact <- .testrecord(c("chr1	100	.	A	<DEL>	14	PASS	SVTYPE=DEL;END=200"))
+	vcfCI <- .testrecord(c("chr1	100	.	A	<DEL>	14	PASS	SVTYPE=DEL;END=200;CIEND=-10,10;CIPOS=-5,5"))
+	expect_equal(breakpointRanges(vcfCI, nominalPosition=TRUE), breakpointRanges(vcfExact, nominalPosition=TRUE))
+	expect_equal(ranges(breakpointRanges(vcfHOM, nominalPosition=TRUE)), ranges(breakpointRanges(vcfExact, nominalPosition=TRUE)))
+})
+test_that("nominalPosition should ignore micro-homology", {
+	# VCF example
+	vcfExact <- .testrecord(c("chr1	100	.	A	<DEL>	14	PASS	SVTYPE=DEL;END=200"))
+	vcfHOM <- .testrecord(c("chr1	100	.	A	<DEL>	14	PASS	SVTYPE=DEL;END=200;HOMLEN=15"))
+	expect_equal(ranges(breakpointRanges(vcfHOM, nominalPosition=TRUE)), ranges(breakpointRanges(vcfExact, nominalPosition=TRUE)))
+})
+
+
+

@@ -108,7 +108,7 @@ setGeneric("breakpointRanges", signature="x",
 )
 setMethod("breakpointRanges", "VCF",
 		  function(x, ...)
-		  	.breakpointRanges(x, suffix="_bp")
+		  	.breakpointRanges(x, ...)
 )
 
 #' @param vcf VCF object
@@ -157,6 +157,9 @@ setMethod("breakpointRanges", "VCF",
 	if (!is.null(info(vcf)$HOMLEN)) {
 		gr$ciwidth <- elementExtract(info(vcf)$HOMLEN, 1) %na% gr$ciwidth
 	}
+	# have not yet factored in imprecise variant calling into ciwidth - just microhomology
+	gr$HOMLEN <- gr$ciwidth
+
 	if (!is.null(info(vcf)$CIPOS)) {
 		.expectMetadataInfo(vcf, "CIPOS", 2, header.Type.Integer)
 		cistartoffset <- elementExtract(info(vcf)$CIPOS, 1)
@@ -401,7 +404,9 @@ setMethod("breakpointRanges", "VCF",
 		stop(paste("Unrecognised format for variants", paste(names(gr)[!gr$processed], collapse=", ")))
 	}
 	# incorporate microhomology and confidence intervals
-	ranges(outgr) <- IRanges(start=start(outgr) + outgr$cistartoffset, width=outgr$ciwidth + 1, names=names(outgr))
+	if (!nominalPosition) {
+		ranges(outgr) <- IRanges(start=start(outgr) + outgr$cistartoffset, width=outgr$ciwidth + 1, names=names(outgr))
+	}
 	outgr$processed <- NULL
 	outgr$cistartoffset <- NULL
 	outgr$ciwidth <- NULL
