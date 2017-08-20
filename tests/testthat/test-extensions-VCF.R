@@ -16,6 +16,7 @@ pindel <- readVcf(.testfile("pindel-0.2.5b6.vcf"), "")
 #socrates <- readVcf(.testfile("socrates-1.13.vcf"), "")
 tigra <- readVcf(.testfile("tigra-0.3.7.vcf"), "")
 manta <- readVcf(.testfile("manta-0.29.6.vcf"), "")
+manta111 <- readVcf(.testfile("manta-1.1.1.vcf"), "")
 
 test_that("Delly TRA", {
 	# https://groups.google.com/forum/#!msg/delly-users/6Mq2juBraRY/BjmMrBh3GAAJ
@@ -238,11 +239,11 @@ test_that("manta merge should retain only unique events", {
 	gr <- breakpointRanges(manta)
 	expect_equal(4, length(gr))
 })
-test_that("manta merge should retain only unique events", {
-	# VCF example
-	gr <- breakpointRanges(manta)
-	expect_equal(8, length(gr))
+test_that("manta 1.1.1", {
+	gr <- breakpointRanges(manta111)
+	expect_equal(2*11, length(gr))
 })
+
 test_that("nominalPosition should ignore confidence intervals", {
 	# VCF example
 	vcfExact <- .testrecord(c("chr1	100	.	A	<DEL>	14	PASS	SVTYPE=DEL;END=200"))
