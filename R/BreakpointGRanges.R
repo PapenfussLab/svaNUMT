@@ -31,9 +31,21 @@ partner <- function(gr) {
 #'
 #'@export
 findBreakpointOverlaps <- function(query, subject, maxgap=0L, minoverlap=1L, ignore.strand=FALSE, sizemargin=0.25, restrictMarginToSizeMultiple=0.5) {
-	hits <- rbind(as.data.frame(findOverlaps(query, subject, maxgap=maxgap, minoverlap=minoverlap, type="any", select="all", ignore.strand=ignore.strand), row.names=NULL),
-		as.data.frame(findOverlaps(partner(query), partner(subject), maxgap=maxgap, minoverlap=minoverlap, type="any", select="all", ignore.strand=ignore.strand), row.names=NULL))
+	hitdf <- as.data.frame(findOverlaps(query, subject, maxgap=maxgap, minoverlap=minoverlap, type="any", select="all", ignore.strand=ignore.strand), row.names=NULL)
+	# instead of running findOverlaps(partner(query), partner(subject), ...
+	# we can reduce our runtime cost by just performing partner index lookups
+	# partner lookups
+	subjectPartnerIndexLookup <- seq_along(names(subject))
+	names(subjectPartnerIndexLookup) <- names(subject)
+	queryPartnerIndexLookup <- seq_along(names(query))
+	names(queryPartnerIndexLookup) <- names(query)
+	phitdf <- data.frame(
+		queryHits=queryPartnerIndexLookup[query$partner[hitdf$queryHits]],
+		subjectHits=subjectPartnerIndexLookup[subject$partner[hitdf$subjectHits]])
+	hits <- rbind(hitdf, phitdf)
 	hits <- hits[duplicated(hits),] # both breakends match
+	# emulate S4Vectors::Hits sort.by.query
+	hits <- hits[base::order(hits$queryHits, hits$subjectHits), ]
 	row.names(hits) <- NULL
 	if (!is.null(sizemargin) && !is.na(sizemargin)) {
 		# take into account confidence intervals when calculating event size
