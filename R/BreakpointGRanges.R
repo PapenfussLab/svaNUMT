@@ -42,11 +42,15 @@ findBreakpointOverlaps <- function(query, subject, maxgap=0L, minoverlap=1L, ign
 	phitdf <- data.frame(
 		queryHits=queryPartnerIndexLookup[query$partner[hitdf$queryHits]],
 		subjectHits=subjectPartnerIndexLookup[subject$partner[hitdf$subjectHits]])
-	hits <- rbind(hitdf, phitdf)
-	hits <- hits[duplicated(hits),] # both breakends match
-	# emulate S4Vectors::Hits sort.by.query
+	hits <- rbind(hitdf, phitdf, make.row.names=FALSE)
+	# we now want to do:
+	# hits <- hits[duplicated(hits),] # both breakends match
+	# but for large hit sets (such as focal false positive loci) we run out of memory (>32GB)
+	# instead, we sort then check that we match the previous record
 	hits <- hits[base::order(hits$queryHits, hits$subjectHits), ]
-	row.names(hits) <- NULL
+	lg <- function(x) c(-1, x[1:(length(x)-1)]) # -1 to ensure FALSE match instead of NA match
+	isDup <- hits$queryHits == lg(hits$queryHits) & hits$subjectHits == lg(hits$subjectHits)
+	hits <- hits[isDup,]
 	if (!is.null(sizemargin) && !is.na(sizemargin)) {
 		# take into account confidence intervals when calculating event size
 		callwidth <- .distance(query, partner(query))
