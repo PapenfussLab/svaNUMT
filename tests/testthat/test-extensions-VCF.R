@@ -18,6 +18,11 @@ tigra <- readVcf(.testfile("tigra-0.3.7.vcf"), "")
 manta <- readVcf(.testfile("manta-0.29.6.vcf"), "")
 manta111 <- readVcf(.testfile("manta-1.1.1.vcf"), "")
 
+test_that("INFO column import", {
+	gr <- breakpointRanges(simple, info_columns=c("SVTYPE", "MATEID"))
+	expect_equal("BNDBF", as.character(gr["BNDFB"]$MATEID))
+})
+
 test_that("Delly TRA", {
 	# https://groups.google.com/forum/#!msg/delly-users/6Mq2juBraRY/BjmMrBh3GAAJ
 	# Sorry, I forgot to post this to the delly-users list:

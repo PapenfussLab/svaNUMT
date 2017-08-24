@@ -117,7 +117,7 @@ setMethod("breakpointRanges", "VCF",
 #'    any homology present).
 #' @param prefix variant name prefix to assign to unnamed variants
 #' @param suffix suffix to append
-.breakpointRanges <- function(vcf, nominalPosition=FALSE, placeholderName="svrecord", suffix="_bp") {
+.breakpointRanges <- function(vcf, nominalPosition=FALSE, placeholderName="svrecord", suffix="_bp", info_columns=NULL) {
 	vcf <- vcf[isStructural(vcf),]
 	assertthat::assert_that(.hasSingleAllelePerRecord(vcf))
 	# VariantAnnotation bug: SV row names are not unique
@@ -150,6 +150,9 @@ setMethod("breakpointRanges", "VCF",
 	gr$cistartoffset <- rep(0, length(gr))
 	gr$ciwidth <- rep(0, length(gr))
 
+	for (col in info_columns) {
+		mcols(gr)[[col]] <- info(vcf)[[col]]
+	}
 	if (!is.null(info(vcf)$HOMSEQ)) {
 		seq <- elementExtract(info(vcf)$HOMSEQ, 1)
 		gr$ciwidth <- ifelse(is.na(seq), gr$ciwidth, nchar(seq))
