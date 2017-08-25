@@ -21,6 +21,8 @@ manta111 <- readVcf(.testfile("manta-1.1.1.vcf"), "")
 test_that("INFO column import", {
 	gr <- breakpointRanges(simple, info_columns=c("SVTYPE", "MATEID"))
 	expect_equal("BNDBF", as.character(gr["BNDFB"]$MATEID))
+
+	gr <- breakpointRanges(.testrecord(c("chr10	2991435	INV	N	<INV>	.	LowQual	SVTYPE=INV;CHR2=chr1;END=19357517;CT=3to5")))
 })
 
 test_that("Delly TRA", {
