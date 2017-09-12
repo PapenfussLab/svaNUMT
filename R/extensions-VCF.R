@@ -117,6 +117,7 @@ setMethod("breakpointRanges", "VCF",
 #'    any homology present).
 #' @param prefix variant name prefix to assign to unnamed variants
 #' @param suffix suffix to append
+#' @param info_columns VCF INFO columns to include in the GRanges object
 .breakpointRanges <- function(vcf, nominalPosition=FALSE, placeholderName="svrecord", suffix="_bp", info_columns=NULL) {
 	vcf <- vcf[isStructural(vcf),]
 	assertthat::assert_that(.hasSingleAllelePerRecord(vcf))

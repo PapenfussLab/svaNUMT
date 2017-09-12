@@ -48,7 +48,13 @@ findBreakpointOverlaps <- function(query, subject, maxgap=0L, minoverlap=1L, ign
 	# but for large hit sets (such as focal false positive loci) we run out of memory (>32GB)
 	# instead, we sort then check that we match the previous record
 	hits <- hits[base::order(hits$queryHits, hits$subjectHits), ]
-	lg <- function(x) c(-1, x[1:(length(x)-1)]) # -1 to ensure FALSE match instead of NA match
+	lg <- function(x) {
+		if (length(x) == 0) {
+			return(x)
+		} else {
+			return(c(-1, x[1:(length(x)-1)])) # -1 to ensure FALSE match instead of NA match
+		}
+	}
 	isDup <- hits$queryHits == lg(hits$queryHits) & hits$subjectHits == lg(hits$subjectHits)
 	hits <- hits[isDup,]
 	if (!is.null(sizemargin) && !is.na(sizemargin)) {
