@@ -17,6 +17,7 @@ find useful in your analysis so please raise them using the issues tab above.
 As the StructuralVariantAnnotation package is not yet released on CRAN or BioConductor, the simplest way to install/update is to use the devtools package:
 
 ```
+#install.packages("devtools")
 library(devtools)
 install_github("PapenfussLab/StructuralVariantAnnotation")
 ```
