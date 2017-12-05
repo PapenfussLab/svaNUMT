@@ -30,7 +30,7 @@ partner <- function(gr) {
 #' overlap at least one base pair.
 #'
 #'@export
-findBreakpointOverlaps <- function(query, subject, maxgap=0L, minoverlap=1L, ignore.strand=FALSE, sizemargin=0.25, restrictMarginToSizeMultiple=0.5) {
+findBreakpointOverlaps <- function(query, subject, maxgap=-1L, minoverlap=0L, ignore.strand=FALSE, sizemargin=0.25, restrictMarginToSizeMultiple=0.5) {
 	hitdf <- as.data.frame(findOverlaps(query, subject, maxgap=maxgap, minoverlap=minoverlap, type="any", select="all", ignore.strand=ignore.strand), row.names=NULL)
 	# instead of running findOverlaps(partner(query), partner(subject), ...
 	# we can reduce our runtime cost by just performing partner index lookups
@@ -96,7 +96,7 @@ findBreakpointOverlaps <- function(query, subject, maxgap=0L, minoverlap=1L, ign
 #' determining which query breakpoint is considered the best when countOnlyBest=TRUE
 #' @return an integer vector containing the tabulated query overlap hits
 #' @export
-countBreakpointOverlaps <- function(querygr, subjectgr, countOnlyBest=FALSE, breakpointScoreColumn = "QUAL", maxgap=0L, minoverlap=1L, ignore.strand=FALSE, sizemargin=0.25, restrictMarginToSizeMultiple=0.5) {
+countBreakpointOverlaps <- function(querygr, subjectgr, countOnlyBest=FALSE, breakpointScoreColumn = "QUAL", maxgap=-1L, minoverlap=0L, ignore.strand=FALSE, sizemargin=0.25, restrictMarginToSizeMultiple=0.5) {
 	hitscounts <- rep(0, length(querygr))
 	hits <- findBreakpointOverlaps(querygr, subjectgr, maxgap, minoverlap, ignore.strand, sizemargin=sizemargin, restrictMarginToSizeMultiple=restrictMarginToSizeMultiple)
 	if (!countOnlyBest) {
