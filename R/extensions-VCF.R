@@ -254,6 +254,14 @@ setMethod("breakpointRanges", "VCF",
 		if (any(is.na(end))) {
 			stop(paste("Variant of undefined length: ", paste(names(cgr1)[is.na(end),], collapse=", ")))
 		}
+		hasPlusBreakend <- rep(TRUE, length(cgr1))
+		hasMinusBreakend <- rep(TRUE, length(cgr1))
+		if (!is.null(info(vcf)$INV3)) {
+			hasMinusBreakend <- !info(vcf)$INV3[rows]
+		}
+		if (!is.null(info(vcf)$INV5)) {
+			hasPlusBreakend <- !info(vcf)$INV5[rows]
+		}
 
 		cgr2 <- cgr1
 		cistartoffset <- elementExtract(info(vcf)$CIEND[rows], 1)
@@ -280,7 +288,8 @@ setMethod("breakpointRanges", "VCF",
 		cgr2$partner <- names(cgr1)
 		cgr3$partner <- names(cgr4)
 		cgr4$partner <- names(cgr3)
-		outgr <- c(outgr, cgr1, cgr2, cgr3, cgr4)
+
+		outgr <- c(outgr, cgr1[hasMinusBreakend], cgr2[hasMinusBreakend], cgr3[hasPlusBreakend], cgr4[hasPlusBreakend])
 		cgr1 <- NULL
 		cgr2 <- NULL
 		cgr3 <- NULL

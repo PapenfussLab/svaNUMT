@@ -248,7 +248,11 @@ test_that("manta merge should retain only unique events", {
 })
 test_that("manta 1.1.1", {
 	gr <- breakpointRanges(manta111)
-	expect_equal(2*11, length(gr))
+	expect_equal(2*10, length(gr))
+})
+test_that("manta INV3 should only have 1 breakpoint", {
+	gr <- breakpointRanges(manta111[info(manta111)$INV3])
+	expect_equal(c("+", "+"), as.character(strand(gr)))
 })
 
 test_that("nominalPosition should ignore confidence intervals", {
