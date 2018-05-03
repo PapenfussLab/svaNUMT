@@ -347,8 +347,8 @@ setMethod("breakpointRanges", "VCF",
 		cgr <- NULL
 		mategr <- NULL
 	}
-	# breakend notation
-	rows <- !gr$processed & !is.na(gr$svtype) & gr$svtype %in% c("BND")  & str_detect(gr$ALT, "^(([.].*)|(.*[.]))$")
+	# breakends that are not in breakpoint notation should be in breakend notation
+	rows <- !gr$processed & !is.na(gr$svtype) & gr$svtype %in% c("BND")
 	if (any(rows)) {
 		cgr <- gr[rows,]
 		gr$processed[rows] <- TRUE
