@@ -176,7 +176,8 @@ setMethod("breakpointRanges", "VCF",
 	gr$processed <- rep(FALSE, length(gr))
 	outgr <- gr[FALSE,]
 
-	rows <- !gr$processed & !isSymbolic(vcf)
+	# Another workaround for single breakend variants turning into the empty string
+	rows <- !gr$processed & !isSymbolic(vcf) & str_length(gr$ALT) > 0
 	if (any(rows)) {
 		cgr <- gr[rows,]
 		gr$processed[rows] <- TRUE
@@ -300,7 +301,7 @@ setMethod("breakpointRanges", "VCF",
 		cgr3 <- NULL
 		cgr4 <- NULL
 	}
-	rows <- !gr$processed & !is.na(gr$svtype) & gr$svtype %in% c("BND") & str_detect(gr$ALT, "(.*)(\\[|])(.*)(\\[|])(.*)")
+	rows <- !gr$processed & !is.na(gr$svtype) & gr$svtype %in% c("BND") & (str_detect(gr$ALT, stringr::fixed("[")) | str_detect(gr$ALT, stringr::fixed("[")))
 	if (any(rows)) {
 		cgr <- gr[rows,]
 		gr$processed[rows] <- TRUE
