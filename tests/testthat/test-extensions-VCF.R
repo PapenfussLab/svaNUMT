@@ -268,6 +268,16 @@ test_that("nominalPosition should ignore micro-homology", {
 	vcfHOM <- .testrecord(c("chr1	100	.	A	<DEL>	14	PASS	SVTYPE=DEL;END=200;HOMLEN=15"))
 	expect_equal(ranges(breakpointRanges(vcfHOM, nominalPosition=TRUE)), ranges(breakpointRanges(vcfExact, nominalPosition=TRUE)))
 })
-
-
+test_that("Breakend notation is partnerless", {
+	expect_equal(1, length(breakpointRanges(.testrecord(c("chr1	100	.	A	AAA.	14	PASS	SVTYPE=BND")))))
+})
+test_that("breakpointRanges should not include breakends", {
+	expect_true(isSymbolic(breakpointRanges(.testrecord(c("chr1	100	.	A	AAA.	14	PASS	SVTYPE=BND")))))
+	expect_equal(0, length(breakpointRanges(.testrecord(c("chr1	100	.	A	AAA.	14	PASS	SVTYPE=BND")))))
+})
+test_that("breakendRanges should include breakends", {
+	gr <- breakendRanges(.testrecord(c("chr1	100	.	A	TGC.	14	PASS	SVTYPE=BND")))
+	expect_equal(1, length(gr))
+	expect_equal("GC", gr$insSeq)
+})
 
