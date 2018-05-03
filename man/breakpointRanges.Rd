@@ -18,4 +18,3 @@ with multiple alt alleles are not supported.
 If HOMLEN or HOMSEQ is defined without CIPOS, it is assumed that
 the variant position is left aligned.
 }
-

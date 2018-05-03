@@ -13,4 +13,3 @@ vectorised pairwise longest common prefix
 Returns the length of the longest common prefix for
 each string pair
 }
-

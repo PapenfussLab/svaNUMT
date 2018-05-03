@@ -9,4 +9,3 @@ isStructural(x, ...)
 \description{
 Determines whether the variant is a structural variant
 }
-

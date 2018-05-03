@@ -17,4 +17,3 @@ breakpoint GRanges object
 \description{
 Loads a breakpoint GRanges from a BEDPE file
 }
-

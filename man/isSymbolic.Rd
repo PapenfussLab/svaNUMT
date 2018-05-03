@@ -9,4 +9,3 @@ isSymbolic(x, ...)
 \description{
 Determines whether the variant is a symbolic allele
 }
-

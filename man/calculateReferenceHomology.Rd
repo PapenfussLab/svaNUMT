@@ -32,4 +32,3 @@ for inexact homology to be detected even in the presence of indels.}
 Calculates the length of inexact homology between the breakpoint sequence
 and the reference
 }
-

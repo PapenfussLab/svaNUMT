@@ -14,4 +14,3 @@ elementExtract(x, offset = 1)
 \description{
 Extracts the element of each element at the given position
 }
-

@@ -5,7 +5,7 @@
 \title{Finds common breakpoints between the two breakpoint sets}
 \usage{
 countBreakpointOverlaps(querygr, subjectgr, countOnlyBest = FALSE,
-  breakpointScoreColumn = "QUAL", maxgap=-1L, minoverlap=0L,
+  breakpointScoreColumn = "QUAL", maxgap = -1L, minoverlap = 0L,
   ignore.strand = FALSE, sizemargin = 0.25,
   restrictMarginToSizeMultiple = 0.5)
 }
@@ -25,4 +25,3 @@ Finds common breakpoints between the two breakpoint sets
 \details{
 See GenomicRanges::countOverlaps-methods
 }
-

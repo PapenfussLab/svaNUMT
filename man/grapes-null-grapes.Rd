@@ -9,4 +9,3 @@ a \%null\% b
 \description{
 Uses b if a is NULL
 }
-

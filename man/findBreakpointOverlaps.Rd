@@ -5,7 +5,7 @@
 \title{Finds overlapping breakpoints by requiring that breakends on
 boths sides overlap}
 \usage{
-findBreakpointOverlaps(query, subject, maxgap=-1L, minoverlap=0L,
+findBreakpointOverlaps(query, subject, maxgap = -1L, minoverlap = 0L,
   ignore.strand = FALSE, sizemargin = 0.25,
   restrictMarginToSizeMultiple = 0.5)
 }
@@ -26,4 +26,3 @@ boths sides overlap
 \details{
 See GenomicRanges::findOverlaps-methods for details of overlap calculation
 }
-

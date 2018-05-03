@@ -9,4 +9,3 @@ transformFunctionsFor(caller)
 \description{
 Returns a list of transformation functions for the given variant caller
 }
-

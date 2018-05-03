@@ -9,4 +9,3 @@ unpack(x, ...)
 \description{
 Expands any columns with multiple values (such as Lists) into separate columns
 }
-

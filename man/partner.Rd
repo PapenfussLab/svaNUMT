@@ -19,4 +19,3 @@ Partner breakend for each breakend.
 All breakends must have their partner breakend included
 in the GRanges.
 }
-

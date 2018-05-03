@@ -9,4 +9,3 @@ aggregateFunctionsFor(caller)
 \description{
 Returns a list of aggegration functions for the given variant caller
 }
-

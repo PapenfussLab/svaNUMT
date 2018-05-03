@@ -23,4 +23,3 @@ The sequence is the sequenced traversed from the reference anchor bases
 to the breakpoint. For backward (-) breakpoints, this corresponds to the
 reverse compliment of the reference sequence bases.
 }
-

@@ -17,4 +17,3 @@ breakpoint GRanges object
 \description{
 Converts a BEDPE Pairs containing pairs of GRanges loaded using rtracklayer::import to a breakpointgr
 }
-
