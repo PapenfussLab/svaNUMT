@@ -301,7 +301,7 @@ setMethod("breakpointRanges", "VCF",
 		cgr3 <- NULL
 		cgr4 <- NULL
 	}
-	rows <- !gr$processed & !is.na(gr$svtype) & gr$svtype %in% c("BND") & (str_detect(gr$ALT, stringr::fixed("[")) | str_detect(gr$ALT, stringr::fixed("[")))
+	rows <- !gr$processed & !is.na(gr$svtype) & gr$svtype %in% c("BND") & (str_detect(gr$ALT, stringr::fixed("[")) | str_detect(gr$ALT, stringr::fixed("]")))
 	if (any(rows)) {
 		cgr <- gr[rows,]
 		gr$processed[rows] <- TRUE
