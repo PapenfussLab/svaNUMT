@@ -355,8 +355,7 @@ setMethod("breakpointRanges", "VCF",
 		gr$processed[rows] <- TRUE
 		if (unpartneredBreakends) {
 			cvcf <- vcf[rows,]
-
-			strand(cgr) <- ifelse(str_sub(cgr$ALT, 1, 1) == ".", "-", "+")
+			strand(cgr) <- ifelse(cgr$ALT == "", "*", ifelse(str_sub(cgr$ALT, 1, 1) == ".", "-", "+"))
 			# trim anchoring base and breakend symbol
 			cgr$insSeq <- str_sub(cgr$ALT, 2, str_length(cgr$ALT) - 1)
 			cgr$insLen <- str_length(cgr$insSeq)
