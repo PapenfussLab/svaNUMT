@@ -1,8 +1,8 @@
 Package: StructuralVariantAnnotation
 Type: Package
 Title: VariantionAnnoration for Structural Variants
-Version: 0.7.0
-Date: 2016-06-11
+Version: 0.7.1
+Date: 2018-08-23
 Author: Daniel Cameron
 Maintainer: Daniel Cameron <daniel.l.cameron@gmail.com>
 Description: StructuralVariantAnnotation contains useful helper

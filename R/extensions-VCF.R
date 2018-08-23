@@ -177,7 +177,7 @@ setMethod("breakpointRanges", "VCF",
 	outgr <- gr[FALSE,]
 
 	# Another workaround for single breakend variants turning into the empty string
-	rows <- !gr$processed & !isSymbolic(vcf) & stingr::str_length(gr$ALT) > 0
+	rows <- !gr$processed & !isSymbolic(vcf) & stringr::str_length(gr$ALT) > 0
 	if (any(rows)) {
 		cgr <- gr[rows,]
 		gr$processed[rows] <- TRUE
@@ -301,7 +301,7 @@ setMethod("breakpointRanges", "VCF",
 		cgr3 <- NULL
 		cgr4 <- NULL
 	}
-	rows <- !gr$processed & !is.na(gr$svtype) & gr$svtype %in% c("BND") & (str_detect(gr$ALT, stringr::fixed("[")) | str_detect(gr$ALT, stringr::fixed("]")))
+	rows <- !gr$processed & !is.na(gr$svtype) & gr$svtype %in% c("BND") & (stringr::str_detect(gr$ALT, stringr::fixed("[")) | stringr::str_detect(gr$ALT, stringr::fixed("]")))
 	if (any(rows)) {
 		cgr <- gr[rows,]
 		gr$processed[rows] <- TRUE
@@ -355,9 +355,9 @@ setMethod("breakpointRanges", "VCF",
 		gr$processed[rows] <- TRUE
 		if (unpartneredBreakends) {
 			cvcf <- vcf[rows,]
-			strand(cgr) <- ifelse(cgr$ALT == "", "*", ifelse(str_sub(cgr$ALT, 1, 1) == ".", "-", "+"))
+			strand(cgr) <- ifelse(cgr$ALT == "", "*", ifelse(stringr::str_sub(cgr$ALT, 1, 1) == ".", "-", "+"))
 			# trim anchoring base and breakend symbol
-			cgr$insSeq <- str_sub(cgr$ALT, 2, stringr::str_length(cgr$ALT) - 1)
+			cgr$insSeq <- stringr::str_sub(cgr$ALT, 2, stringr::str_length(cgr$ALT) - 1)
 			cgr$insLen <- stringr::str_length(cgr$insSeq)
 			cgr$partner <- NA_character_
 			cgr$svLen <- NA_integer_
