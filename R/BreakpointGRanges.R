@@ -321,4 +321,51 @@ calculateBlastHomology <- function(gr, ref, db, anchorLength=150) {
 	cl$minOverlap <- pmin(cl$leftOverlap, cl$rightOverlap)
 	return(cl)
 }
+#' Converts to breakend notation
+.toVcfBreakendNotationAlt = function(gr, insSeq=gr$insSeq, ref=gr$REF) {
+	assert_that(all(width(gr) == 1))
+	assert_that(!is.null(insSeq))
+	assert_that(all(insSeq != ""))
+	assert_that(!is.null(gr$partner))
+	isBreakpoint = !is.na(gr$partner)
+	breakendAlt = ifelse(as.character(strand(gr)) == "+", paste0(gr$insSeq, "."), paste0(".", gr$insSeq))
+	gr$partner[isBreakpoint] = names(gr)[isBreakpoint] # self partner to prevent errors
+	partnergr = gr[gr$partner]
+	partnerDirectionChar = ifelse(strand(partnergr) == "+", "]", "[")
+	breakpointAlt = ifelse(as.character(strand(gr)) == "+",
+		paste0(ref, insSeq, partnerDirectionChar, seqnames(partnergr), ":", start(partnergr), partnerDirectionChar),
+		paste0(partnerDirectionChar, seqnames(partnergr), ":", start(partnergr), partnerDirectionChar, insSeq, ref))
+	return (ifelse(isBreakpoint, breakpointAlt, breakendAlt))
+}
+#' Converts the given breakpoint GRanges object to VCF format in breakend
+#' notation.
+#'
+#' @param gr breakpoint GRanges object. Can contain both breakpoint and single breakend SV records
+#'
+#'@export
+breakpointGRangesToVCF <- function(gr) {
+	if (is.null(gr$insSeq)) {
+		gr$insSeq = rep("", length(gr))
+	}
+	nominalgr = GRanges(seqnames=seqnames(gr), ranges=IRanges(start=(end(gr) + start(gr)) / 2, width=1))
+	if (is.null(gr$REF)) {
+		gr$REF = rep("N", length(gr))
+	}
+	gr$ALT[is.na(gr$ALT)] = ""
+	if (is.null(gr$ALT)) {
+		gr$ALT = rep("", length(gr))
+	}
+	gr$ALT[is.na(gr$ALT)] = ""
+	gr$ALT[gr$ALT == ""] = .toVcfBreakendNotationAlt(gr)[gr$ALT == ""]
+	ciposstart = start(gr) - start(nominalgr)
+	ciposend = end(gr) - end(nominalgr)
+	vcf = VCF(rowRanges=nominalgr, collapsed=FALSE)
+	fixeddf = data.frame(
+		ALT=gr$ALT,
+		REF=gr$REF,
+		QUAL=gr$QUAL,
+		FILTER=gr$FILTER)
+
+	VCF(rowRanges = GRanges(), colData = DataFrame(), exptData = list(header = VCFHeader()), fixed = DataFrame(), info = DataFrame(), geno = SimpleList(), ..., collapsed=FALSE, verbose = FALSE
+}
 
