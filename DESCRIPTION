@@ -1,8 +1,8 @@
 Package: StructuralVariantAnnotation
 Type: Package
 Title: VariantionAnnoration for Structural Variants
-Version: 0.7.1
-Date: 2018-08-23
+Version: 0.7.2
+Date: 2018-01-25
 Author: Daniel Cameron
 Maintainer: Daniel Cameron <daniel.l.cameron@gmail.com>
 Description: StructuralVariantAnnotation contains useful helper
@@ -20,7 +20,8 @@ Depends:
 	stats,
     R (>= 3.2.2),
     S4Vectors (>= 0.10.0),
-    VariantAnnotation (>= 1.16.3)
+    VariantAnnotation (>= 1.16.3),
+    dplyr
 Imports:
     assertthat,
     Biostrings (>= 2.40.0),

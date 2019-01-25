@@ -31,32 +31,15 @@ partner <- function(gr) {
 #'
 #'@export
 findBreakpointOverlaps <- function(query, subject, maxgap=-1L, minoverlap=0L, ignore.strand=FALSE, sizemargin=0.25, restrictMarginToSizeMultiple=0.5) {
-	hitdf <- as.data.frame(findOverlaps(query, subject, maxgap=maxgap, minoverlap=minoverlap, type="any", select="all", ignore.strand=ignore.strand), row.names=NULL)
-	# instead of running findOverlaps(partner(query), partner(subject), ...
-	# we can reduce our runtime cost by just performing partner index lookups
-	# partner lookups
-	subjectPartnerIndexLookup <- seq_along(names(subject))
-	names(subjectPartnerIndexLookup) <- names(subject)
-	queryPartnerIndexLookup <- seq_along(names(query))
-	names(queryPartnerIndexLookup) <- names(query)
-	phitdf <- data.frame(
-		queryHits=queryPartnerIndexLookup[query$partner[hitdf$queryHits]],
-		subjectHits=subjectPartnerIndexLookup[subject$partner[hitdf$subjectHits]])
-	hits <- rbind(hitdf, phitdf, make.row.names=FALSE)
+	hits <- dplyr::bind_rows(
+		as.data.frame(findOverlaps(query, subject, maxgap=maxgap, minoverlap=minoverlap, type="any", select="all", ignore.strand=ignore.strand), row.names=NULL),
+		as.data.frame(findOverlaps(query, subject, maxgap=maxgap, minoverlap=minoverlap, type="any", select="all", ignore.strand=ignore.strand), row.names=NULL))
 	# we now want to do:
 	# hits <- hits[duplicated(hits),] # both breakends match
 	# but for large hit sets (such as focal false positive loci) we run out of memory (>32GB)
-	# instead, we sort then check that we match the previous record
-	hits <- hits[base::order(hits$queryHits, hits$subjectHits), ]
-	lg <- function(x) {
-		if (length(x) == 0) {
-			return(x)
-		} else {
-			return(c(-1, x[1:(length(x)-1)])) # -1 to ensure FALSE match instead of NA match
-		}
-	}
-	isDup <- hits$queryHits == lg(hits$queryHits) & hits$subjectHits == lg(hits$subjectHits)
-	hits <- hits[isDup,]
+	# instead, we sort then check that we match the next record
+	hits = hits %>% dplyr::arrange(queryHits, subjectHits) %>%
+		dplyr::filter(!is.na(dplyr::lead(.$queryHits)) & !is.na(dplyr::lead(.$subjectHits)) & dplyr::lead(.$queryHits) == .$queryHits & dplyr::lead(.$subjectHits) == .$subjectHits)
 	if (!is.null(sizemargin) && !is.na(sizemargin)) {
 		# take into account confidence intervals when calculating event size
 		callwidth <- .distance(query, partner(query))
@@ -343,29 +326,28 @@ calculateBlastHomology <- function(gr, ref, db, anchorLength=150) {
 #' @param gr breakpoint GRanges object. Can contain both breakpoint and single breakend SV records
 #'
 #'@export
-breakpointGRangesToVCF <- function(gr) {
-	if (is.null(gr$insSeq)) {
-		gr$insSeq = rep("", length(gr))
-	}
-	nominalgr = GRanges(seqnames=seqnames(gr), ranges=IRanges(start=(end(gr) + start(gr)) / 2, width=1))
-	if (is.null(gr$REF)) {
-		gr$REF = rep("N", length(gr))
-	}
-	gr$ALT[is.na(gr$ALT)] = ""
-	if (is.null(gr$ALT)) {
-		gr$ALT = rep("", length(gr))
-	}
-	gr$ALT[is.na(gr$ALT)] = ""
-	gr$ALT[gr$ALT == ""] = .toVcfBreakendNotationAlt(gr)[gr$ALT == ""]
-	ciposstart = start(gr) - start(nominalgr)
-	ciposend = end(gr) - end(nominalgr)
-	vcf = VCF(rowRanges=nominalgr, collapsed=FALSE)
-	fixeddf = data.frame(
-		ALT=gr$ALT,
-		REF=gr$REF,
-		QUAL=gr$QUAL,
-		FILTER=gr$FILTER)
-
-	VCF(rowRanges = GRanges(), colData = DataFrame(), exptData = list(header = VCFHeader()), fixed = DataFrame(), info = DataFrame(), geno = SimpleList(), ..., collapsed=FALSE, verbose = FALSE
-}
+# breakpointGRangesToVCF <- function(gr) {
+# 	if (is.null(gr$insSeq)) {
+# 		gr$insSeq = rep("", length(gr))
+# 	}
+# 	nominalgr = GRanges(seqnames=seqnames(gr), ranges=IRanges(start=(end(gr) + start(gr)) / 2, width=1))
+# 	if (is.null(gr$REF)) {
+# 		gr$REF = rep("N", length(gr))
+# 	}
+# 	gr$ALT[is.na(gr$ALT)] = ""
+# 	if (is.null(gr$ALT)) {
+# 		gr$ALT = rep("", length(gr))
+# 	}
+# 	gr$ALT[is.na(gr$ALT)] = ""
+# 	gr$ALT[gr$ALT == ""] = .toVcfBreakendNotationAlt(gr)[gr$ALT == ""]
+# 	ciposstart = start(gr) - start(nominalgr)
+# 	ciposend = end(gr) - end(nominalgr)
+# 	vcf = VCF(rowRanges=nominalgr, collapsed=FALSE)
+# 	fixeddf = data.frame(
+# 		ALT=gr$ALT,
+# 		REF=gr$REF,
+# 		QUAL=gr$QUAL,
+# 		FILTER=gr$FILTER)
+# 	VCF(rowRanges = GRanges(), colData = DataFrame(), exptData = list(header = VCFHeader()), fixed = DataFrame(), info = DataFrame(), geno = SimpleList(), ..., collapsed=FALSE, verbose = FALSE)
+# }
 

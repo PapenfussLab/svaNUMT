@@ -211,6 +211,18 @@ test_that("calculateBlastHomology", {
 	#bh <- calculateBlastHomology(gr, hg19, "~/blastdb/16SMicrobial")
 
 })
+test_that("performance_test_partner", {
+	n = 10000
+	gr = GRanges(
+		seqnames="1",
+		ranges=IRanges(start=1:(2*n), width=1),
+		partner=c(paste0(1:n, "o"), paste0(1:n, "h")))
+	names(gr)=c(paste0(1:n, "h"), paste0(1:n, "o"))
+	tictoc::tic(paste0("Start", n))
+	pgr = partner(gr)
+	tictoc::toc()
+})
+
 
 
 
