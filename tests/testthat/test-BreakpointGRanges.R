@@ -36,11 +36,10 @@ test_that(".constrict", {
 	expect_equal(start(gr), c(1, 16571))
 })
 
-
+justHits <- function(df) {
+	return(data.frame(queryHits=df$queryHits, subjectHits=df$subjectHits))
+}
 test_that("findBreakpointOverlaps", {
-	justHits <- function(df) {
-		return(data.frame(queryHits=df$queryHits, subjectHits=df$subjectHits))
-	}
 	expect_equal(justHits(findBreakpointOverlaps(breakpointRanges(.testrecord(c(
 			"chr1	100000	a	N	N[chr1:100100[	.	.	SVTYPE=BND;PARID=b",
 			"chr1	100100	b	N	]chr1:100000]N	.	.	SVTYPE=BND;PARID=a",
@@ -83,6 +82,13 @@ test_that("findBreakpointOverlaps", {
 			"chr1	10000	c	N	N[chr1:11000[	.	.	SVTYPE=BND;PARID=d"))),
 		maxgap=1)),
 		data.frame(queryHits=c(1,2), subjectHits=c(2,1)))
+})
+test_that("findBreakpointOverlaps_match_both_sides", {
+	gr1 = GRanges(seqnames="1", ranges=IRanges(start=c(1, 100), width=1), strand="+", partner=c("2", "1"))
+	names(gr1) = c("1", "2")
+	gr2 = GRanges(seqnames="1", ranges=IRanges(start=c(100, 100), width=1),  strand="+", partner=c("2", "1"))
+	names(gr2) = c("1", "2")
+	expect_equal(nrow(findBreakpointOverlaps(gr1, gr2, sizemargin=NULL)), 0)
 })
 
 test_that("findBreakpointOverlaps: delly vs truth", {
