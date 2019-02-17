@@ -3,7 +3,7 @@ Type: Package
 Title: VariantionAnnoration for Structural Variants
 Version: 0.7.3
 Date: 2018-01-25
-Author: Daniel Cameron
+Author: Daniel Cameron, Ruining Dong
 Maintainer: Daniel Cameron <daniel.l.cameron@gmail.com>
 Description: StructuralVariantAnnotation contains useful helper
 	functions for dealing with structural variants in VCF format.
@@ -33,5 +33,7 @@ Suggests:
     testthat,
     roxygen2,
     covr,
-    glmnet (>= 2.0)
+    glmnet (>= 2.0),
+    knitr
 RoxygenNote: 6.0.1
+VignetteBuilder: knitr
