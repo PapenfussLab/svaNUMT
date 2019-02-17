@@ -1,0 +1,77 @@
+---
+title: "StructuralVariantAnnotation Quick Overview"
+author: "Ruining Dong"
+date: "17/02/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+This vignette outlines a workflow of annoating and filtering structural variant from Variant Call Format (VCF) **REF** using the *StructuralVariantAnnotation* package. *StructuralVariantAnnotation* contains useful helper functions for reading and interpreting structural variants calls. The packages contains functions for parsing VCFs from a number of popular caller as well as functions for dealing with breakpoints involving two separate genomic loci encoded as GRanges objects. 
+
+## Installation
+
+The *StructuralVariationAnnotation* package can be loaded from *Bioconductor* as follows:
+
+```{r, eval=FALSE}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("StructuralVariantAnnotation")
+```
+
+## Workflow
+### Reading VCF file
+### Converting SV calls
+The package employs *GRanges* object for storage of breakends. Function `breakpointRanges()` converts SVs in a VCF to GRanges with one entry per breakend. A breakend on the '+' strand indicates a break immediately after the given position, and on the '-' strand indicates a break immediately before the given position. Unpaired variants are removed at this stage.
+
+```{r}
+library(VariantAnnotation)
+library(StructuralVariantAnnotation)
+#parsing VCF 'gridss.vcf' as 'vcf' with hg19 reference genome
+vcf.file <- system.file('extdata','gridss.vcf',package='StructuralVariantAnnotation')
+vcf <- readVcf(vcf.file, "hg19")
+#converting 'vcf' to GRanges 'gr'
+gr <- breakpointRanges(vcf)
+```
+
+### Interpreting breakpoints
+
+`findBreakpointOverlaps()` and `countBreakpointOverlaps()` are functions for finding and counting overlaps between GRanges objects, equivalent of `findOverlaps()` and `countOverlaps()`.
+
+**EXAMPLE HERE FOR GENE OVERLAP**
+
+### Converting between BEDPE files and GRanges
+```{r}
+library(stringr)
+bedpe <- data.frame(
+    chrom1=seqnames(gr),
+    start1=start(gr) - 1,
+    end1=end(gr),
+    chrom1=seqnames(partner(gr)),
+    start2=start(partner(gr)) - 1,
+    end2=end(partner(gr)),
+    name=names(gr),
+    score=gr$QUAL,
+    strand1=strand(gr),
+    strand2=strand(partner(gr))
+    )
+bedpe <- bedpe[str_detect(bedpe$name, "gridss.+o"),]
+```
+# Just the lower of the two breakends so we don't output everything twice
+#bedpe <- bedpe[str_detect(bedpe$name, "gridss.+o"),]
+#write.table(bedpe, "somatic.gridss.hq.somatic.bedpe", quote=FALSE, sep='\t', row.names=FALSE, col.names=FALSE)
+
+
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
