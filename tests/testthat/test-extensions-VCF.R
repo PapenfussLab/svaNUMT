@@ -350,3 +350,19 @@ test_that("align_breakpoint centre should ensure odd length homology is consiste
 	expect_equal(c(-3,2, -2,3), noname(unlist(info(vcf)$CIPOS)))
 	expect_equal(c("[chr1:2002[N", "[chr1:998[N"), unlist(rowRanges(vcf)$ALT))
 })
+test_that("align_breakpoint should not touch other variants", {
+	vcf = .testrecord(c(
+		"chr1	1000	be1	N	AGT.	.	.	SVTYPE=BND;CIPOS=-5,0",
+		"chr1	1000	b21	N	.AGT	.	.	SVTYPE=BND;CIPOS=-5,0",
+		"chr1	1000	b21	N	<DEL>	.	.	SVTYPE=DEL;CIPOS=-5,0"))
+	vcf = align_breakpoints(vcf)
+	expect_equal(c("AGT.", ".AGT", "<DEL>"), unlist(rowRanges(vcf)$ALT))
+})
+
+
+
+
+
+
+
+
