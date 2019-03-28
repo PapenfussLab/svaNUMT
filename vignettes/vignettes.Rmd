@@ -2,7 +2,9 @@
 title: "StructuralVariantAnnotation Quick Overview"
 author: "Ruining Dong"
 date: "17/02/2019"
-output: pdf_document
+output:
+  html_document:
+    df_print: paged
 ---
 
 ```{r setup, include=FALSE}
@@ -23,18 +25,33 @@ BiocManager::install("StructuralVariantAnnotation")
 ```
 
 ## Workflow
-### Reading VCF file
-### Converting SV calls
-The package employs *GRanges* object for storage of breakends. Function `breakpointRanges()` converts SVs in a VCF to GRanges with one entry per breakend. A breakend on the '+' strand indicates a break immediately after the given position, and on the '-' strand indicates a break immediately before the given position. Unpaired variants are removed at this stage.
-
-```{r}
+### Data import and filtering
+VCF data is parsed into a `VCF` object using `readVCF` function from Bioconductor package `VariantAnnotation`. Details of `VCF` objects can be found by `browseVignettes("VariantAnnotation")`.
+```{r, warning=FALSE, message=FALSE}
 library(VariantAnnotation)
 library(StructuralVariantAnnotation)
-#parsing VCF 'gridss.vcf' as 'vcf' with hg19 reference genome
-vcf.file <- system.file('extdata','gridss.vcf',package='StructuralVariantAnnotation')
+vcf.file <- system.file("extdata", "gridss.vcf", package = "StructuralVariantAnnotation")
 vcf <- readVcf(vcf.file, "hg19")
-#converting 'vcf' to GRanges 'gr'
+vcf
+```
+
+Simple filters could be applied to a `VCF` object to remove unwanted calls.
+```{r, warning=FALSE,message=FALSE}
+# filter out low quality calls
+vcf <- vcf[rowRanges(vcf)$FILTER %in% c(".", "PASS"),]
+# somatic calls have no support in the normal
+somatic_vcf <- vcf[geno(vcf)$QUAL[,"normal.bam"] == 0,]
+# somatic loss of heterozygosity has no support in the tumour
+loh_vcf <- vcf[geno(vcf)$QUAL[,"tumour.bam"] == 0,]
+```
+
+### Converting SV calls
+The package employs `GRanges` object for storage of breakends. Function `breakpointRanges()` converts SVs in a VCF to GRanges with one entry per breakend. A breakend on the '+' strand indicates a break immediately after the given position, and on the '-' strand indicates a break immediately before the given position. Unpaired variants are removed at this stage.
+
+```{r}
+#converting VCF object 'vcf' to GRanges object 'gr'
 gr <- breakpointRanges(vcf)
+gr
 ```
 
 ### Interpreting breakpoints
@@ -59,13 +76,15 @@ bedpe <- data.frame(
     strand2=strand(partner(gr))
     )
 bedpe <- bedpe[str_detect(bedpe$name, "gridss.+o"),]
-```
-# Just the lower of the two breakends so we don't output everything twice
 #bedpe <- bedpe[str_detect(bedpe$name, "gridss.+o"),]
-#write.table(bedpe, "somatic.gridss.hq.somatic.bedpe", quote=FALSE, sep='\t', row.names=FALSE, col.names=FALSE)
+#write.table(bedpe, "gridss.bedpe", quote=FALSE, sep='\t', row.names=FALSE, col.names=FALSE)
+```
 
 
-
+## SessionInfo
+```{r}
+sessionInfo()
+```
 ## Including Plots
 
 You can also embed plots, for example:
@@ -75,3 +94,6 @@ plot(pressure)
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+bedpe2breakpointgr , breakendRanges, breakpointRanges, countBreakpointOverlaps, findBreakpointOverlaps, partner, isStructural, isSymbolic, pairs2breakpointgr
