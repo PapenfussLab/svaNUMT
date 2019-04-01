@@ -33,6 +33,7 @@ Suggests:
     roxygen2,
     covr,
     glmnet (>= 2.0),
-    knitr
-RoxygenNote: 6.0.1
+    knitr,
+    rmarkdown
+RoxygenNote: 6.1.1
 VignetteBuilder: knitr

@@ -206,7 +206,7 @@ extractReferenceSequence <- function(gr, ref, anchoredBases, followingBases=anch
 	seq <- ifelse(strand(gr) == "-", as.character(Biostrings::reverseComplement(DNAStringSet(seq))), seq)
 	return(seq)
 }
-#' constrict
+#' constrict0
 .constrict <- function(gr, ref=NULL,position="middle") {
 	isLower <- start(gr) < start(partner(gr))
 	# Want to call a valid breakpoint
