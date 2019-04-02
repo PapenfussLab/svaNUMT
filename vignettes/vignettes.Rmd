@@ -95,13 +95,17 @@ partner(gr)
 
 
 ### Converting between BEDPE files and GRanges
+
+The package supports converting GRanges objects to BEDPE files. The BEDPE format is defined by [`bedtools`](https://bedtools.readthedocs.io/en/latest/content/general-usage.html).
+
 ```{r}
 suppressPackageStartupMessages(library(stringr))
+#breakpoint2bedpe(gr)
 bedpe <- data.frame(
     chrom1=seqnames(gr),
     start1=start(gr) - 1,
     end1=end(gr),
-    chrom1=seqnames(partner(gr)),
+    chrom2=seqnames(partner(gr)),
     start2=start(partner(gr)) - 1,
     end2=end(partner(gr)),
     name=names(gr),
@@ -110,10 +114,29 @@ bedpe <- data.frame(
     strand2=strand(partner(gr))
     )
 bedpe <- bedpe[str_detect(bedpe$name, "gridss.+o"),]
-#bedpe <- bedpe[str_detect(bedpe$name, "gridss.+o"),]
-#write.table(bedpe, "gridss.bedpe", quote=FALSE, sep='\t', row.names=FALSE, col.names=FALSE)
+bedpe
+write.table(bedpe, file="gridss.bedpe", quote=FALSE, sep='\t', row.names=FALSE, col.names=FALSE)
 ```
 
+BEDPE files can be imported to GRanges objects in R via `bedpe2breakpointgr`.
+```{r}
+bedpe.gr <- bedpe2breakpointgr('gridss.bedpe')
+bedpe.gr
+```
+
+
+
+
+### Visualising breakpoint pairs via circos plots
+
+One way of visualising paired breakpoints is by circos plots. Here we use package `circlize` to demonstrate breakpoint visualisation.
+```{r}
+library(circlize)
+bed1<-bedpe[,1:3]
+bed2<-bedpe[,4:6]
+circos.initializeWithIdeogram(species = 'hg19')
+circos.genomicLink(bed1, bed2)
+```
 
 
 ## SessionInfo

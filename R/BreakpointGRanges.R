@@ -157,6 +157,27 @@ pairs2breakpointgr <- function(pairs, placeholderName="bedpe") {
 	return(gr)
 }
 
+#' Converts a breakpoint GRanges to a BEDPE-formatted data frame
+#' @param gr GRanges object
+#'
+#' @return BEDPE-formatted data frame
+#' @export
+breakpointgr2bedpe <- function(gr){
+	bedpe <- data.frame(
+		chrom1=seqnames(gr),
+		start1=start(gr) - 1,
+		end1=end(gr),
+		chrom2=seqnames(partner(gr)),
+		start2=start(partner(gr)) - 1,
+		end2=end(partner(gr)),
+		name=names(gr),
+		score=gr$QUAL,
+		strand1=strand(gr),
+		strand2=strand(partner(gr))
+	)
+	bedpe <- bedpe[str_detect(bedpe$name, "gridss.+o"),]
+	return(bedpe)
+}
 #' Extracts the breakpoint sequence.
 #'
 #' @details
