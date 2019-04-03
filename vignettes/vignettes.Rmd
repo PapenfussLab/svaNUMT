@@ -20,7 +20,7 @@ knitr::opts_chunk$set(#echo = TRUE,
 ```
 
 ## Introduction
-This vignette outlines a workflow of annoating and filtering structural variant from Variant Call Format (VCF) **REF** using the *StructuralVariantAnnotation* package. *StructuralVariantAnnotation* contains useful helper functions for reading and interpreting structural variants calls. The packages contains functions for parsing VCFs from a number of popular caller as well as functions for dealing with breakpoints involving two separate genomic loci encoded as GRanges objects. 
+This vignette outlines a workflow of parsing and plotting structural variants from Variant Call Format (VCF) using the `StructuralVariantAnnotation` package. `StructuralVariantAnnotation` contains useful helper functions for reading and interpreting structural variants calls. The packages contains functions for parsing VCFs from a number of popular caller as well as functions for dealing with breakpoints involving two separate genomic loci encoded as `GRanges` objects. 
 
 ## Installation
 
@@ -33,13 +33,12 @@ BiocManager::install("StructuralVariantAnnotation")
 ```
 
 ## Workflow
-### Data import and filtering
+### Data preparation and filtering
 VCF data is parsed into a `VCF` object using `readVCF` function from Bioconductor package `VariantAnnotation`. Details of `VCF` objects can be found by `browseVignettes("VariantAnnotation")`.
 ```{r, warning=FALSE, message=FALSE}
 library(VariantAnnotation)
-library(StructuralVariantAnnotation)
 vcf.file <- system.file("extdata", "gridss.vcf", package = "StructuralVariantAnnotation")
-vcf <- readVcf(vcf.file, "hg19")
+vcf <- VariantAnnotation::readVcf(vcf.file, "hg19")
 vcf
 ```
 
@@ -54,10 +53,11 @@ loh_vcf <- vcf[geno(vcf)$QUAL[,"tumour.bam"] == 0,]
 ```
 
 ### Converting SV calls to GRanges
-The package employs `GRanges` object for storage of breakends. Function `breakpointRanges()` converts SVs in a VCF to GRanges with one entry per breakend. A breakend on the '+' strand indicates a break immediately after the given position, and on the '-' strand indicates a break immediately before the given position. Unpaired variants are removed at this stage.
+The package employs `GRanges` objects for storage of breakends. Function `breakpointRanges()` converts SVs in a VCF to GRanges with one entry per breakend. A breakend on the '+' strand indicates a break immediately after the given position, and on the '-' strand indicates a break immediately before the given position. Unpaired variants are removed at this stage.
 
 ```{r}
 #converting VCF object 'vcf' to GRanges object 'gr'
+suppressPackageStartupMessages(library(StructuralVariantAnnotation))
 gr <- breakpointRanges(vcf)
 gr
 ```
@@ -99,21 +99,8 @@ partner(gr)
 The package supports converting GRanges objects to BEDPE files. The BEDPE format is defined by [`bedtools`](https://bedtools.readthedocs.io/en/latest/content/general-usage.html).
 
 ```{r}
-suppressPackageStartupMessages(library(stringr))
-#breakpoint2bedpe(gr)
-bedpe <- data.frame(
-    chrom1=seqnames(gr),
-    start1=start(gr) - 1,
-    end1=end(gr),
-    chrom2=seqnames(partner(gr)),
-    start2=start(partner(gr)) - 1,
-    end2=end(partner(gr)),
-    name=names(gr),
-    score=gr$QUAL,
-    strand1=strand(gr),
-    strand2=strand(partner(gr))
-    )
-bedpe <- bedpe[str_detect(bedpe$name, "gridss.+o"),]
+#suppressPackageStartupMessages(library(stringr))
+bedpe <- breakpointgr2bedpe(gr)
 bedpe
 write.table(bedpe, file="gridss.bedpe", quote=FALSE, sep='\t', row.names=FALSE, col.names=FALSE)
 ```
@@ -129,13 +116,28 @@ bedpe.gr
 
 ### Visualising breakpoint pairs via circos plots
 
-One way of visualising paired breakpoints is by circos plots. Here we use package `circlize` to demonstrate breakpoint visualisation.
+One way of visualising paired breakpoints is by circos plots. Here we use package [`circlize`](https://doi.org/10.1093/bioinformatics/btu393) to demonstrate breakpoint visualisation. The `bedpe2circos` function takes BEDPE-formatted dataframes (see `breakpointgr2bedpe()`) and plotting parameters for `circos.initializeWithIdeogram()` and `circos.genomicLink()` functions from `circlize`.
+
+To generate a simple circos plot of paired breakpoints:
 ```{r}
-library(circlize)
-bed1<-bedpe[,1:3]
-bed2<-bedpe[,4:6]
-circos.initializeWithIdeogram(species = 'hg19')
-circos.genomicLink(bed1, bed2)
+bedpe2circos(bedpe)
+```
+
+If you'd like to add extra circular plots on the circos plot, you can do:
+```{r}
+suppressPackageStartupMessages(library(circlize))
+bedpe2circos(bedpe)
+circos.genomicLink(bedpe[,4:6], bedpe[,4:6])
+circos.clear()
+```
+Alternatively, you can save the code chunk as an object and call it later:
+```{r}
+suppressPackageStartupMessages(library(pryr))
+circos.plot %<a-% bedpe2circos(bedpe, chromosome.index= paste0('chr',c(1,12)))
+#some other code
+circos.plot
+circos.genomicLink(bedpe[,4:6], bedpe[,4:6])
+circos.clear()
 ```
 
 
