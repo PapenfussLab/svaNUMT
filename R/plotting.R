@@ -1,4 +1,4 @@
-#' Converts a breakpoint GRanges to a BEDPE-formatted data frame
+#' \code{breakpointgr2bedpe} Converts a breakpoint GRanges to a BEDPE-formatted data frame
 #' @param gr GRanges object
 #'
 #' @return BEDPE-formatted data frame
