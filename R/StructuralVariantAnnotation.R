@@ -23,6 +23,9 @@
 #'    * Generate BEDPE files for circos plot with `breakpointgr2bedpe()` function.
 #'    * ...
 #'
-#'    For more details on the features of StructuralVariantAnnotation, read the vignette:
-#'    `browseVignettes(package = "StructuralVariantAnnotation")`
-"_PACKAGE"
+#' For more details on the features of StructuralVariantAnnotation, read the vignette:
+#' `browseVignettes(package = "StructuralVariantAnnotation")`
+#'
+#' @docType package
+#' @name StructuralVariantAnnotation
+NULL
