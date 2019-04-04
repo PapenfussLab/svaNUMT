@@ -19,8 +19,8 @@ breakpointgr2bedpe <- function(gr){
 	)
 	l <- mapply(c, bedpe$name, bedpe$partner.name, SIMPLIFY = FALSE)
 	ll <- mapply(sort, l, SIMPLIFY = FALSE)
-	bedpe <- bedpe %>% mutate(pair = as.character(ll)) %>%
-		distinct(pair,.keep_all = TRUE) %>% select(-c('partner.name','pair'))
+	bedpe <- bedpe %>% dplyr::mutate(pair = as.character(ll)) %>%
+		dplyr::distinct(pair,.keep_all = TRUE) %>% dplyr::select(-c('partner.name','pair'))
 	#bedpe <- bedpe[stringr::str_detect(bedpe$name, "gridss.+o"),]
 	return(bedpe)
 }

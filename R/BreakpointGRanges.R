@@ -102,7 +102,7 @@ countBreakpointOverlaps <- function(querygr, subjectgr, countOnlyBest=FALSE, bre
 	if (!countOnlyBest) {
 		hits <- hits %>%
 	      dplyr::group_by(queryHits) %>%
-	      dplyr::summarise(n=n())
+	      dplyr::summarise(n=dplyr::n())
 	} else {
 		# assign supporting evidence to the call with the highest QUAL
 		hits$QUAL <- mcols(querygr)[[breakpointScoreColumn]][hits$queryHits]

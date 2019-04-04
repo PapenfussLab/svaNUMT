@@ -1,17 +1,19 @@
 ---
 title: "StructuralVariantAnnotation Quick Overview"
 author: "Ruining Dong"
-# date: "17/02/2019"
-# output:
-#   html_document:
-#     df_print: paged
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Vignette Title}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    toc: yes
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+vignette: |
+  %\VignetteIndexEntry{Vignette Title} %\VignetteEngine{knitr::rmarkdown} %\VignetteEncoding{UTF-8}
 ---
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(#echo = TRUE,
@@ -26,16 +28,24 @@ This vignette outlines a workflow of parsing and plotting structural variants fr
 
 The *StructuralVariationAnnotation* package can be loaded from *Bioconductor* as follows:
 
-```{r, eval=FALSE}
+```{r installation, eval=FALSE}
 if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install("StructuralVariantAnnotation")
 ```
 
+## Breakpoint notation revisited
+The [VCF standard](https://samtools.github.io/hts-specs/VCFv4.3.pdf) describes two types of SV notations. One is by SV types, i.e. insertions, deletions, inversions, translocations, etc. The other is by breakend notations, often labelled with `SVTYPE=BND`. To describe a SV with breakend notations, each SV has two positions, each captured by one breakend (except for inversions, which has 4 separate records). Each breakend includes a genomic locus, as well as a half interval extending out to the partner breakend. In VCF BND notations, the `ALT` field encodes directional information of the partner breakend.
+
+* 1	200	.	N	N[5:500[	partner breakend immediately after chr1:200, starting from chr5:500 and extending rightwards
+* 1	200	.	N	]5:500]N	partner breakend immediately before chr1:200, extending from the left and ending at chr5:500
+* 1	200	.	N	[5:500[N	partner breakend immediately before chr1:200, starting from chr5:500 and extending rightwards
+* 1	200	.	N	N]5:500]	partner breakend immediately after chr1:200, extending from the left and ending at chr5:500
+
 ## Workflow
 ### Data preparation and filtering
 VCF data is parsed into a `VCF` object using `readVCF` function from Bioconductor package `VariantAnnotation`. Details of `VCF` objects can be found by `browseVignettes("VariantAnnotation")`.
-```{r, warning=FALSE, message=FALSE}
+```{r input, warning=FALSE, message=FALSE}
 library(VariantAnnotation)
 vcf.file <- system.file("extdata", "gridss.vcf", package = "StructuralVariantAnnotation")
 vcf <- VariantAnnotation::readVcf(vcf.file, "hg19")
@@ -43,7 +53,7 @@ vcf
 ```
 
 Simple filters could be applied to a `VCF` object to remove unwanted calls.
-```{r, warning=FALSE,message=FALSE}
+```{r vcf.filter, warning=FALSE,message=FALSE}
 # filter out low quality calls
 hq_vcf <- vcf[rowRanges(vcf)$FILTER %in% c(".", "PASS"),]
 # somatic calls have no support in the normal
@@ -55,7 +65,7 @@ loh_vcf <- vcf[geno(vcf)$QUAL[,"tumour.bam"] == 0,]
 ### Converting SV calls to GRanges
 The package employs `GRanges` objects for storage of breakends. Function `breakpointRanges()` converts SVs in a VCF to GRanges with one entry per breakend. A breakend on the '+' strand indicates a break immediately after the given position, and on the '-' strand indicates a break immediately before the given position. Unpaired variants are removed at this stage.
 
-```{r}
+```{r breakpointRanges}
 #converting VCF object 'vcf' to GRanges object 'gr'
 suppressPackageStartupMessages(library(StructuralVariantAnnotation))
 gr <- breakpointRanges(vcf)
@@ -65,7 +75,7 @@ gr
 
 ### Exploring breakpoints
 
-`findBreakpointOverlaps()` and `countBreakpointOverlaps()` are functions for finding and counting overlaps between GRanges objects, equivalent of `findOverlaps()` and `countOverlaps()`. All breakends must have their partner breakend included in the GRanges. A valid overlap requires that breakends on boths sides overlap.
+`findBreakpointOverlaps()` and `countBreakpointOverlaps()` are functions for finding and counting overlaps between breakpoint objects. All breakends must have their partner breakend included in the GRanges. A valid overlap requires that breakends on boths sides overlap.
 
 <!-- **EXAMPLE HERE FOR GENE OVERLAP** -->
 <!-- # ```{r, warning=FALSE, message=FALSE} -->
@@ -78,17 +88,20 @@ gr
 
 To demonstrate `findBreakpointOverlaps()` function, we construct a toy `GRanges` object `region.gr` using two partnered breakpoints from `gr`. The output matrix reports the index of overlapping breakpoints (`queryHits` and `subjectHits`), and overlapping distances (`sizeerror`, `localbperror` and `remotebperror`). 
 ```{r}
+#load `plyranges` for GRanges modification
+suppressPackageStartupMessages(library(plyranges))
+#toy GRanges `region.gr`
+region.gr <- gr[2:3,]  %>% mutate(end=end+5) %>% mutate(start=start+5)
 # event sizes must be within sizemargin
-region.gr <- gr[2:3,]
 findBreakpointOverlaps(gr, region.gr)
 ```
 `countBreakpointOverlaps` reports count of overlaps for each breakpoint.
 ```{r}
-suppressPackageStartupMessages(library(dplyr))
+#suppressPackageStartupMessages(library(dplyr))
 countBreakpointOverlaps(gr, region.gr)
 ```
 
-`partner()` returns partner breakend for each breakend.
+`partner()` returns a `GRanges` object, in which each entry is the partner breakend of those in `gr`.
 ```{r}
 partner(gr)
 ```
@@ -99,13 +112,12 @@ partner(gr)
 The package supports converting GRanges objects to BEDPE files. The BEDPE format is defined by [`bedtools`](https://bedtools.readthedocs.io/en/latest/content/general-usage.html).
 
 ```{r}
-#suppressPackageStartupMessages(library(stringr))
 bedpe <- breakpointgr2bedpe(gr)
 bedpe
 write.table(bedpe, file="gridss.bedpe", quote=FALSE, sep='\t', row.names=FALSE, col.names=FALSE)
 ```
 
-BEDPE files can be imported to GRanges objects in R via `bedpe2breakpointgr`.
+BEDPE files can be imported as GRanges objects via `bedpe2breakpointgr()`.
 ```{r}
 bedpe.gr <- bedpe2breakpointgr('gridss.bedpe')
 bedpe.gr
@@ -114,7 +126,7 @@ bedpe.gr
 
 
 
-### Visualising breakpoint pairs via circos plots
+## Visualising breakpoint pairs via circos plots
 
 One way of visualising paired breakpoints is by circos plots. Here we use package [`circlize`](https://doi.org/10.1093/bioinformatics/btu393) to demonstrate breakpoint visualisation. The `bedpe2circos` function takes BEDPE-formatted dataframes (see `breakpointgr2bedpe()`) and plotting parameters for `circos.initializeWithIdeogram()` and `circos.genomicLink()` functions from `circlize`.
 
@@ -145,15 +157,3 @@ circos.clear()
 ```{r}
 sessionInfo()
 ```
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
-
-
-bedpe2breakpointgr , breakendRanges, breakpointRanges, countBreakpointOverlaps, findBreakpointOverlaps, partner, isStructural, isSymbolic, pairs2breakpointgr
