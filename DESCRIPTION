@@ -16,7 +16,8 @@ License: GPL-3
 Depends:
 	GenomicRanges,
 	rtracklayer,
-    VariantAnnotation
+  VariantAnnotation,
+  BiocGenerics
 Imports:
     assertthat,
     Biostrings,
@@ -28,6 +29,12 @@ Suggests:
     testthat,
     roxygen2,
     covr,
-    knitr
+    knitr,
+    plyranges,
+    dplyr,
+    ggbio,
+    biovizBase,
+    circlize
 RoxygenNote: 6.1.1
 VignetteBuilder: knitr
+biocViews: DataImport, Sequencing, Annotation, Genetics, VariantAnnotation

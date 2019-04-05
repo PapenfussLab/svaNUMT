@@ -9,7 +9,7 @@ output:
       collapsed: yes
       smooth_scroll: yes
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{Structural Variant Annotation Package}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -146,19 +146,19 @@ indicating the end of the link using GRanges format, which we can add to `gr` us
 [`plyranges`](https://bioconductor.org/packages/release/bioc/html/plyranges.html).
 ```{r add to.gr}
 suppressPackageStartupMessages(library(plyranges))
+suppressPackageStartupMessages(library(ggbio))
 seqlevels(gr)<-sub(pattern = 'chr', replacement = '', seqlevels(gr))
 gr.circos <- gr %>% 
 	mutate(to.gr=GRanges(seqnames(partner(gr)),ranges(partner(gr))))
-seqlevels(gr.circos)<-seqlevels(hg19sub)
+seqlevels(gr.circos)<-seqlevels(biovizBase::hg19sub)
 ```
 We can then plot the breakpoints agains referece genomes.
 ```{r ggbio}
-suppressPackageStartupMessages(library(ggbio))
 p <- ggbio() +
 	circle(gr.circos, geom="link", linked.to="to.gr") +
-	circle(hg19sub, geom='ideo', fill='gray70') +
-	circle(hg19sub, geom='scale', size=2) +
-	circle(hg19sub, geom='text', aes(label=seqnames), vjust=0, size=3)
+	circle(biovizBase::hg19sub, geom='ideo', fill='gray70') +
+	circle(biovizBase::hg19sub, geom='scale', size=2) +
+	circle(biovizBase::hg19sub, geom='text', aes(label=seqnames), vjust=0, size=3)
 p
 ```
 

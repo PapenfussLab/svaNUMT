@@ -23,7 +23,6 @@
 #' @name StructuralVariantAnnotation
 #' @import assertthat
 #' @import BiocGenerics
-#' @import circlize
 #' @import VariantAnnotation
 #' @import stringr
 
