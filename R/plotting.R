@@ -25,9 +25,8 @@ breakpointgr2bedpe <- function(gr){
 		partner.name=names(partner(gr)),
 		score=gr$QUAL,
 		strand1=strand(gr),
-		strand2=strand(partner(gr))
-	)
-	bedpe[(as.character(bedpe$chrom1)<as.character(bedpe$chrom2)) |
+		strand2=strand(partner(gr)))
+	bedpe <- bedpe[(as.character(bedpe$chrom1)<as.character(bedpe$chrom2)) |
 		  	(bedpe$chrom1==bedpe$chrom2 & bedpe$start1<bedpe$start2),-c(8)]
 	return(bedpe)
 }

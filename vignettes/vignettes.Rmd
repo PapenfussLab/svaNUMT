@@ -3,16 +3,14 @@ title: "StructuralVariantAnnotation Quick Overview"
 author: "Ruining Dong"
 date: "`r Sys.Date()`"
 output:
-  pdf_document:
-    toc: yes
   html_document:
     toc: yes
     toc_float:
       collapsed: yes
       smooth_scroll: yes
-vignette:
-  %\VignetteIndexEntry{Vignette Title} 
-  %\VignetteEngine{knitr::rmarkdown} 
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
@@ -46,7 +44,10 @@ The [VCF standard](https://samtools.github.io/hts-specs/VCFv4.3.pdf) describes t
 
 ## Workflow
 ### Data preparation and filtering
-VCF data is parsed into a `VCF` object using `readVCF` function from Bioconductor package `VariantAnnotation`. Details of `VCF` objects can be found by `browseVignettes("VariantAnnotation")`.
+VCF data is parsed into a `VCF` object using `readVCF` function from 
+Bioconductor package `VariantAnnotation`. Simple filters could be applied to a 
+`VCF` object to remove unwanted calls.Details of `VCF` objects can be found by 
+`browseVignettes("VariantAnnotation")`.
 ```{r input, warning=FALSE, message=FALSE}
 library(VariantAnnotation)
 vcf.file <- system.file("extdata", "gridss.vcf", package = "StructuralVariantAnnotation")
@@ -54,18 +55,15 @@ vcf <- VariantAnnotation::readVcf(vcf.file, "hg19")
 vcf
 ```
 
-Simple filters could be applied to a `VCF` object to remove unwanted calls.
-```{r vcf.filter, warning=FALSE,message=FALSE}
-# filter out low quality calls
-hq_vcf <- vcf[rowRanges(vcf)$FILTER %in% c(".", "PASS"),]
-# somatic calls have no support in the normal
-somatic_vcf <- vcf[geno(vcf)$QUAL[,"normal.bam"] == 0,]
-# somatic loss of heterozygosity has no support in the tumour
-loh_vcf <- vcf[geno(vcf)$QUAL[,"tumour.bam"] == 0,]
-```
-
 ### Converting SV calls to GRanges
-The package employs `GRanges` objects for storage of breakends. Function `breakpointRanges()` converts SVs in a VCF to GRanges with one entry per breakend. A breakend on the '+' strand indicates a break immediately after the given position, and on the '-' strand indicates a break immediately before the given position. Unpaired variants are removed at this stage.
+The package employs `GRanges` objects for storage of breakends. Function 
+`breakpointRanges()` converts SVs in a VCF to GRanges with one entry per 
+breakend. A breakend on the '+' strand indicates a break immediately after the 
+given position, to the left of which is the DNA segment involved in the 
+breakpoint. The '-' strand indicates a break immediately before the given 
+position, rightwards of which is the DNA segment involved in the breakpoint. 
+Unpaired variants are removed at this stage. Leftward of the '+' strand is the 
+breakpoint involved.
 
 ```{r breakpointRanges}
 #converting VCF object 'vcf' to GRanges object 'gr'
@@ -78,15 +76,6 @@ gr
 ### Exploring breakpoints
 
 `findBreakpointOverlaps()` and `countBreakpointOverlaps()` are functions for finding and counting overlaps between breakpoint objects. All breakends must have their partner breakend included in the GRanges. A valid overlap requires that breakends on boths sides overlap.
-
-<!-- **EXAMPLE HERE FOR GENE OVERLAP** -->
-<!-- # ```{r, warning=FALSE, message=FALSE} -->
-<!-- # library(dplyr) -->
-<!-- # library(plyranges) -->
-<!-- # region.gr <- data.frame(seqnames=c('chr12','chr12'),start=c(84350,4886681),end=c(84350,4886681),strand=c('-','+'), vcfID=c('gridss100o','gridss100h'), partner=c('gridss100h','gridss100o')) %>% as_granges() -->
-<!-- # region.gr <- setNames(region.gr, c('gridss100o','gridss100h')) -->
-<!-- # region.gr -->
-<!-- # ``` -->
 
 To demonstrate `findBreakpointOverlaps()` function, we construct a toy `GRanges` object `region.gr` using two partnered breakpoints from `gr`. The output matrix reports the index of overlapping breakpoints (`queryHits` and `subjectHits`), and overlapping distances (`sizeerror`, `localbperror` and `remotebperror`). 
 ```{r}
@@ -116,12 +105,14 @@ The package supports converting GRanges objects to BEDPE files. The BEDPE format
 ```{r}
 bedpe <- breakpointgr2bedpe(gr)
 bedpe
+#save bedpe as a tabulated text file
 write.table(bedpe, file="gridss.bedpe", quote=FALSE, sep='\t', row.names=FALSE, col.names=FALSE)
 ```
 
 BEDPE files can be imported as GRanges objects via `bedpe2breakpointgr()`.
 ```{r}
-bedpe.gr <- bedpe2breakpointgr('gridss.bedpe')
+bedpe.file <- 'gridss.bedpe'
+bedpe.gr <- bedpe2breakpointgr(bedpe.file)
 bedpe.gr
 ```
 
@@ -130,30 +121,46 @@ bedpe.gr
 
 ## Visualising breakpoint pairs via circos plots
 
-One way of visualising paired breakpoints is by circos plots. Here we use package [`circlize`](https://doi.org/10.1093/bioinformatics/btu393) to demonstrate breakpoint visualisation. The `bedpe2circos` function takes BEDPE-formatted dataframes (see `breakpointgr2bedpe()`) and plotting parameters for `circos.initializeWithIdeogram()` and `circos.genomicLink()` functions from `circlize`.
+One way of visualising paired breakpoints is by circos plots. Here we use package 
+[`circlize`](https://doi.org/10.1093/bioinformatics/btu393) to demonstrate 
+breakpoint visualisation. The `bedpe2circos` function takes BEDPE-formatted 
+dataframes (see `breakpointgr2bedpe()`) and plotting parameters for 
+`circos.initializeWithIdeogram()` and `circos.genomicLink()` functions 
+from `circlize`.
 
 To generate a simple circos plot of paired breakpoints:
 ```{r}
-bedpe2circos(bedpe)
-```
-
-If you'd like to add extra circular plots on the circos plot, you can do:
-```{r}
 suppressPackageStartupMessages(library(circlize))
-bedpe2circos(bedpe)
-circos.genomicLink(bedpe[,4:6], bedpe[,4:6])
-circos.clear()
-```
-Alternatively, you can save the code chunk as an object and call it later:
-```{r}
-suppressPackageStartupMessages(library(pryr))
-circos.plot %<a-% bedpe2circos(bedpe, chromosome.index= paste0('chr',c(1,12)))
-#some other code
-circos.plot
-circos.genomicLink(bedpe[,4:6], bedpe[,4:6])
+circos.initializeWithIdeogram()
+circos.genomicLink(bedpe[,1:3], bedpe[,4:6])
 circos.clear()
 ```
 
+Alternatively, plotting package such as `ggbio()` provides flexible tracks 
+function which binds
+with `ggplot2()` objects. It takes `GRanges` objects as input and support circos
+plots.
+To plot structural variant breakpoints in a circos plot using `ggbio`, we need
+to first prepare the breakpoint GRanges. The function requires a sepecial column,
+indicating the end of the link using GRanges format, which we can add to `gr` using
+[`plyranges`](https://bioconductor.org/packages/release/bioc/html/plyranges.html).
+```{r add to.gr}
+suppressPackageStartupMessages(library(plyranges))
+seqlevels(gr)<-sub(pattern = 'chr', replacement = '', seqlevels(gr))
+gr.circos <- gr %>% 
+	mutate(to.gr=GRanges(seqnames(partner(gr)),ranges(partner(gr))))
+seqlevels(gr.circos)<-seqlevels(hg19sub)
+```
+We can then plot the breakpoints agains referece genomes.
+```{r ggbio}
+suppressPackageStartupMessages(library(ggbio))
+p <- ggbio() +
+	circle(gr.circos, geom="link", linked.to="to.gr") +
+	circle(hg19sub, geom='ideo', fill='gray70') +
+	circle(hg19sub, geom='scale', size=2) +
+	circle(hg19sub, geom='text', aes(label=seqnames), vjust=0, size=3)
+p
+```
 
 ## SessionInfo
 ```{r}
