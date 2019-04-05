@@ -278,4 +278,91 @@ test_that("breakendRanges should include breakends", {
 	expect_equal(1, length(gr))
 	expect_equal("GC", gr$insSeq)
 })
+test_that("align_breakpoint should handle all orientations", {
+	noname = function(x) { names(x) = NULL; return(x)}
+	vcf = .testrecord(c(
+		"chr1	1000	a	N	A[chr1:2000[	.	.	SVTYPE=BND;CIPOS=0,4;PARID=b",
+		"chr1	2000	b	N	]chr1:1000]G	.	.	SVTYPE=BND;CIPOS=0,4;PARID=a"))
+	vcf = align_breakpoints(vcf)
+	expect_equal(c(1002, 2002), start(rowRanges(vcf)))
+	expect_equal(c(-2,2, -2,2), noname(unlist(info(vcf)$CIPOS)))
+	expect_equal(c("N[chr1:2002[", "]chr1:1002]N"), unlist(rowRanges(vcf)$ALT))
+	expect_equal(c("+-", "-+"), .vcfAltToStrandPair(rowRanges(vcf)$ALT))
+
+	vcf = .testrecord(c(
+		"chr1	1000	a	N	]chr1:2000]A	.	.	SVTYPE=BND;CIPOS=0,4;PARID=b",
+		"chr1	2000	b	N	G[chr1:1000[	.	.	SVTYPE=BND;CIPOS=0,4;PARID=a"))
+	vcf = align_breakpoints(vcf)
+	expect_equal(c(1002, 2002), start(rowRanges(vcf)))
+	expect_equal(c(-2,2, -2,2), noname(unlist(info(vcf)$CIPOS)))
+	expect_equal(c("]chr1:2002]N", "N[chr1:1002["), unlist(rowRanges(vcf)$ALT))
+	expect_equal(c("-+", "+-"), .vcfAltToStrandPair(rowRanges(vcf)$ALT))
+
+	vcf = .testrecord(c(
+		"chr1	1000	a	N	A]chr1:2000]	.	.	SVTYPE=BND;CIPOS=-4,0;PARID=b",
+		"chr1	2000	b	N	G]chr1:1000]	.	.	SVTYPE=BND;CIPOS=0,4;PARID=a"))
+	vcf = align_breakpoints(vcf)
+	expect_equal(c(998, 2002), start(rowRanges(vcf)))
+	expect_equal(c(-2,2, -2,2), noname(unlist(info(vcf)$CIPOS)))
+	expect_equal(c("N]chr1:2002]", "N]chr1:998]"), unlist(rowRanges(vcf)$ALT))
+	expect_equal(c("++", "++"), .vcfAltToStrandPair(rowRanges(vcf)$ALT))
+
+	vcf = .testrecord(c(
+		"chr1	1000	a	N	[chr1:2000[A	.	.	SVTYPE=BND;CIPOS=-4,0;PARID=b",
+		"chr1	2000	b	N	[chr1:1000[G	.	.	SVTYPE=BND;CIPOS=0,4;PARID=a"))
+	vcf = align_breakpoints(vcf)
+	expect_equal(c(998, 2002), start(rowRanges(vcf)))
+	expect_equal(c(-2,2, -2,2), noname(unlist(info(vcf)$CIPOS)))
+	expect_equal(c("[chr1:2002[N", "[chr1:998[N"), unlist(rowRanges(vcf)$ALT))
+	expect_equal(c("--", "--"), .vcfAltToStrandPair(rowRanges(vcf)$ALT))
+})
+test_that("align_breakpoint centre should ensure odd length homology is consistent on both sides", {
+	noname = function(x) { names(x) = NULL; return(x)}
+	vcf = .testrecord(c(
+		"chr1	1000	a	N	A[chr1:2000[	.	.	SVTYPE=BND;CIPOS=0,5;PARID=b",
+		"chr1	2000	b	N	]chr1:1000]G	.	.	SVTYPE=BND;CIPOS=0,5;PARID=a"))
+	vcf = align_breakpoints(vcf)
+	expect_equal(c(1002, 2002), start(rowRanges(vcf)))
+	expect_equal(c(-2,3, -2,3), noname(unlist(info(vcf)$CIPOS)))
+	expect_equal(c("N[chr1:2002[", "]chr1:1002]N"), unlist(rowRanges(vcf)$ALT))
+
+	vcf = .testrecord(c(
+		"chr1	1000	a	N	]chr1:2000]A	.	.	SVTYPE=BND;CIPOS=0,5;PARID=b",
+		"chr1	2000	b	N	G[chr1:1000[	.	.	SVTYPE=BND;CIPOS=0,5;PARID=a"))
+	vcf = align_breakpoints(vcf)
+	expect_equal(c(1002, 2002), start(rowRanges(vcf)))
+	expect_equal(c(-2,3, -2,3), noname(unlist(info(vcf)$CIPOS)))
+	expect_equal(c("]chr1:2002]N", "N[chr1:1002["), unlist(rowRanges(vcf)$ALT))
+
+	vcf = .testrecord(c(
+		"chr1	1000	a	N	A]chr1:2000]	.	.	SVTYPE=BND;CIPOS=-5,0;PARID=b",
+		"chr1	2000	b	N	G]chr1:1000]	.	.	SVTYPE=BND;CIPOS=0,5;PARID=a"))
+	vcf = align_breakpoints(vcf)
+	expect_equal(c(998, 2002), start(rowRanges(vcf)))
+	expect_equal(c(-3,2, -2,3), noname(unlist(info(vcf)$CIPOS)))
+	expect_equal(c("N]chr1:2002]", "N]chr1:998]"), unlist(rowRanges(vcf)$ALT))
+
+	vcf = .testrecord(c(
+		"chr1	1000	a	N	[chr1:2000[A	.	.	SVTYPE=BND;CIPOS=-5,0;PARID=b",
+		"chr1	2000	b	N	[chr1:1000[G	.	.	SVTYPE=BND;CIPOS=0,5;PARID=a"))
+	vcf = align_breakpoints(vcf)
+	expect_equal(c(998, 2002), start(rowRanges(vcf)))
+	expect_equal(c(-3,2, -2,3), noname(unlist(info(vcf)$CIPOS)))
+	expect_equal(c("[chr1:2002[N", "[chr1:998[N"), unlist(rowRanges(vcf)$ALT))
+})
+test_that("align_breakpoint should not touch other variants", {
+	vcf = .testrecord(c(
+		"chr1	1000	be1	N	AGT.	.	.	SVTYPE=BND;CIPOS=-5,0",
+		"chr1	1000	b21	N	.AGT	.	.	SVTYPE=BND;CIPOS=-5,0",
+		"chr1	1000	b21	N	<DEL>	.	.	SVTYPE=DEL;CIPOS=-5,0"))
+	vcf = align_breakpoints(vcf)
+	expect_equal(c("AGT.", ".AGT", "<DEL>"), unlist(rowRanges(vcf)$ALT))
+})
+
+
+
+
+
+
+
 

@@ -118,8 +118,12 @@ setMethod("breakpointRanges", "VCF",
 #'    any homology present).
 #' @param prefix variant name prefix to assign to unnamed variants
 #' @param suffix suffix to append
+#' @param unpartneredBreakends determines whether to return single breakend calls, or breakpoint calls
+#' @param add_inferred_breakends add missing breakend for any breakpoints which include only a single breakend.
+#' Note that the VCF specifications require both breakends to be reported and calls in breakend notation
+#' that include only a single breakend are not technically VCF compliant.
 #' @param info_columns VCF INFO columns to include in the GRanges object
-.breakpointRanges <- function(vcf, nominalPosition=FALSE, placeholderName="svrecord", suffix="_bp", info_columns=NULL, unpartneredBreakends=FALSE) {
+.breakpointRanges <- function(vcf, nominalPosition=FALSE, placeholderName="svrecord", suffix="_bp", info_columns=NULL, unpartneredBreakends=FALSE, add_inferred_breakends=FALSE) {
 	vcf <- vcf[isStructural(vcf),]
 	assertthat::assert_that(.hasSingleAllelePerRecord(vcf))
 	# VariantAnnotation bug: SV row names are not unique
@@ -308,11 +312,12 @@ setMethod("breakpointRanges", "VCF",
 		if (!unpartneredBreakends) {
 			cvcf <- vcf[rows,]
 
-			bndMatches <- stringr::str_match(cgr$ALT, "(.*)(\\[|])(.*)(\\[|])(.*)")
+			bndMatches <- stringr::str_match(cgr$ALT, "(.*)(\\[|])(.*):([0-9]+)(\\[|])(.*)")
 			preBases <- bndMatches[,2]
 			bracket <- bndMatches[,3]
-			remoteLocation <- bndMatches[,4]
-			postBases <- bndMatches[,6]
+			remoteChr <- bndMatches[,4]
+			remotePos <- bndMatches[,5]
+			postBases <- bndMatches[,7]
 			strand(cgr) <- ifelse(preBases == "", "-", "+")
 
 			cgr$partner <- NA_character_
@@ -330,10 +335,19 @@ setMethod("breakpointRanges", "VCF",
 			cgr$insSeq <- paste0(stringr::str_sub(preBases, reflen + 1), stringr::str_sub(postBases, end=-(reflen + 1)))
 			cgr$insLen <- nchar(cgr$insSeq)
 
-			toRemove <- is.na(cgr$partner) | !(cgr$partner %in% names(cgr))
-			if (any(toRemove)) {
-				warning(paste("Removing", sum(toRemove), "unpaired breakend variants", paste0(names(cgr)[toRemove], collapse=", ")))
-				cgr <- cgr[!toRemove,]
+			missingPartner <- is.na(cgr$partner) | !(cgr$partner %in% names(cgr))
+			if (any(missingPartner)) {
+				if (add_inferred_breakends) {
+					inferredgr = cgr[missingPartner]
+					inferredgr$partner = names(cgr[missingPartner])
+					names(inferredgr) = paste0("inferred_", names(inferredgr))
+					cgr[missingPartner]$partner = names(inferredgr)
+					seqnames(inferredgr) = remoteChr
+					start(inferredgr) = remotePos
+				} else {
+					warning(paste("Removing", sum(missingPartner), "unpaired breakend variants", paste0(names(cgr)[missingPartner], collapse=", ")))
+					cgr <- cgr[!missingPartner,]
+				}
 			}
 			mategr <- cgr[cgr$partner,]
 			cgr$svLen <- ifelse(seqnames(cgr)==seqnames(mategr), abs(start(cgr) - start(mategr)) - 1, NA_integer_)
@@ -500,5 +514,69 @@ setMethod("breakendRanges", "VCF",
 	row <- info(header(vcf))[field,]
 	assertthat::assert_that(number == row$Number)
 	assertthat::assert_that(type == row$Type)
+}
+
+#' Adjusts the nominal position of a breakpoints
+align_breakpoints <- function(vcf, align=c("centre"), is_higher_breakend=names(vcf) < info(vcf)$PARID) {
+	if (length(vcf) == 0) {
+		return(vcf)
+	}
+	align = match.arg(align)
+	if (!all(elementNROWS(info(vcf)$CIPOS) == 2)) {
+		stop("CIPOS not specified for all variants.")
+	}
+	is_higher_breakend[is.na(is_higher_breakend)] = FALSE
+	nominal_start = start(rowRanges(vcf))
+	cipos = t(matrix(unlist(info(vcf)$CIPOS), nrow=2))
+	ciwdith = cipos[,2] - cipos[,1]
+	orientations = .vcfAltToStrandPair(rowRanges(vcf)$ALT)
+	if (align == "centre") {
+		citargetpos = nominal_start + cipos[,1] + ciwdith / 2.0
+		adjust_by = citargetpos - nominal_start
+		adjust_in_opposite_direction_to_partner = orientations %in% c("--", "++")
+		adjust_by = ifelse(is_higher_breakend & adjust_in_opposite_direction_to_partner, ceiling(adjust_by), floor(adjust_by))
+	} else {
+		stop("Only centre alignment is currently implemented.")
+	}
+	isbp = str_detect(VariantAnnotation::fixed(vcf)$ALT, "[\\]\\[]")
+	is_adjusted_bp =  isbp & !is.na(adjust_by) & adjust_by != 0
+	rowRanges(vcf) = shift(rowRanges(vcf), ifelse(!is_adjusted_bp, 0, adjust_by))
+	info(vcf)$CIPOS = info(vcf)$CIPOS - adjust_by
+	if (!is.null(info(vcf)$CIEND)) {
+		info(vcf)$CIEND = info(vcf)$CIEND - adjust_by
+	}
+	if (!is.null(info(vcf)$IHOMPOS)) {
+		info(vcf)$IHOMPOS = info(vcf)$IHOMPOS - adjust_by
+	}
+	alt = unlist(rowRanges(vcf)$ALT)
+	partner_alt = stringr::str_match(alt, "^([^\\]\\[]*)[\\]\\[]([^:]+):([0-9]+)([\\]\\[])([^\\]\\[]*)$")
+	# [,2] anchoring bases
+	# [,3] partner chr
+	# [,4] old partner position
+	partner_pos = ifelse(is.na(partner_alt[,4]), NA_integer_, as.integer(partner_alt[,4])) + ifelse(adjust_in_opposite_direction_to_partner, -adjust_by, adjust_by)
+	# [,5] partner orientation
+	# [,6] anchoring bases
+	# adjust ALT for breakpoints. anchoring bases get replaced with N since we don't know
+	VariantAnnotation::fixed(vcf)$ALT = as(ifelse(!is_adjusted_bp, alt,
+		paste0(
+			str_pad("", stringr::str_length(partner_alt[,2]), pad="N"),
+			partner_alt[,5],
+			partner_alt[,3],
+			":",
+			partner_pos,
+			partner_alt[,5],
+			str_pad("", stringr::str_length(partner_alt[,6]), pad="N"))), "CharacterList")
+	info(vcf)$CIRPOS = NULL # TODO: remove CIRPOS from GRIDSS entirely
+	return(vcf)
+}
+.vcfAltToStrandPair = function(alt) {
+	chralt = unlist(alt)
+	ifelse(startsWith(chralt, "."), "-",
+		   ifelse(endsWith(chralt, "."), "+",
+		   	   ifelse(startsWith(chralt, "]"), "-+",
+		   	   	   ifelse(startsWith(chralt, "["), "--",
+		   	   	   	   ifelse(endsWith(chralt, "]"), "++",
+		   	   	   	   	   ifelse(endsWith(chralt, "["), "+-", ""))))))
+
 }
 
