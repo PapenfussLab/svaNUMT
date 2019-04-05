@@ -1,18 +1,6 @@
 ---
 title: "StructuralVariantAnnotation Quick Overview"
 author: "Ruining Dong"
-<<<<<<< HEAD
-date: "17/02/2019"
-output: pdf_document
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-## Introduction
-This vignette outlines a workflow of annoating and filtering structural variant from Variant Call Format (VCF) **REF** using the *StructuralVariantAnnotation* package. *StructuralVariantAnnotation* contains useful helper functions for reading and interpreting structural variants calls. The packages contains functions for parsing VCFs from a number of popular caller as well as functions for dealing with breakpoints involving two separate genomic loci encoded as GRanges objects. 
-=======
 date: "`r Sys.Date()`"
 output:
   pdf_document:
@@ -23,7 +11,9 @@ output:
       collapsed: yes
       smooth_scroll: yes
 vignette: |
-  %\VignetteIndexEntry{Vignette Title} %\VignetteEngine{knitr::rmarkdown} %\VignetteEncoding{UTF-8}
+  %\VignetteIndexEntry{Vignette Title} 
+  %\VignetteEngine{knitr::rmarkdown} 
+  %\VignetteEncoding{UTF-8}
 ---
 
 
@@ -35,77 +25,17 @@ knitr::opts_chunk$set(#echo = TRUE,
 
 ## Introduction
 This vignette outlines a workflow of parsing and plotting structural variants from Variant Call Format (VCF) using the `StructuralVariantAnnotation` package. `StructuralVariantAnnotation` contains useful helper functions for reading and interpreting structural variants calls. The packages contains functions for parsing VCFs from a number of popular caller as well as functions for dealing with breakpoints involving two separate genomic loci encoded as `GRanges` objects. 
->>>>>>> 3751da9f4b2255a75c1307a0dd8678bf4e664bd0
 
 ## Installation
 
 The *StructuralVariationAnnotation* package can be loaded from *Bioconductor* as follows:
 
-<<<<<<< HEAD
-```{r, eval=FALSE}
-=======
 ```{r installation, eval=FALSE}
->>>>>>> 3751da9f4b2255a75c1307a0dd8678bf4e664bd0
 if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install("StructuralVariantAnnotation")
 ```
 
-<<<<<<< HEAD
-## Workflow
-### Reading VCF file
-### Converting SV calls
-The package employs *GRanges* object for storage of breakends. Function `breakpointRanges()` converts SVs in a VCF to GRanges with one entry per breakend. A breakend on the '+' strand indicates a break immediately after the given position, and on the '-' strand indicates a break immediately before the given position. Unpaired variants are removed at this stage.
-
-```{r}
-library(VariantAnnotation)
-library(StructuralVariantAnnotation)
-#parsing VCF 'gridss.vcf' as 'vcf' with hg19 reference genome
-vcf.file <- system.file('extdata','gridss.vcf',package='StructuralVariantAnnotation')
-vcf <- readVcf(vcf.file, "hg19")
-#converting 'vcf' to GRanges 'gr'
-gr <- breakpointRanges(vcf)
-```
-
-### Interpreting breakpoints
-
-`findBreakpointOverlaps()` and `countBreakpointOverlaps()` are functions for finding and counting overlaps between GRanges objects, equivalent of `findOverlaps()` and `countOverlaps()`.
-
-**EXAMPLE HERE FOR GENE OVERLAP**
-
-### Converting between BEDPE files and GRanges
-```{r}
-library(stringr)
-bedpe <- data.frame(
-    chrom1=seqnames(gr),
-    start1=start(gr) - 1,
-    end1=end(gr),
-    chrom1=seqnames(partner(gr)),
-    start2=start(partner(gr)) - 1,
-    end2=end(partner(gr)),
-    name=names(gr),
-    score=gr$QUAL,
-    strand1=strand(gr),
-    strand2=strand(partner(gr))
-    )
-bedpe <- bedpe[str_detect(bedpe$name, "gridss.+o"),]
-```
-# Just the lower of the two breakends so we don't output everything twice
-#bedpe <- bedpe[str_detect(bedpe$name, "gridss.+o"),]
-#write.table(bedpe, "somatic.gridss.hq.somatic.bedpe", quote=FALSE, sep='\t', row.names=FALSE, col.names=FALSE)
-```
-
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
-=======
 ## Breakpoint notation revisited
 The [VCF standard](https://samtools.github.io/hts-specs/VCFv4.3.pdf) describes two types of SV notations. One is by SV types, i.e. insertions, deletions, inversions, translocations, etc. The other is by breakend notations, often labelled with `SVTYPE=BND`. To describe a SV with breakend notations, each SV has two positions, each captured by one breakend (except for inversions, which has 4 separate records). Each breakend includes a genomic locus, as well as a half interval extending out to the partner breakend. In VCF BND notations, the `ALT` field encodes directional information of the partner breakend.
 
@@ -229,3 +159,4 @@ circos.clear()
 ```{r}
 sessionInfo()
 ```
+
