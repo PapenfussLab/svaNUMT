@@ -10,7 +10,7 @@ output:
     toc_float:
       collapsed: yes
       smooth_scroll: yes
-vignette: |
+vignette:
   %\VignetteIndexEntry{Vignette Title} 
   %\VignetteEngine{knitr::rmarkdown} 
   %\VignetteEncoding{UTF-8}
@@ -159,4 +159,3 @@ circos.clear()
 ```{r}
 sessionInfo()
 ```
-
