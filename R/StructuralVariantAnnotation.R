@@ -28,3 +28,8 @@
 #' @import stringr
 
 NULL
+#' @import assertthat
+#' @import BiocGenerics
+#' @import circlize
+#' @import VariantAnnotation
+#' @import stringr

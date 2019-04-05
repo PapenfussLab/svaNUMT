@@ -24,7 +24,6 @@
 #'
 #' @param x list-like object
 #' @param offset offset of list
-#' @export
 setGeneric("elementExtract", function(x, offset=1) standardGeneric("elementExtract"))
 setMethod("elementExtract", "XStringSet", .elementExtract.XStringSet)
 setMethod("elementExtract", "List", .elementExtract.List)
@@ -36,7 +35,6 @@ setMethod(".unXStringSet", "XStringSet", function(x) as.character(x))
 
 
 #' Replaces the NA values in a with corresponding values in b
-#' @export
 '%na%' <- function(a, b) {
 	if (is.null(a) || length(a) == 0) return(b)
 	if (is.null(b) || length(b) == 0) return(a)
@@ -44,7 +42,6 @@ setMethod(".unXStringSet", "XStringSet", function(x) as.character(x))
 }
 
 #' Uses b if a is NULL
-#' @export
 '%null%' <- function(a, b) {
 	if (is.null(a)) return(b)
 	return (a)
@@ -53,8 +50,7 @@ setMethod(".unXStringSet", "XStringSet", function(x) as.character(x))
 #' vectorised pairwise longest common prefix
 #' Returns the length of the longest common prefix for
 #' each string pair
-#' @export
-pairwiseLCPrefix <- function(s1, s2, ignore.case=FALSE) {
+.pairwiseLCPrefix <- function(s1, s2, ignore.case=FALSE) {
 	s1 <- as.character(s1)
 	s2 <- as.character(s2)
 	if (ignore.case) {
