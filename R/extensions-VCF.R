@@ -1,18 +1,18 @@
 .dispatchPerAllele_CollapsedVCF <- function(FUN, x, singleAltOnly) {
-	alt <- alt(x)
-	flat <- BiocGenerics::unlist(alt, use.names=FALSE)
-	res <- FUN(rep(ref(x), S4Vectors::elementNROWS(alt(x))), flat)
-	lst <- relist(res, alt)
-	if (singleAltOnly)
-		all(lst) & S4Vectors::elementNROWS(lst) == 1
-	else
-		any(lst)
+    alt <- alt(x)
+    flat <- BiocGenerics::unlist(alt, use.names=FALSE)
+    res <- FUN(rep(ref(x), S4Vectors::elementNROWS(alt(x))), flat)
+    lst <- relist(res, alt)
+    if (singleAltOnly)
+        all(lst) & S4Vectors::elementNROWS(lst) == 1
+    else
+        any(lst)
 }
 .dispatchPerAllele_ExpandedVCF <- function(FUN, x) {
-	alt <- alt(x)
-	flat <- BiocGenerics::unlist(alt, use.names=FALSE)
-	res <- FUN(rep(ref(x), S4Vectors::elementNROWS(alt(x))), flat)
-	res
+    alt <- alt(x)
+    flat <- BiocGenerics::unlist(alt, use.names=FALSE)
+    res <- FUN(rep(ref(x), S4Vectors::elementNROWS(alt(x))), flat)
+    res
 }
 
 #' Determines whether the variant is a symbolic allele
@@ -26,23 +26,23 @@
 #' isSymbolic(vcf)
 #' @export
 setGeneric("isSymbolic", signature="x",
-		   function(x, ...)
-		   	standardGeneric("isSymbolic")
+           function(x, ...)
+               standardGeneric("isSymbolic")
 )
 setMethod("isSymbolic", "CollapsedVCF",
-		  function(x, ..., singleAltOnly=TRUE)
-		  	.dispatchPerAllele_CollapsedVCF(.isSymbolic, x, singleAltOnly)
+          function(x, ..., singleAltOnly=TRUE)
+              .dispatchPerAllele_CollapsedVCF(.isSymbolic, x, singleAltOnly)
 )
 setMethod("isSymbolic", "ExpandedVCF",
-		  function(x, ...)
-		  	.dispatchPerAllele_ExpandedVCF(.isSymbolic, x)
+          function(x, ...)
+              .dispatchPerAllele_ExpandedVCF(.isSymbolic, x)
 )
 .isSymbolic <- function(r, a) {
-	result <- grepl("<", a, fixed=TRUE) |
-		grepl("[", a, fixed=TRUE) |
-		grepl("]", a, fixed=TRUE) |
-		grepl(".", a, fixed=TRUE)
-	return(result)
+    result <- grepl("<", a, fixed=TRUE) |
+        grepl("[", a, fixed=TRUE) |
+        grepl("]", a, fixed=TRUE) |
+    	grepl(".", a, fixed=TRUE)
+    return(result)
 }
 
 #' Determining whether the variant is a structural variant
@@ -56,16 +56,16 @@ setMethod("isSymbolic", "ExpandedVCF",
 #' isStructural(vcf)
 #' @export
 setGeneric("isStructural", signature="x",
-		   function(x, ...)
-		   	standardGeneric("isStructural")
+           function(x, ...)
+               standardGeneric("isStructural")
 )
 setMethod("isStructural", "CollapsedVCF",
-		  function(x, ..., singleAltOnly=TRUE)
-		  	.dispatchPerAllele_CollapsedVCF(.isStructural, x, singleAltOnly)
+          function(x, ..., singleAltOnly=TRUE)
+              .dispatchPerAllele_CollapsedVCF(.isStructural, x, singleAltOnly)
 )
 setMethod("isStructural", "ExpandedVCF",
-		  function(x, ...)
-		  	.dispatchPerAllele_ExpandedVCF(.isStructural, x)
+          function(x, ...)
+              .dispatchPerAllele_ExpandedVCF(.isStructural, x)
 )
 .isStructural <- function(ref, alt) {
 	lengthDiff <- S4Vectors::elementNROWS(ref) != IRanges::nchar(alt)
@@ -73,10 +73,10 @@ setMethod("isStructural", "ExpandedVCF",
 		# don't break if there are no symbolic alleles in the VCF
 		return(lengthDiff)
 	}
-	return(as.logical(
-		# exclude no-call sites
-		!is.na(alt) & alt != "<NON_REF>" &
-			(lengthDiff | .isSymbolic(ref, alt))))
+    return(as.logical(
+    	# exclude no-call sites
+    	!is.na(alt) & alt != "<NON_REF>" &
+        (lengthDiff | .isSymbolic(ref, alt))))
 }
 
 
@@ -86,18 +86,18 @@ setMethod("isStructural", "ExpandedVCF",
 #'
 .svLen <- function(vcf) {
 	assertthat::assert_that(.hasSingleAllelePerRecord(vcf))
-	r <- ref(vcf)
-	a <- elementExtract(alt(vcf))
-	result <- ifelse(!isStructural(vcf), 0,
-					 elementExtract(info(vcf)$SVLEN) %na%
-					 	(elementExtract(info(vcf)$END) - start(rowRanges(vcf))) %na%
-					 	(ifelse(isSymbolic(vcf), NA_integer_, IRanges::nchar(a) - IRanges::nchar(r))))
-	return(result)
+    r <- ref(vcf)
+    a <- elementExtract(alt(vcf))
+    result <- ifelse(!isStructural(vcf), 0,
+		elementExtract(info(vcf)$SVLEN) %na%
+		(elementExtract(info(vcf)$END) - start(rowRanges(vcf))) %na%
+		(ifelse(isSymbolic(vcf), NA_integer_, IRanges::nchar(a) - IRanges::nchar(r))))
+    return(result)
 }
 
 .hasSingleAllelePerRecord <- function(vcf) {
 	assertthat::assert_that(is(vcf, "VCF"))
-	all(S4Vectors::elementNROWS(alt(vcf)) == 1)
+    all(S4Vectors::elementNROWS(alt(vcf)) == 1)
 }
 setMethod("isStructural", "VCF",
 		  function(x, ...)
@@ -140,7 +140,7 @@ setMethod("isStructural", "VCF",
 #' @export
 setGeneric("breakpointRanges", signature="x",
 		   function(x, ...)
-		   	standardGeneric("breakpointRanges")
+		   		standardGeneric("breakpointRanges")
 )
 setMethod("breakpointRanges", "VCF",
 		  function(x, ...)
@@ -220,7 +220,7 @@ setMethod("breakpointRanges", "VCF",
 		cgr <- gr[rows,]
 		gr$processed[rows] <- TRUE
 		if (!unpartneredBreakends) {
-			commonPrefixLength <- pairwiseLCPrefix(cgr$REF, cgr$ALT, ignore.case=TRUE)
+			commonPrefixLength <- .pairwiseLCPrefix(cgr$REF, cgr$ALT, ignore.case=TRUE)
 			cgr$svLen <- nchar(cgr$ALT) - nchar(cgr$REF)
 			cgr$insSeq <- subseq(cgr$ALT, start=commonPrefixLength + 1)
 			cgr$insLen <- nchar(cgr$insSeq)
@@ -372,14 +372,14 @@ setMethod("breakpointRanges", "VCF",
 			if (any(toRemove)) {
 				warning(paste("Removing", sum(toRemove), "unpaired breakend variants", paste0(names(cgr)[toRemove], collapse=", ")))
 				cgr <- cgr[!toRemove,]
-			}
+				}
 			mategr <- cgr[cgr$partner,]
 			cgr$svLen <- ifelse(seqnames(cgr)==seqnames(mategr), abs(start(cgr) - start(mategr)) - 1, NA_integer_)
 			# make deletion-like events have a -ve svLen
 			cgr$svLen <- ifelse(strand(cgr) != strand(mategr) &
-									((start(cgr) < start(mategr) & strand(cgr) == "+") |
-									 	(start(cgr) > start(mategr) & strand(cgr) == "-")),
-								-cgr$svLen, cgr$svLen)
+					((start(cgr) < start(mategr) & strand(cgr) == "+") |
+					 (start(cgr) > start(mategr) & strand(cgr) == "-")),
+				-cgr$svLen, cgr$svLen)
 			cgr$svLen <- cgr$svLen + cgr$insLen
 			outgr <- c(outgr, cgr)
 		}

@@ -24,5 +24,5 @@ expect_equal(c(1,NA) %na% integer(0), c(1,NA))
 expect_equal(numeric(0) %na% c(1,2), c(1,2))
 expect_equal((NULL - c(2, NA)) %na% c(1,2), c(1,2))
 
-expect_equal(pairwiseLCPrefix(DNAStringSet(c("Aa", "CCCt", "N")), c("aA", "ccct", ""), ignore.case=TRUE), c(2, 4, 0))
-expect_equal(pairwiseLCPrefix(DNAStringSet(c("ACGT")), c("CGT"), ignore.case=TRUE), c(0))
+expect_equal(.pairwiseLCPrefix(DNAStringSet(c("Aa", "CCCt", "N")), c("aA", "ccct", ""), ignore.case=TRUE), c(2, 4, 0))
+expect_equal(.pairwiseLCPrefix(DNAStringSet(c("ACGT")), c("CGT"), ignore.case=TRUE), c(0))
