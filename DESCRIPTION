@@ -1,10 +1,11 @@
 Package: StructuralVariantAnnotation
 Type: Package
 Title: VariantionAnnoration for Structural Variants
-Version: 0.7.3
-Date: 2018-01-25
-Author: Daniel Cameron
-Maintainer: Daniel Cameron <daniel.l.cameron@gmail.com>
+Version: 0.99.1
+Date: 2018-04-05
+Authors@R: c(
+	person("Daniel", "Cameron", email="daniel.l.cameron@gmail.com", role=c("aut", "cre")),
+	person("Ruining", "Dong", email="dong.rn@wehi.edu.au", role=c("aut")))
 Description: StructuralVariantAnnotation contains useful helper
 	functions for dealing with structural variants in VCF format.
 	The packages contains functions for parsing VCFs from a number
@@ -33,5 +34,10 @@ Suggests:
     testthat,
     roxygen2,
     covr,
-    glmnet (>= 2.0)
-RoxygenNote: 6.0.1
+    glmnet (>= 2.0),
+    knitr,
+    rmarkdown,
+    circlize,
+    pryr
+RoxygenNote: 6.1.1
+VignetteBuilder: knitr
