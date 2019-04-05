@@ -2,10 +2,10 @@
 % Please edit documentation in R/BreakpointGRanges.R
 \name{.constrict}
 \alias{.constrict}
-\title{constrict0}
+\title{constrict}
 \usage{
 .constrict(gr, ref = NULL, position = "middle")
 }
 \description{
-constrict0
+constrict
 }

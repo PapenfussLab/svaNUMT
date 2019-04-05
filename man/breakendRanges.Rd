@@ -6,6 +6,39 @@
 \usage{
 breakendRanges(x, ...)
 }
+\arguments{
+\item{x}{A VCF object.}
+
+\item{nominalPosition}{Determines whether to call the variant at the
+nominal VCF position, or to call the confidence interval. Default value is
+set to FALSE.}
+
+\item{placeholderName}{Variant name prefix to assign to unnamed variants.}
+
+\item{suffix}{The suffix to append to varaint names.}
+
+\item{info_columns}{VCF INFO columns to include in the GRanges object.}
+}
+\value{
+A GRanges object of SVs.
+}
 \description{
-See Section 5.4.9 of https://samtools.github.io/hts-specs/VCFv4.3.pdf for details.
+Extracts unpartnered breakend structural variants as a GRanges
+}
+\details{
+The VCF standard supports single breakends where a breakend is not part of a
+novel adjacency and lacks a mate. This function supports parsing single
+breakends to GRanges, where a dot symbol is used in the ALT field to annotate
+the directional information. Single breakends provide insights to situations
+when one side of the structural variant is not observed, due to e.g. low
+mappability, non-reference contigs, complex multi-break operations, etc.
+See Section 5.4.9 of \url{https://samtools.github.io/hts-specs/VCFv4.3.pdf}
+for details of single breakends.
+}
+\examples{
+vcf.file <- system.file("extdata", "gridss.vcf",
+                         package = "StructuralVariantAnnotation")
+vcf <- VariantAnnotation::readVcf(vcf.file, "hg19")
+breakendRanges(vcf.file)
+breakendRanges(vcf.file, nominalPosition=TRUE)
 }

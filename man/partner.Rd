@@ -9,6 +9,13 @@ Partner breakend for each breakend.}
 \usage{
 partner(gr)
 }
+\arguments{
+\item{gr}{GRanges object of SV breakends}
+}
+\value{
+A GRanges object in which each entry is the partner breakend of
+those in the input object.
+}
 \description{
 GRanges representing the breakend coordinates of
 structural variants
@@ -18,4 +25,13 @@ Partner breakend for each breakend.
 \details{
 All breakends must have their partner breakend included
 in the GRanges.
+}
+\examples{
+#reading in a VCF file as \\code{vcf}
+vcf.file <- system.file("extdata", "gridss.vcf", package = "StructuralVariantAnnotation")
+vcf <- VariantAnnotation::readVcf(vcf.file, "hg19")
+#parsing \\code{vcf} to GRanges object \\code{gr}
+gr <- breakpointRanges(vcf)
+#output partner breakend of each breakend in \\code{gr}
+partner(gr)
 }

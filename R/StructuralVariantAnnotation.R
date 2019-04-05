@@ -1,10 +1,3 @@
-#' @import assertthat
-#' @import BiocGenerics
-#' @import circlize
-#' @import VariantAnnotation
-#' @import stringr
-
-
 #' StructuralVariantAnnotation: a package for VCF
 #'
 #' plyranges is a dplyr like API to the Ranges/GenomicRanges infrastructure
@@ -28,4 +21,10 @@
 #'
 #' @docType package
 #' @name StructuralVariantAnnotation
+#' @import assertthat
+#' @import BiocGenerics
+#' @import circlize
+#' @import VariantAnnotation
+#' @import stringr
+
 NULL

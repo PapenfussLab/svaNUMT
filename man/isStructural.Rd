@@ -2,10 +2,25 @@
 % Please edit documentation in R/extensions-VCF.R
 \name{isStructural}
 \alias{isStructural}
-\title{Determines whether the variant is a structural variant}
+\title{Determining whether the variant is a structural variant}
 \usage{
 isStructural(x, ...)
 }
+\arguments{
+\item{x}{A VCF object.}
+}
+\value{
+A logical list of which the length is the same with the input object.
+}
 \description{
-Determines whether the variant is a structural variant
+Determining whether the variant is a structural variant
+}
+\details{
+The function takes a VCF object as input, and returns a logical
+value for each row, determining whether the variant is a structural variant.
+}
+\examples{
+vcf.file <- system.file("extdata", "gridss.vcf", package = "StructuralVariantAnnotation")
+vcf <- VariantAnnotation::readVcf(vcf.file, "hg19")
+isStructural(vcf)
 }

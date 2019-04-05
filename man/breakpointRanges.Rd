@@ -2,19 +2,50 @@
 % Please edit documentation in R/extensions-VCF.R
 \name{breakpointRanges}
 \alias{breakpointRanges}
-\title{Extracts the structural variants as a BreakendGRanges}
+\title{Extracting the structural variants as a BreakendGRanges}
 \usage{
 breakpointRanges(x, ...)
 }
+\arguments{
+\item{x}{A VCF object}
+
+\item{nominalPosition}{Determines whether to call the variant at the
+nominal VCF position, or to call the confidence interval (incorporating
+any homology present). Default value is set to FALSE, where the interval is
+called based on the CIPOS tag. When set to TRUE, the ranges field contains
+the nomimal variant position only.}
+
+\item{placeholderName}{Variant name prefix to assign to unnamed variants.}
+
+\item{suffix}{The suffix to append to varaint names.}
+
+\item{info_columns}{VCF INFO columns to include in the GRanges object.}
+}
+\value{
+A GRanges object of SVs.
+}
 \description{
-Extracts the structural variants as a BreakendGRanges
+Extracting the structural variants as a BreakendGRanges
 }
 \details{
 Structural variants are converted to breakend notation.
-
 Due to ambiguities in the VCF specifications, structural variants
 with multiple alt alleles are not supported.
-
+The CIPOS tag describes the uncertainty interval of the around the postition
+of the breakend. See Section 5.4.8 of
+\url{https://samtools.github.io/hts-specs/VCFv4.3.pdf} for details of CIPOS.
 If HOMLEN or HOMSEQ is defined without CIPOS, it is assumed that
 the variant position is left aligned.
+A breakend on the '+' strand indicates a break immediately after the given
+position, to the left of which is the DNA segment involved in the breakpoint.
+The '-' strand indicates a break immediately before the given position,
+rightwards of which is the DNA segment involved in the breakpoint.
+Unpaired variants are removed at this stage.
+}
+\examples{
+vcf.file <- system.file("extdata", "vcf4.2.example.sv.vcf",
+                         package = "StructuralVariantAnnotation")
+vcf <- VariantAnnotation::readVcf(vcf.file, "hg19")
+breakpointRanges(vcf.file)
+breakpointRanges(vcf.file, nominalPosition=TRUE)
 }

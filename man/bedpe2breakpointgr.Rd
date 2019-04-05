@@ -2,18 +2,27 @@
 % Please edit documentation in R/BreakpointGRanges.R
 \name{bedpe2breakpointgr}
 \alias{bedpe2breakpointgr}
-\title{Loads a breakpoint GRanges from a BEDPE file}
+\title{Loading a breakpoint GRanges from a BEDPE file}
 \usage{
 bedpe2breakpointgr(file, placeholderName = "bedpe")
 }
 \arguments{
-\item{file}{BEDPE file}
+\item{file}{A BEDPE file. See \url{https://bedtools.readthedocs.io/en/latest/content/general-usage.html} for details.}
 
-\item{placeholderName}{prefix to use to ensure ids are unique}
+\item{placeholderName}{Prefix to use to ensure each entry has a unique ID.}
 }
 \value{
 breakpoint GRanges object
 }
 \description{
-Loads a breakpoint GRanges from a BEDPE file
+Loading a breakpoint GRanges from a BEDPE file
+}
+\details{
+A BEDPE file is taken as an input and converted to a breakpoint GRanges object. The file is first loaded using
+rtracklayer::import as a Pairs object, then converted to GRanges.
+}
+\examples{
+bedpe.file <- system.file("extdata", "gridss.bedpe", package = "StructuralVariantAnnotation")
+bedpe2breakpointgr(bedpe.file)
+bedpe2breakpointgr(bedpe.file, placeholderName='gridss')
 }

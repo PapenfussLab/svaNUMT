@@ -15,7 +15,7 @@
 #' @examples
 #' #reading in a VCF file as \code{vcf}
 #' vcf.file <- system.file("extdata", "gridss.vcf", package = "StructuralVariantAnnotation")
-#' vcf <- VariantAnnotation::readVcf(vcf.file, "hg19") vcf.file <- system.file("extdata", "g
+#' vcf <- VariantAnnotation::readVcf(vcf.file, "hg19")
 #' #parsing \code{vcf} to GRanges object \code{gr}
 #' gr <- breakpointRanges(vcf)
 #' #output partner breakend of each breakend in \code{gr}
@@ -211,3 +211,212 @@ pairs2breakpointgr <- function(pairs, placeholderName="bedpe") {
 	}
 	return(gr)
 }
+
+#' Extracts the breakpoint sequence.
+#'
+#' @details
+#' The sequence is the sequenced traversed from the reference anchor bases
+#' to the breakpoint. For backward (-) breakpoints, this corresponds to the
+#' reverse compliment of the reference sequence bases.
+#'
+#' @param gr breakpoint GRanges
+#' @param ref Reference BSgenome
+#' @param anchoredBases Number of bases leading into breakpoint to extract
+#' @param remoteBases Number of bases from other side of breakpoint to extract
+extractBreakpointSequence <- function(gr, ref, anchoredBases, remoteBases=anchoredBases) {
+	localSeq <- extractReferenceSequence(gr, ref, anchoredBases, 0)
+	insSeq <- ifelse(strand(gr) == "-",
+					 as.character(Biostrings::reverseComplement(DNAStringSet(gr$insSeq %na% ""))),
+					 gr$insSeq %na% "")
+	remoteSeq <- as.character(Biostrings::reverseComplement(DNAStringSet(
+		extractReferenceSequence(partner(gr), ref, remoteBases, 0))))
+	return(paste0(localSeq, insSeq, remoteSeq))
+}
+#' Returns the reference sequence around the breakpoint position
+#'
+#' @details
+#' The sequence is the sequenced traversed from the reference anchor bases
+#' to the breakpoint. For backward (-) breakpoints, this corresponds to the
+#' reverse compliment of the reference sequence bases.
+#'
+#' @param gr breakpoint GRanges
+#' @param ref Reference BSgenome
+#' @param anchoredBases Number of bases leading into breakpoint to extract
+#' @param followingBases Number of reference bases past breakpoint to extract
+extractReferenceSequence <- function(gr, ref, anchoredBases, followingBases=anchoredBases) {
+	assertthat::assert_that(is(gr, "GRanges"))
+	assertthat::assert_that(is(ref, "BSgenome"))
+	gr <- .constrict(gr)
+	seqgr <- GRanges(seqnames=seqnames(gr), ranges=IRanges(
+		start=start(gr) - ifelse(strand(gr) == "-", followingBases, anchoredBases - 1),
+		end=end(gr) + ifelse(strand(gr) == "-", anchoredBases - 1, followingBases)))
+	startPad <- pmax(0, 1 - start(seqgr))
+	endPad <- pmax(0, end(seqgr) - seqlengths(ref)[as.character(seqnames(seqgr))])
+	ranges(seqgr) <- IRanges(start=start(seqgr) + startPad, end=end(seqgr) - endPad)
+	seq <- Biostrings::getSeq(ref, seqgr)
+	seq <- paste0(stringr::str_pad("", startPad, pad="N"), as.character(seq), stringr::str_pad("", endPad, pad="N"))
+	# DNAStringSet doesn't like out of bounds subsetting
+	seq <- ifelse(strand(gr) == "-", as.character(Biostrings::reverseComplement(DNAStringSet(seq))), seq)
+	return(seq)
+}
+#' constrict
+.constrict <- function(gr, ref=NULL,position="middle") {
+	isLower <- start(gr) < start(partner(gr))
+	# Want to call a valid breakpoint
+	#  123 456
+	#
+	#  =>   <= + -
+	#  >   <== f f
+	#
+	#  =>  =>  + +
+	#  >   ==> f c
+	roundDown <- isLower | strand(gr) == "-"
+	if (position == "middle") {
+		pos <- (start(gr) + end(gr)) / 2
+		ranges(gr) <- IRanges(
+			start=ifelse(roundDown,floor(pos), ceiling(pos)),
+			width=1, names=names(gr))
+
+	} else {
+		stop(paste("Unrecognised position", position))
+	}
+	if (!is.null(ref)) {
+		ranges(gr) <- IRanges(start=pmin(pmax(1, start(gr)), seqlengths(ref)[as.character(seqnames(gr))]), width=1)
+	}
+	return(gr)
+}
+
+#' Calculates the length of inexact homology between the breakpoint sequence
+#' and the reference
+#'
+#' @param gr breakpoint GRanges
+#' @param ref Reference BSgenome
+#' @param anchorLength Number of bases to consider for homology
+#' @param margin Number of additional reference bases include. This allows
+#'		for inexact homology to be detected even in the presence of indels.
+#' @param match alignment
+#' @param mismatch see Biostrings::pairwiseAlignment
+#' @param gapOpening see Biostrings::pairwiseAlignment
+#' @param gapExtension see Biostrings::pairwiseAlignment
+#' @param match see Biostrings::pairwiseAlignment
+#'
+calculateReferenceHomology <- function(gr, ref,
+									   anchorLength=300,
+									   margin=5,
+									   match=2, mismatch=-6, gapOpening=5, gapExtension=3 # bwa
+									   #match = 1, mismatch = -4, gapOpening = 6, gapExtension = 1, # bowtie2
+) {
+	# shrink anchor for small events to prevent spanning alignment
+	aLength <- pmin(anchorLength, abs(gr$svLen) + 1) %na% anchorLength
+	anchorSeq <- extractReferenceSequence(gr, ref, aLength, 0)
+	anchorSeq <- sub(".*N", "", anchorSeq)
+	# shrink anchor with Ns
+	aLength <- nchar(anchorSeq)
+	varseq <- extractBreakpointSequence(gr, ref, aLength)
+	varseq <- sub("N.*", "", varseq)
+	bpLength <- nchar(varseq) - aLength
+	nonbpseq <- extractReferenceSequence(gr, ref, 0, bpLength + margin)
+	nonbpseq <- sub("N.*", "", nonbpseq)
+	refseq <- paste0(anchorSeq, nonbpseq)
+
+	partnerIndex <- match(gr$partner, names(gr))
+
+	if (all(refseq=="") && all(varseq=="")) {
+		# Workaround of Biostrings::pairwiseAlignment bug
+		return(data.frame(
+			exacthomlen=rep(NA, length(gr)),
+			inexacthomlen=rep(NA, length(gr)),
+			inexactscore=rep(NA, length(gr))))
+	}
+
+	aln <- Biostrings::pairwiseAlignment(varseq, refseq, type="local",
+										 substitutionMatrix=nucleotideSubstitutionMatrix(match, mismatch, FALSE, "DNA"),
+										 gapOpening=gapOpening, gapExtension=gapExtension, scoreOnly=FALSE)
+	ihomlen <- Biostrings::nchar(aln) - aLength - deletion(nindel(aln))[,2] - insertion(nindel(aln))[,2]
+	ibphomlen <- ihomlen + ihomlen[partnerIndex]
+	ibpscore <- score(aln) + score(aln)[partnerIndex] - 2 * aLength * match
+
+	# TODO: replace this with an efficient longest common substring function
+	# instead of S/W with a massive mismatch/gap penalty
+	penalty <- anchorLength * match
+	matchLength <- Biostrings::pairwiseAlignment(varseq, refseq, type="local",
+												 substitutionMatrix=nucleotideSubstitutionMatrix(match, -penalty, FALSE, "DNA"),
+												 gapOpening=penalty, gapExtension=0, scoreOnly=TRUE) / match
+	ehomlen <- matchLength - aLength
+	ebphomlen <- ehomlen + ehomlen[partnerIndex]
+
+	ebphomlen[aLength == 0] <- NA
+	ibphomlen[aLength == 0] <- NA
+	ibpscore[aLength == 0] <- NA
+	return(data.frame(
+		exacthomlen=ebphomlen,
+		inexacthomlen=ibphomlen,
+		inexactscore=ibpscore))
+}
+
+#' Identifies breakpoint sequences with signficant homology to BLAST database
+#' sequences. Apparent breakpoints containing such sequence are better explained
+#' by the sequence from the BLAST database such as by alternate assemblies.
+#'
+#' @details
+#' See https://github.com/mhahsler/rBLAST for rBLAST package installation
+#' instructions
+#' Download and install the package from AppVeyor or install via install_github("mhahsler/rBLAST") (requires the R package devtools)
+calculateBlastHomology <- function(gr, ref, db, anchorLength=150) {
+	requireNamespace("rBLAST", quietly=FALSE)
+	blastseq <- DNAStringSet(breakpointSequence(gr, ref, anchorLength))
+	bl <- rBLAST::blast(db=db)
+	cl <- predict(bl, blastseq)
+	cl$index <- as.integer(substring(cl$QueryID, 7))
+	cl$leftOverlap <- anchorLength - cl$Q.start + 1
+	cl$rightOverlap <- cl$Q.end - (nchar(blastseq) - anchorLength)
+	cl$minOverlap <- pmin(cl$leftOverlap, cl$rightOverlap)
+	return(cl)
+}
+#' Converts to breakend notation
+.toVcfBreakendNotationAlt = function(gr, insSeq=gr$insSeq, ref=gr$REF) {
+	assert_that(all(width(gr) == 1))
+	assert_that(!is.null(insSeq))
+	assert_that(all(insSeq != ""))
+	assert_that(!is.null(gr$partner))
+	isBreakpoint = !is.na(gr$partner)
+	breakendAlt = ifelse(as.character(strand(gr)) == "+", paste0(gr$insSeq, "."), paste0(".", gr$insSeq))
+	gr$partner[isBreakpoint] = names(gr)[isBreakpoint] # self partner to prevent errors
+	partnergr = gr[gr$partner]
+	partnerDirectionChar = ifelse(strand(partnergr) == "+", "]", "[")
+	breakpointAlt = ifelse(as.character(strand(gr)) == "+",
+						   paste0(ref, insSeq, partnerDirectionChar, seqnames(partnergr), ":", start(partnergr), partnerDirectionChar),
+						   paste0(partnerDirectionChar, seqnames(partnergr), ":", start(partnergr), partnerDirectionChar, insSeq, ref))
+	return (ifelse(isBreakpoint, breakpointAlt, breakendAlt))
+}
+#' Converts the given breakpoint GRanges object to VCF format in breakend
+#' notation.
+#'
+#' @param gr breakpoint GRanges object. Can contain both breakpoint and single breakend SV records
+#'
+breakpointGRangesToVCF <- function(gr) {
+	if (is.null(gr$insSeq)) {
+		gr$insSeq = rep("", length(gr))
+	}
+	nominalgr = GRanges(seqnames=seqnames(gr), ranges=IRanges(start=(end(gr) + start(gr)) / 2, width=1))
+	if (is.null(gr$REF)) {
+		gr$REF = rep("N", length(gr))
+	}
+	gr$ALT[is.na(gr$ALT)] = ""
+	if (is.null(gr$ALT)) {
+		gr$ALT = rep("", length(gr))
+	}
+	gr$ALT[is.na(gr$ALT)] = ""
+	gr$ALT[gr$ALT == ""] = .toVcfBreakendNotationAlt(gr)[gr$ALT == ""]
+	ciposstart = start(gr) - start(nominalgr)
+	ciposend = end(gr) - end(nominalgr)
+	vcf = VCF(rowRanges=nominalgr, collapsed=FALSE)
+	fixeddf = data.frame(
+		ALT=gr$ALT,
+		REF=gr$REF,
+		QUAL=gr$QUAL,
+		FILTER=gr$FILTER)
+
+	VCF(rowRanges = GRanges(), colData = DataFrame(), exptData = list(header = VCFHeader()), fixed = DataFrame(), info = DataFrame(), geno = SimpleList(), ..., collapsed=FALSE, verbose = FALSE)
+}
+

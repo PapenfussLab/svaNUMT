@@ -6,6 +6,21 @@
 \usage{
 isSymbolic(x, ...)
 }
+\arguments{
+\item{x}{A VCF object.}
+}
+\value{
+A logical list of which the length is the same with the input object.
+}
 \description{
 Determines whether the variant is a symbolic allele
+}
+\details{
+The function takes a VCF object as input, and returns a logical
+value for each row, determining whether the variant is a symbolic allele.
+}
+\examples{
+vcf.file <- system.file("extdata", "gridss.vcf", package = "StructuralVariantAnnotation")
+vcf <- VariantAnnotation::readVcf(vcf.file, "hg19")
+isSymbolic(vcf)
 }

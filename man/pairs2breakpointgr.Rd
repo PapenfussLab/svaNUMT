@@ -2,18 +2,24 @@
 % Please edit documentation in R/BreakpointGRanges.R
 \name{pairs2breakpointgr}
 \alias{pairs2breakpointgr}
-\title{Converts a BEDPE Pairs containing pairs of GRanges loaded using rtracklayer::import to a breakpointgr}
+\title{Converts a BEDPE Pairs containing pairs of GRanges loaded using to a breakpoint GRanges object.}
 \usage{
 pairs2breakpointgr(pairs, placeholderName = "bedpe")
 }
 \arguments{
-\item{pairs}{pairs object}
+\item{pairs}{a Pairs object consisting of two parallel genomic loci.}
 
-\item{placeholderName}{prefix to use to ensure ids are unique}
+\item{placeholderName}{prefix to use to ensure each entry has a unique ID.}
 }
 \value{
 breakpoint GRanges object
 }
 \description{
-Converts a BEDPE Pairs containing pairs of GRanges loaded using rtracklayer::import to a breakpointgr
+Converts a BEDPE Pairs containing pairs of GRanges loaded using to a breakpoint GRanges object.
+}
+\examples{
+bedpe.file <- system.file("extdata", "gridss.bedpe", package = "StructuralVariantAnnotation")
+bedpe.pairs <- rtracklayer::import(bedpe.file)
+pairs2breakpointgr(bedpe.pairs)
+pairs2breakpointgr(bedpe.pairs, placeholderName='gridss')
 }

@@ -540,7 +540,7 @@ setMethod("breakendRanges", "VCF",
 		  function(x, ...)
 		  	.breakpointRanges(x, unpartneredBreakends=TRUE, ...)
 )
-
+#' Function for extracting the unpartnered structural variants as a GRanges
 #' @param vcf VCF object
 #' @param nominalPosition Determines whether to call the variant at the
 #'    nominal VCF position, or to call the confidence interval (incorporating

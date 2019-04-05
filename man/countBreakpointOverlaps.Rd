@@ -2,7 +2,7 @@
 % Please edit documentation in R/BreakpointGRanges.R
 \name{countBreakpointOverlaps}
 \alias{countBreakpointOverlaps}
-\title{Finds common breakpoints between the two breakpoint sets}
+\title{Counting overlapping breakpoints between two breakpoint sets}
 \usage{
 countBreakpointOverlaps(querygr, subjectgr, countOnlyBest = FALSE,
   breakpointScoreColumn = "QUAL", maxgap = -1L, minoverlap = 0L,
@@ -10,18 +10,36 @@ countBreakpointOverlaps(querygr, subjectgr, countOnlyBest = FALSE,
   restrictMarginToSizeMultiple = 0.5)
 }
 \arguments{
-\item{countOnlyBest}{count each subject breakpoint as overlaping only the
-best overlapping query breakpoint.}
+\item{querygr, subjectgr, maxgap, minoverlap, ignore.strand, sizemargin, restrictMarginToSizeMultiple}{See \code{findBreakpointOverlaps()}.}
 
-\item{breakpointScoreColumn}{query column defining a score for
-determining which query breakpoint is considered the best when countOnlyBest=TRUE}
+\item{countOnlyBest}{Default value set to FALSE. When set to TRUE, the result count
+each subject breakpoint as overlaping only the best overlapping query breakpoint.}
+
+\item{breakpointScoreColumn}{Query column defining a score for determining which query breakpoint
+is considered the best when countOnlyBest=TRUE.}
 }
 \value{
-an integer vector containing the tabulated query overlap hits
+An integer vector containing the tabulated query overlap hits.
 }
 \description{
-Finds common breakpoints between the two breakpoint sets
+Counting overlapping breakpoints between two breakpoint sets
 }
 \details{
+\code{countBreakpointOverlaps()} returns the number of overlaps between breakpoint
+objects, based on the output of \code{findBreakpointOverlaps()}.
 See GenomicRanges::countOverlaps-methods
+}
+\examples{
+#reading in VCF files
+query.file <- system.file("extdata", "gridss-na12878.vcf", package = "StructuralVariantAnnotation")
+subject.file <- system.file("extdata", "gridss.vcf", package = "StructuralVariantAnnotation")
+query.vcf <- VariantAnnotation::readVcf(query.file, "hg19")
+subject.vcf <- VariantAnnotation::readVcf(subject.file, "hg19")
+#parsing vcfs to GRanges objects
+query.gr <- breakpointRanges(query.vcf)
+subject.gr <- breakpointRanges(subject.vcf)
+#count overlapping breakpoint intervals
+countBreakpointOverlaps(query.gr, subject.gr)
+countBreakpointOverlaps(query.gr, subject.gr, maxgap=100)
+countBreakpointOverlaps(query.gr, subject.gr, maxgap=100, ignore.strand=TRUE, countOnlyBest=TRUE)
 }
