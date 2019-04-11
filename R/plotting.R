@@ -15,10 +15,10 @@
 #' @export
 breakpointgr2bedpe <- function(gr){
 	bedpe <- data.frame(
-		chrom1=seqnames(gr),
+		chrom1=GenomeInfoDb::seqnames(gr),
 		start1=start(gr) - 1,
 		end1=end(gr),
-		chrom2=seqnames(partner(gr)),
+		chrom2=GenomeInfoDb::seqnames(partner(gr)),
 		start2=start(partner(gr)) - 1,
 		end2=end(partner(gr)),
 		name=names(gr),
