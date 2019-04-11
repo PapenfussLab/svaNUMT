@@ -61,5 +61,5 @@ subject.gr <- breakpointRanges(subject.vcf)
 #find overlapping breakpoint intervals
 findBreakpointOverlaps(query.gr, subject.gr)
 findBreakpointOverlaps(query.gr, subject.gr, ignore.strand=TRUE)
-findBreakpointOverlaps(query.gr, subject.gr, maxgap=100, minoverlap=10, sizemargin=0.5)
+findBreakpointOverlaps(query.gr, subject.gr, maxgap=100, sizemargin=0.5)
 }
