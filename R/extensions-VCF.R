@@ -135,8 +135,8 @@ setMethod("isStructural", "VCF",
 #' vcf.file <- system.file("extdata", "vcf4.2.example.sv.vcf",
 #'                          package = "StructuralVariantAnnotation")
 #' vcf <- VariantAnnotation::readVcf(vcf.file, "hg19")
-#' breakpointRanges(vcf.file)
-#' breakpointRanges(vcf.file, nominalPosition=TRUE)
+#' breakpointRanges(vcf)
+#' breakpointRanges(vcf, nominalPosition=TRUE)
 #' @export
 setGeneric("breakpointRanges", signature="x",
 		   function(x, ...)
@@ -529,8 +529,8 @@ setMethod("breakpointRanges", "VCF",
 #' vcf.file <- system.file("extdata", "gridss.vcf",
 #'                          package = "StructuralVariantAnnotation")
 #' vcf <- VariantAnnotation::readVcf(vcf.file, "hg19")
-#' breakendRanges(vcf.file)
-#' breakendRanges(vcf.file, nominalPosition=TRUE)
+#' breakendRanges(vcf)
+#' breakendRanges(vcf, nominalPosition=TRUE)
 #' @export
 setGeneric("breakendRanges", signature="x",
 		   function(x, ...)
