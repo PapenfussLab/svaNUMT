@@ -25,5 +25,8 @@
 #' @import BiocGenerics
 #' @import VariantAnnotation
 #' @import stringr
-
+#' @import GenomicRanges
+#' @import Biostrings
+#' @import rtracklayer
+#' @import dplyr
 NULL

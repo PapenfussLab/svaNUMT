@@ -69,7 +69,7 @@ partner <- function(gr) {
 #' #find overlapping breakpoint intervals
 #' findBreakpointOverlaps(query.gr, subject.gr)
 #' findBreakpointOverlaps(query.gr, subject.gr, ignore.strand=TRUE)
-#' findBreakpointOverlaps(query.gr, subject.gr, maxgap=100, minoverlap=10, sizemargin=0.5)
+#' findBreakpointOverlaps(query.gr, subject.gr, maxgap=100, sizemargin=0.5)
 #' @return A dataframe containing index and error stats of overlapping breakpoints.
 #'@export
 findBreakpointOverlaps <- function(query, subject, maxgap=-1L, minoverlap=0L, ignore.strand=FALSE, sizemargin=0.25, restrictMarginToSizeMultiple=0.5) {

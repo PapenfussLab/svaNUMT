@@ -3,3 +3,5 @@
 .RData
 inst/doc
 StructuralVariantAnnotation.Rproj
+.Rproj
+StructuralVariantAnnotation.Rcheck/
