@@ -82,7 +82,7 @@ To demonstrate `findBreakpointOverlaps()` function, we construct a toy `GRanges`
 #load `plyranges` for GRanges modification
 suppressPackageStartupMessages(library(plyranges))
 #toy GRanges `region.gr`
-region.gr <- gr[2:3,]  %>% mutate(end=end+5) %>% mutate(start=start+5)
+region.gr <- gr[2:3,]  %>% dplyr::mutate(end=end+5) %>% dplyr::mutate(start=start+5)
 # event sizes must be within sizemargin
 findBreakpointOverlaps(gr, region.gr)
 ```
