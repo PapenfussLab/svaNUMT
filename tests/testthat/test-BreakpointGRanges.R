@@ -1,4 +1,4 @@
-
+context('parsing functions')
 example <- readVcf(.testfile("vcf4.2.example.sv.vcf"), "")
 simple <- readVcf(.testfile("simple.vcf"), "")
 breakend <- readVcf(.testfile("breakend.vcf"), "")

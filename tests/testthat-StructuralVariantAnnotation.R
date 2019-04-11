@@ -1,2 +1,2 @@
-library(testthat)
-test_package("StructuralVariantAnnotation")
+#library(testthat)
+#test_package("StructuralVariantAnnotation")

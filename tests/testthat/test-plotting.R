@@ -1,3 +1,4 @@
+context('plotting functions')
 vcf.vcf <- readVcf(.testfile("vcf4.2.example.sv.vcf"), "")
 vcf.gr <- breakpointRanges(vcf.vcf)
 gridss.vcf <- readVcf(.testfile("gridss.vcf"), "")

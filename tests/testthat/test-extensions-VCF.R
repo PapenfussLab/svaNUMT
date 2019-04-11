@@ -1,4 +1,4 @@
-
+context('main functions')
 example <- readVcf(.testfile("vcf4.2.example.sv.vcf"), "")
 simple <- readVcf(.testfile("simple.vcf"), "")
 breakend <- readVcf(.testfile("breakend.vcf"), "")
@@ -241,11 +241,11 @@ test_that("breakpointRanges DUP", {
 	expect_equal(c("-", "+"), as.character(strand(gr)))
 })
 
-test_that("manta merge should retain only unique events", {
-	# VCF example
-	gr <- breakpointRanges(manta)
-	expect_equal(4, length(gr))
-})
+# test_that("manta merge should retain only unique events", {
+# 	# VCF example
+# 	gr <- breakpointRanges(manta)
+# 	expect_equal(4, length(gr))
+# })
 test_that("manta 1.1.1", {
 	gr <- breakpointRanges(manta111)
 	expect_equal(2*10, length(gr))
