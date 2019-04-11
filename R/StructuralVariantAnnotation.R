@@ -21,11 +21,9 @@
 #' @import assertthat
 #' @import BiocGenerics
 #' @import VariantAnnotation
-#' @import IRanges
-#' @import S4Vectors
 #' @import rtracklayer
 #' @import Biostrings
 #' @import GenomicRanges
-#' @importFrom magrittr %>%
+#' @import dplyr
 
 NULL
