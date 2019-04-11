@@ -39,6 +39,6 @@ for details of single breakends.
 vcf.file <- system.file("extdata", "gridss.vcf",
                          package = "StructuralVariantAnnotation")
 vcf <- VariantAnnotation::readVcf(vcf.file, "hg19")
-breakendRanges(vcf.file)
-breakendRanges(vcf.file, nominalPosition=TRUE)
+breakendRanges(vcf)
+breakendRanges(vcf, nominalPosition=TRUE)
 }

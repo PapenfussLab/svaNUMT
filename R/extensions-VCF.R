@@ -191,7 +191,7 @@ setMethod("breakpointRanges", "VCF",
 	gr$ciwidth <- rep(0, length(gr))
 
 	for (col in info_columns) {
-		mcols(gr)[[col]] <- info(vcf)[[col]]
+		S4Vectors::mcols(gr)[[col]] <- info(vcf)[[col]]
 	}
 	if (!is.null(info(vcf)$HOMSEQ)) {
 		seq <- elementExtract(info(vcf)$HOMSEQ, 1)
@@ -222,7 +222,7 @@ setMethod("breakpointRanges", "VCF",
 		if (!unpartneredBreakends) {
 			commonPrefixLength <- .pairwiseLCPrefix(cgr$REF, cgr$ALT, ignore.case=TRUE)
 			cgr$svLen <- nchar(cgr$ALT) - nchar(cgr$REF)
-			cgr$insSeq <- subseq(cgr$ALT, start=commonPrefixLength + 1)
+			cgr$insSeq <- Biostrings::subseq(cgr$ALT, start=commonPrefixLength + 1)
 			cgr$insLen <- nchar(cgr$insSeq)
 			start(cgr) <- start(cgr) - 1 + commonPrefixLength
 			width(cgr) <- 1

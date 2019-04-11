@@ -44,3 +44,5 @@ expect_equal(.pairwiseLCPrefix(DNAStringSet(c("ACGT")), c("CGT"), ignore.case=TR
 #              matrix(integer(0), ncol=0, nrow=3))
 # expect_equal(.as.matrix.list(CharacterList(c(), c(), c())),
 #              matrix(character(0), ncol=0, nrow=3))
+
+
