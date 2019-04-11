@@ -47,12 +47,12 @@ partner <- function(gr) {
 #' overlapping positions between breakend intervals. Both should be scalar integers. maxgap
 #' allows non-negative values, and minoverlap allows positive values.
 #' See GenomicRanges::findOverlaps-methods for details.
-#' @param ignore.strand Default value is FALSE. strand inforamtion is ignored when set to
+#' @param ignore.strand Default value is FALSE. strand information is ignored when set to
 #' TRUE.
 #' See GenomicRanges::findOverlaps-methods for details.
 #' @param sizemargin Error margin in allowable size to prevent matching of events
 #' of different sizes, e.g. a 200bp event matching a 1bp event when maxgap is
-#' set to 200.
+#' set to 200. A value of 0.25 will match events differing by at most 25% in length.
 #' @param restrictMarginToSizeMultiple Size restriction multiplier on event size.
 #' The default value of 0.5 requires that the breakpoint positions can be off by
 #' at maximum, half the event size. This ensures that small deletion do actually
@@ -72,40 +72,56 @@ partner <- function(gr) {
 #' findBreakpointOverlaps(query.gr, subject.gr, maxgap=100, sizemargin=0.5)
 #' @return A dataframe containing index and error stats of overlapping breakpoints.
 #'@export
-findBreakpointOverlaps <- function(query, subject, maxgap=-1L, minoverlap=0L, ignore.strand=FALSE, sizemargin=0.25, restrictMarginToSizeMultiple=0.5) {
-	hits <- dplyr::bind_rows(
-		as.data.frame(findOverlaps(query, subject, maxgap=maxgap, minoverlap=minoverlap, type="any", select="all", ignore.strand=ignore.strand), row.names=NULL),
-		as.data.frame(findOverlaps(partner(query), partner(subject), maxgap=maxgap, minoverlap=minoverlap, type="any", select="all", ignore.strand=ignore.strand), row.names=NULL))
-	#as.data.frame(findOverlaps(partner(query), partner(subject), maxgap=maxgap, minoverlap=minoverlap, type="any", select="all", ignore.strand=ignore.strand), row.names=NULL))
-
-	# we now want to do:
-	# hits <- hits[duplicated(hits),] # both breakends match
-	# but for large hit sets (such as focal false positive loci) we run out of memory (>32GB)
-	# instead, we sort then check that we match the next record
-	hits = hits %>% dplyr::arrange(queryHits, subjectHits) %>%
-		dplyr::filter(!is.na(dplyr::lead(.$queryHits)) & !is.na(dplyr::lead(.$subjectHits)) & dplyr::lead(.$queryHits) == .$queryHits & dplyr::lead(.$subjectHits) == .$subjectHits)
+findBreakpointOverlaps <- function(query, subject, maxgap=-1L, minoverlap=0L, ignore.strand=FALSE, sizemargin=NULL, restrictMarginToSizeMultiple=NULL) {
+	localhits = findOverlaps(query, subject, maxgap=maxgap, minoverlap=minoverlap, type="any", select="all", ignore.strand=ignore.strand)
+	remotehits = findOverlaps(partner(query), partner(subject), maxgap=maxgap, minoverlap=minoverlap, type="any", select="all", ignore.strand=ignore.strand)
+	## duplicated() version:
+	#hits = Hits(c(queryHits(localhits), queryHits(remotehits)), c(subjectHits(localhits), subjectHits(remotehits)), nLnode=nLnode(localhits), nRnode=nRnode(localhits), sort.by.query=TRUE)
+	#hits = hits[duplicated(hits)]
+	
+	## intersect() version:
+	hits = BiocGenerics::intersect(localhits, remotehits)
+	
+	## dplyr() version:
+	#hits <- dplyr::bind_rows(
+	#	as.data.frame(localhits, row.names=NULL),
+	#	as.data.frame(remotehits, row.names=NULL))
+	#hits = hits %>% dplyr::arrange(queryHits, subjectHits) %>%
+	#	dplyr::filter(!is.na(dplyr::lead(.$queryHits)) & !is.na(dplyr::lead(.$subjectHits)) & dplyr::lead(.$queryHits) == .$queryHits & dplyr::lead(.$subjectHits) == .$subjectHits)
+	
+	## dplyr() exploiting the sorted nature of the findOverlaps():
+	#hits = Hits(c(queryHits(localhits), queryHits(remotehits)), c(subjectHits(localhits), subjectHits(remotehits)), nLnode=nLnode(localhits), nRnode=nRnode(localhits), sort.by.query=TRUE)
+	#queryLead  = dplyr::lead(queryHits(hits))
+	#querySubject  = dplyr::lead(queryHits(hits))
+	#hits = hits[
+	#	!is.na(queryLead) &d
+	#	!is.na(querySubject) &
+	#	queryLead == queryHits(hits) &
+	#	querySubject == subjectHits(hits)]
+	
 	if (!is.null(sizemargin) && !is.na(sizemargin)) {
 		# take into account confidence intervals when calculating event size
 		callwidth <- .distance(query, partner(query))
 		truthwidth <- .distance(subject, partner(subject))
 		callsize <- callwidth + (query$insLen %na% 0)
 		truthsize <- truthwidth + (subject$insLen %na% 0)
-		hits$sizeerror <- .distance(
-			IRanges(start=callsize$min[hits$queryHits], end=callsize$max[hits$queryHits]),
-			IRanges(start=truthsize$min[hits$subjectHits], end=truthsize$max[hits$subjectHits])
+		sizeerror <- .distance(
+			IRanges(start=callsize$min[queryHits(hits)], end=callsize$max[queryHits(hits)]),
+			IRanges(start=truthsize$min[subjectHits(hits)], end=truthsize$max[subjectHits(hits)])
 			)$min
 		# event sizes must be within sizemargin
-		hits <- hits[hits$sizeerror - 1 < sizemargin * pmin(callsize$max[hits$queryHits], truthsize$max[hits$subjectHits]),]
+		hits <- hits[sizeerror - 1 < sizemargin * pmin(callsize$max[queryHits(hits)], truthsize$max[subjectHits(hits)]),]
 		# further restrict breakpoint positions for small events
-		hits$localbperror <- .distance(query[hits$queryHits], subject[hits$subjectHits])$min
-		hits$remotebperror <- .distance(partner(query)[hits$queryHits], partner(subject)[hits$subjectHits])$min
+		localbperror <- .distance(query[queryHits(hits)], subject[subjectHits(hits)])$min
+		remotebperror <- .distance(partner(query)[queryHits(hits)], partner(subject)[subjectHits(hits)])$min
 		if (!is.null(restrictMarginToSizeMultiple)) {
-			allowablePositionError <- (pmin(callsize$max[hits$queryHits], truthsize$max[hits$subjectHits]) * restrictMarginToSizeMultiple + 1)
-			hits <- hits[hits$localbperror <= allowablePositionError & hits$remotebperror <= allowablePositionError, ]
+			allowablePositionError <- (pmin(callsize$max[queryHits(hits)], truthsize$max[subjectHits(hits)]) * restrictMarginToSizeMultiple + 1)
+			hits <- hits[localbperror <= allowablePositionError & remotebperror <= allowablePositionError, ]
 		}
 	}
 	return(hits)
 }
+# TODO: new function to annotate a Hits object with sizeerror, localbperror, and remotebperror
 .distance <- function(r1, r2) {
 	return(data.frame(
 		min=pmax(0, pmax(start(r1), start(r2)) - pmin(end(r1), end(r2))),
@@ -140,10 +156,10 @@ findBreakpointOverlaps <- function(query, subject, maxgap=-1L, minoverlap=0L, ig
 #' @export
 countBreakpointOverlaps <- function(querygr, subjectgr, countOnlyBest=FALSE,
 									breakpointScoreColumn = "QUAL", maxgap=-1L,
-									minoverlap=0L, ignore.strand=FALSE, sizemargin=0.25,
-									restrictMarginToSizeMultiple=0.5) {
+									minoverlap=0L, ignore.strand=FALSE, sizemargin=NULL,
+									restrictMarginToSizeMultiple=NULL) {
 	hitscounts <- rep(0, length(querygr))
-	hits <- findBreakpointOverlaps(querygr, subjectgr, maxgap, minoverlap, ignore.strand, sizemargin=sizemargin, restrictMarginToSizeMultiple=restrictMarginToSizeMultiple)
+	hits <- as.data.frame(findBreakpointOverlaps(querygr, subjectgr, maxgap, minoverlap, ignore.strand, sizemargin=sizemargin, restrictMarginToSizeMultiple=restrictMarginToSizeMultiple))
 	if (!countOnlyBest) {
 		hits <- hits %>%
 	      dplyr::group_by(queryHits) %>%
