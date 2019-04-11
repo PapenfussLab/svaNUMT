@@ -150,7 +150,7 @@ countBreakpointOverlaps <- function(querygr, subjectgr, countOnlyBest=FALSE,
 	      dplyr::summarise(n=dplyr::n())
 	} else {
 		# assign supporting evidence to the call with the highest QUAL
-		hits$QUAL <- mcols(querygr)[[breakpointScoreColumn]][hits$queryHits]
+		hits$QUAL <- S4Vectors::mcols(querygr)[[breakpointScoreColumn]][hits$queryHits]
 	    hits <- hits %>%
 	      dplyr::arrange(desc(QUAL), queryHits) %>%
 	      dplyr::distinct(subjectHits, .keep_all=TRUE) %>%
@@ -190,8 +190,8 @@ pairs2breakpointgr <- function(pairs, placeholderName="bedpe") {
 	n <- names(pairs)
 	if (is.null(n)) {
 		# BEDPE uses the "name" field
-		if ("name" %in% names(mcols(pairs))) {
-			n <- mcols(pairs)$name
+		if ("name" %in% names(S4Vectors::mcols(pairs))) {
+			n <- S4Vectors::mcols(pairs)$name
 		} else {
 			n <- rep(NA_character_, length(pairs))
 		}
@@ -202,11 +202,11 @@ pairs2breakpointgr <- function(pairs, placeholderName="bedpe") {
 	gr <- c(S4Vectors::first(pairs), S4Vectors::second(pairs))
 	names(gr) <- c(paste0(n, "_1"), paste0(n, "_2"))
 	gr$partner <- c(paste0(n, "_2"), paste0(n, "_1"))
-	for (col in names(mcols(pairs))) {
+	for (col in names(S4Vectors::mcols(pairs))) {
 		if (col %in% c("name")) {
 			# drop columns we have processed
 		} else {
-			mcols(gr)[[col]] <- mcols(pairs)[[col]]
+			S4Vectors::mcols(gr)[[col]] <- S4Vectors::mcols(pairs)[[col]]
 		}
 	}
 	return(gr)
@@ -252,7 +252,7 @@ extractReferenceSequence <- function(gr, ref, anchoredBases, followingBases=anch
 		end=end(gr) + ifelse(strand(gr) == "-", anchoredBases - 1, followingBases)))
 	startPad <- pmax(0, 1 - start(seqgr))
 	endPad <- pmax(0, end(seqgr) - seqlengths(ref)[as.character(seqnames(seqgr))])
-	ranges(seqgr) <- IRanges(start=start(seqgr) + startPad, end=end(seqgr) - endPad)
+	GenomicRanges::ranges(seqgr) <- IRanges(start=start(seqgr) + startPad, end=end(seqgr) - endPad)
 	seq <- Biostrings::getSeq(ref, seqgr)
 	seq <- paste0(stringr::str_pad("", startPad, pad="N"), as.character(seq), stringr::str_pad("", endPad, pad="N"))
 	# DNAStringSet doesn't like out of bounds subsetting
@@ -273,7 +273,7 @@ extractReferenceSequence <- function(gr, ref, anchoredBases, followingBases=anch
 	roundDown <- isLower | strand(gr) == "-"
 	if (position == "middle") {
 		pos <- (start(gr) + end(gr)) / 2
-		ranges(gr) <- IRanges(
+		GenomicRanges::ranges(gr) <- IRanges(
 			start=ifelse(roundDown,floor(pos), ceiling(pos)),
 			width=1, names=names(gr))
 
@@ -281,7 +281,7 @@ extractReferenceSequence <- function(gr, ref, anchoredBases, followingBases=anch
 		stop(paste("Unrecognised position", position))
 	}
 	if (!is.null(ref)) {
-		ranges(gr) <- IRanges(start=pmin(pmax(1, start(gr)), seqlengths(ref)[as.character(seqnames(gr))]), width=1)
+		GenomicRanges::ranges(gr) <- IRanges(start=pmin(pmax(1, start(gr)), seqlengths(ref)[as.character(seqnames(gr))]), width=1)
 	}
 	return(gr)
 }

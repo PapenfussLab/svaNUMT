@@ -37,5 +37,6 @@ Suggests:
     circlize,
     tictoc
 RoxygenNote: 6.1.1
+Encoding: UTF-8
 VignetteBuilder: knitr
 biocViews: DataImport, Sequencing, Annotation, Genetics, VariantAnnotation

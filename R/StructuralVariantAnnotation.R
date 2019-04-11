@@ -1,7 +1,4 @@
-#' StructuralVariantAnnotation: a package for VCF
-#'
-#' plyranges is a dplyr like API to the Ranges/GenomicRanges infrastructure
-#' in Bioconductor.
+#' StructuralVariantAnnotation: a package for SV annotation
 #'
 #' StructuralVariantAnnotation contains useful helper functions for reading
 #' and interpreting structural variants calls. The packages contains functions
@@ -25,8 +22,9 @@
 #' @import BiocGenerics
 #' @import VariantAnnotation
 #' @import stringr
-#' @import GenomicRanges
-#' @import Biostrings
 #' @import rtracklayer
+#' @import Biostrings
+#' @import GenomicRanges
 #' @import dplyr
+
 NULL

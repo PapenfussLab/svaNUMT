@@ -4,19 +4,16 @@
 \name{StructuralVariantAnnotation}
 \alias{StructuralVariantAnnotation}
 \alias{StructuralVariantAnnotation-package}
-\title{StructuralVariantAnnotation: a package for VCF}
+\title{StructuralVariantAnnotation: a package for SV annotation}
 \description{
-plyranges is a dplyr like API to the Ranges/GenomicRanges infrastructure
-in Bioconductor.
-}
-\details{
 StructuralVariantAnnotation contains useful helper functions for reading
 and interpreting structural variants calls. The packages contains functions
 for parsing VCFs from a number of popular caller as well as functions for
 dealing with breakpoints involving two separate genomic loci. The package
 supports encoding breakpoints as `GRanges` objects and BEDPE-formatted
 data frame.
-
+}
+\details{
 * Parse VCF objects with the `breakpointRanges()` function.
    * Find breakpoint overlaps with the `findBreakpointOverlaps()`
   and `countBreakpointOverlaps()` functions.
