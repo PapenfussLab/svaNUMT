@@ -187,7 +187,7 @@ countBreakpointOverlaps <- function(querygr, subjectgr, countOnlyBest=FALSE,
 #' bedpe.file <- system.file("extdata", "gridss.bedpe", package = "StructuralVariantAnnotation")
 #' bedpe2breakpointgr(bedpe.file)
 #' bedpe2breakpointgr(bedpe.file, placeholderName='gridss')
-#' @return breakpoint GRanges object
+#' @return Breakpoint GRanges object.
 #' @export
 bedpe2breakpointgr <- function(file, placeholderName="bedpe") {
 	return(pairs2breakpointgr(import(file), placeholderName))
@@ -200,7 +200,7 @@ bedpe2breakpointgr <- function(file, placeholderName="bedpe") {
 #' bedpe.pairs <- rtracklayer::import(bedpe.file)
 #' pairs2breakpointgr(bedpe.pairs)
 #' pairs2breakpointgr(bedpe.pairs, placeholderName='gridss')
-#' @return breakpoint GRanges object
+#' @return Breakpoint GRanges object.
 #' @export
 pairs2breakpointgr <- function(pairs, placeholderName="bedpe") {
 	n <- names(pairs)
@@ -239,6 +239,7 @@ pairs2breakpointgr <- function(pairs, placeholderName="bedpe") {
 #' @param ref Reference BSgenome
 #' @param anchoredBases Number of bases leading into breakpoint to extract
 #' @param remoteBases Number of bases from other side of breakpoint to extract
+#' @return Breakpoint sequence around the variant position.
 extractBreakpointSequence <- function(gr, ref, anchoredBases, remoteBases=anchoredBases) {
 	localSeq <- extractReferenceSequence(gr, ref, anchoredBases, 0)
 	insSeq <- ifelse(strand(gr) == "-",
@@ -259,6 +260,7 @@ extractBreakpointSequence <- function(gr, ref, anchoredBases, remoteBases=anchor
 #' @param ref Reference BSgenome
 #' @param anchoredBases Number of bases leading into breakpoint to extract
 #' @param followingBases Number of reference bases past breakpoint to extract
+#' @return Reference sequence around the breakpoint position.
 extractReferenceSequence <- function(gr, ref, anchoredBases, followingBases=anchoredBases) {
 	assertthat::assert_that(is(gr, "GRanges"))
 	assertthat::assert_that(is(ref, "BSgenome"))
@@ -279,6 +281,7 @@ extractReferenceSequence <- function(gr, ref, anchoredBases, followingBases=anch
 #' @param gr GRanges object
 #' @param ref reference 
 #' @param position only 'middle' position is accepted.
+#' @return A constricted GRanges object.
 .constrict <- function(gr, ref=NULL,position="middle") {
 	isLower <- start(gr) < start(partner(gr))
 	# Want to call a valid breakpoint
@@ -317,7 +320,8 @@ extractReferenceSequence <- function(gr, ref, anchoredBases, followingBases=anch
 #' @param gapOpening see Biostrings::pairwiseAlignment
 #' @param gapExtension see Biostrings::pairwiseAlignment
 #' @param match see Biostrings::pairwiseAlignment
-#'
+#' @return A dataframe containing the length of inexact homology between the 
+#' breakpoint sequence and the reference.
 calculateReferenceHomology <- function(gr, ref,
 									   anchorLength=300,
 									   margin=5,
@@ -377,6 +381,7 @@ calculateReferenceHomology <- function(gr, ref,
 #' @param gr GRanges object.
 #' @param insSeq insert sequence of the GRanges.
 #' @param ref reference sequence of the GRanges.
+#' @return breakendAlt or breakpointAlt depending on whether the variant is partnered.
 .toVcfBreakendNotationAlt = function(gr, insSeq=gr$insSeq, ref=gr$REF) {
 	assert_that(all(width(gr) == 1))
 	assert_that(!is.null(insSeq))
@@ -401,7 +406,7 @@ calculateReferenceHomology <- function(gr, ref,
 #' @param ... For cbind and rbind a list of VCF objects. For all other methods 
 #' ... are additional arguments passed to methods. See VCF class in 
 #' VariantAnnotation for more details.
-#'
+#' @return A VCF object.
 breakpointGRangesToVCF <- function(gr, ...) {
 	if (is.null(gr$insSeq)) {
 		gr$insSeq = rep("", length(gr))
