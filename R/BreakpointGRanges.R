@@ -429,7 +429,7 @@ breakpointGRangesToVCF <- function(gr, ...) {
 	
 	VariantAnnotation::VCF(rowRanges = GRanges(), colData = S4Vectors::DataFrame(), 
 	    exptData = list(header = VCFHeader()), fixed = S4Vectors::DataFrame(), 
-	    info = DataFrame(), geno = S4Vectors::SimpleList(), ..., collapsed=FALSE, 
+	    info = S4Vectors::DataFrame(), geno = S4Vectors::SimpleList(), ..., collapsed=FALSE, 
 	    verbose = FALSE)
 
 }
