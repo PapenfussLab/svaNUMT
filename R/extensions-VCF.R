@@ -103,7 +103,7 @@ setMethod("isStructural", "ExpandedVCF",
 #' Returns the structural variant length of the first allele
 #'
 #' @param vcf VCF object
-#'
+#' @return Structural variant lengths of the first allele.
 .svLen <- function(vcf) {
 	assertthat::assert_that(.hasSingleAllelePerRecord(vcf))
     r <- ref(vcf)
@@ -579,6 +579,7 @@ setMethod("breakendRanges", "VCF",
 #' @param vcf A VCF object.
 #' @param align The alignment type.
 #' @param is_higher_breakend Breakpoint ID ordering.
+#' @return A VCF object with adjusted nominal positions.
 align_breakpoints <- function(vcf, align=c("centre"), is_higher_breakend=names(vcf) < info(vcf)$PARID) {
 	if (length(vcf) == 0) {
 		return(vcf)
