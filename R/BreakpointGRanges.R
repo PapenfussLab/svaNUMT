@@ -276,6 +276,9 @@ extractReferenceSequence <- function(gr, ref, anchoredBases, followingBases=anch
 	return(seq)
 }
 #' constrict
+#' @param gr GRanges object
+#' @param ref reference 
+#' @param position only 'middle' position is accepted.
 .constrict <- function(gr, ref=NULL,position="middle") {
 	isLower <- start(gr) < start(partner(gr))
 	# Want to call a valid breakpoint
@@ -305,12 +308,11 @@ extractReferenceSequence <- function(gr, ref, anchoredBases, followingBases=anch
 #' Calculates the length of inexact homology between the breakpoint sequence
 #' and the reference
 #'
-#' @param gr breakpoint GRanges
-#' @param ref Reference BSgenome
+#' @param gr reakpoint GRanges
+#' @param ref reference BSgenome
 #' @param anchorLength Number of bases to consider for homology
 #' @param margin Number of additional reference bases include. This allows
 #'		for inexact homology to be detected even in the presence of indels.
-#' @param match alignment
 #' @param mismatch see Biostrings::pairwiseAlignment
 #' @param gapOpening see Biostrings::pairwiseAlignment
 #' @param gapExtension see Biostrings::pairwiseAlignment
@@ -372,6 +374,9 @@ calculateReferenceHomology <- function(gr, ref,
 
 
 #' Converts to breakend notation
+#' @param gr GRanges object.
+#' @param insSeq insert sequence of the GRanges.
+#' @param ref reference sequence of the GRanges.
 .toVcfBreakendNotationAlt = function(gr, insSeq=gr$insSeq, ref=gr$REF) {
 	assert_that(all(width(gr) == 1))
 	assert_that(!is.null(insSeq))
@@ -391,9 +396,13 @@ calculateReferenceHomology <- function(gr, ref,
 #' Converts the given breakpoint GRanges object to VCF format in breakend
 #' notation.
 #'
-#' @param gr breakpoint GRanges object. Can contain both breakpoint and single breakend SV records
+#' @param gr breakpoint GRanges object. Can contain both breakpoint and single 
+#' breakend SV records.
+#' @param ... For cbind and rbind a list of VCF objects. For all other methods 
+#' ... are additional arguments passed to methods. See VCF class in 
+#' VariantAnnotation for more details.
 #'
-breakpointGRangesToVCF <- function(gr) {
+breakpointGRangesToVCF <- function(gr, ...) {
 	if (is.null(gr$insSeq)) {
 		gr$insSeq = rep("", length(gr))
 	}
@@ -415,6 +424,7 @@ breakpointGRangesToVCF <- function(gr) {
 		REF=gr$REF,
 		QUAL=gr$QUAL,
 		FILTER=gr$FILTER)
+	
 	VCF(rowRanges = GRanges(), colData = DataFrame(), exptData = list(header = VCFHeader()), fixed = DataFrame(), info = DataFrame(), geno = SimpleList(), ..., collapsed=FALSE, verbose = FALSE)
 
 }

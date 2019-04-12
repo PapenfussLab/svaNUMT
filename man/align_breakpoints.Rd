@@ -2,11 +2,18 @@
 % Please edit documentation in R/extensions-VCF.R
 \name{align_breakpoints}
 \alias{align_breakpoints}
-\title{Adjusts the nominal position of a breakpoints}
+\title{Adjusting the nominal position of a pair of partnered breakpoint.}
 \usage{
 align_breakpoints(vcf, align = c("centre"),
   is_higher_breakend = names(vcf) < info(vcf)$PARID)
 }
+\arguments{
+\item{vcf}{A VCF object.}
+
+\item{align}{The alignment type.}
+
+\item{is_higher_breakend}{Breakpoint ID ordering.}
+}
 \description{
-Adjusts the nominal position of a breakpoints
+Adjusting the nominal position of a pair of partnered breakpoint.
 }

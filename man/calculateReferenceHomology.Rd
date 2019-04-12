@@ -9,24 +9,22 @@ calculateReferenceHomology(gr, ref, anchorLength = 300, margin = 5,
   match = 2, mismatch = -6, gapOpening = 5, gapExtension = 3)
 }
 \arguments{
-\item{gr}{breakpoint GRanges}
+\item{gr}{reakpoint GRanges}
 
-\item{ref}{Reference BSgenome}
+\item{ref}{reference BSgenome}
 
 \item{anchorLength}{Number of bases to consider for homology}
 
 \item{margin}{Number of additional reference bases include. This allows
 for inexact homology to be detected even in the presence of indels.}
 
-\item{match}{alignment}
+\item{match}{see Biostrings::pairwiseAlignment}
 
 \item{mismatch}{see Biostrings::pairwiseAlignment}
 
 \item{gapOpening}{see Biostrings::pairwiseAlignment}
 
 \item{gapExtension}{see Biostrings::pairwiseAlignment}
-
-\item{match}{see Biostrings::pairwiseAlignment}
 }
 \description{
 Calculates the length of inexact homology between the breakpoint sequence

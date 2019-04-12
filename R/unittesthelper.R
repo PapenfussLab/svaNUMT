@@ -1,5 +1,7 @@
 #' testthat helper utility to locate files used
 #' for package tests
+#' @param filename Name of the test file.
+#' @param location Directory of the test file. 
 .testfile <- function(filename, location="extdata") {
     if (file.exists(filename)) return(filename)
     f <- system.file(location, filename, package="StructuralVariantAnnotation")

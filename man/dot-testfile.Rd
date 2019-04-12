@@ -7,6 +7,11 @@ for package tests}
 \usage{
 .testfile(filename, location = "extdata")
 }
+\arguments{
+\item{filename}{Name of the test file.}
+
+\item{location}{Directory of the test file.}
+}
 \description{
 testthat helper utility to locate files used
 for package tests

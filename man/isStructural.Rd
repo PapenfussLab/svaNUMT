@@ -18,6 +18,9 @@ isStructural(x, ...)
 }
 \arguments{
 \item{x}{A VCF object.}
+
+\item{singleAltOnly}{Whether only single ALT values are accepted. Default is
+set to TRUE.}
 }
 \value{
 A logical list of which the length is the same with the input object.

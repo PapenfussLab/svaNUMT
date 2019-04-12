@@ -4,14 +4,23 @@
 \name{breakpointRanges}
 \alias{breakpointRanges}
 \alias{breakpointRanges,VCF-method}
+\alias{.breakpointRanges}
 \title{Extracting the structural variants as a GRanges.}
 \usage{
 breakpointRanges(x, ...)
 
 \S4method{breakpointRanges}{VCF}(x, ...)
+
+.breakpointRanges(vcf, nominalPosition = FALSE,
+  placeholderName = "svrecord", suffix = "_bp", info_columns = NULL,
+  unpartneredBreakends = FALSE)
 }
 \arguments{
 \item{x}{A VCF object}
+
+\item{...}{Parameters of \code{.breakpointRanges()}. See below.}
+
+\item{vcf}{A VCF object.}
 
 \item{nominalPosition}{Determines whether to call the variant at the
 nominal VCF position, or to call the confidence interval (incorporating
@@ -24,12 +33,18 @@ the nomimal variant position only.}
 \item{suffix}{The suffix to append to varaint names.}
 
 \item{info_columns}{VCF INFO columns to include in the GRanges object.}
+
+\item{unpartneredBreakends}{Determining whether to report unpartnered 
+breakends. Default is set to FALSE.}
 }
 \value{
 A GRanges object of SVs.
 }
 \description{
 Extracting the structural variants as a GRanges.
+
+.breakpointRanges() is an internal function for extracting structural 
+variants as GRanges.
 }
 \details{
 Structural variants are converted to breakend notation.

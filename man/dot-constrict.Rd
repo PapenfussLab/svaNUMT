@@ -6,6 +6,13 @@
 \usage{
 .constrict(gr, ref = NULL, position = "middle")
 }
+\arguments{
+\item{gr}{GRanges object}
+
+\item{ref}{reference}
+
+\item{position}{only 'middle' position is accepted.}
+}
 \description{
 constrict
 }

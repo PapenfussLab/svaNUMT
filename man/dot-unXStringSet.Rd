@@ -6,6 +6,9 @@
 \usage{
 .unXStringSet(x)
 }
+\arguments{
+\item{x}{an XStringSet.}
+}
 \description{
 converts an XStringSet to a character
 }

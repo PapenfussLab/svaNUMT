@@ -8,6 +8,11 @@ each string pair}
 \usage{
 .pairwiseLCPrefix(s1, s2, ignore.case = FALSE)
 }
+\arguments{
+\item{s1, s2}{A pair of strings.}
+
+\item{ignore.case}{Whether cases in the strings should be ignored.}
+}
 \description{
 vectorised pairwise longest common prefix
 Returns the length of the longest common prefix for

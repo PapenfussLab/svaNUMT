@@ -6,6 +6,13 @@
 \usage{
 .toVcfBreakendNotationAlt(gr, insSeq = gr$insSeq, ref = gr$REF)
 }
+\arguments{
+\item{gr}{GRanges object.}
+
+\item{insSeq}{insert sequence of the GRanges.}
+
+\item{ref}{reference sequence of the GRanges.}
+}
 \description{
 Converts to breakend notation
 }

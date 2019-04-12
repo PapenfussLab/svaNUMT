@@ -5,10 +5,15 @@
 \title{Converts the given breakpoint GRanges object to VCF format in breakend
 notation.}
 \usage{
-breakpointGRangesToVCF(gr)
+breakpointGRangesToVCF(gr, ...)
 }
 \arguments{
-\item{gr}{breakpoint GRanges object. Can contain both breakpoint and single breakend SV records}
+\item{gr}{breakpoint GRanges object. Can contain both breakpoint and single 
+breakend SV records.}
+
+\item{...}{For cbind and rbind a list of VCF objects. For all other methods 
+... are additional arguments passed to methods. See VCF class in 
+VariantAnnotation for more details.}
 }
 \description{
 Converts the given breakpoint GRanges object to VCF format in breakend

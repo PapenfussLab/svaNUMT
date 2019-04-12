@@ -13,15 +13,8 @@ breakendRanges(x, ...)
 \arguments{
 \item{x}{A VCF object.}
 
-\item{nominalPosition}{Determines whether to call the variant at the
-nominal VCF position, or to call the confidence interval. Default value is
-set to FALSE.}
-
-\item{placeholderName}{Variant name prefix to assign to unnamed variants.}
-
-\item{suffix}{The suffix to append to varaint names.}
-
-\item{info_columns}{VCF INFO columns to include in the GRanges object.}
+\item{...}{Parameters of \code{.breakpointRanges()}. See breakpointRanges for
+more details.}
 }
 \value{
 A GRanges object of SVs.

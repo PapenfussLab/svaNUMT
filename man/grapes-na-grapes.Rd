@@ -6,6 +6,9 @@
 \usage{
 a \%na\% b
 }
+\arguments{
+\item{a, b}{objects to be tested or coerced.}
+}
 \description{
 Replaces the NA values in a with corresponding values in b
 }
