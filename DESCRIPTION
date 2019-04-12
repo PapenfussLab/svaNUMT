@@ -16,8 +16,8 @@ License: GPL-3
 Depends:
 	GenomicRanges,
 	rtracklayer,
-  VariantAnnotation,
-  BiocGenerics
+    VariantAnnotation,
+    BiocGenerics
 Imports:
     assertthat,
     Biostrings,
@@ -31,7 +31,6 @@ Suggests:
     covr,
     knitr,
     plyranges,
-    dplyr,
     ggbio,
     biovizBase,
     circlize,
