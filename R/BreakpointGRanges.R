@@ -162,16 +162,16 @@ countBreakpointOverlaps <- function(querygr, subjectgr, countOnlyBest=FALSE,
 	hits <- as.data.frame(findBreakpointOverlaps(querygr, subjectgr, maxgap, minoverlap, ignore.strand, sizemargin=sizemargin, restrictMarginToSizeMultiple=restrictMarginToSizeMultiple))
 	if (!countOnlyBest) {
 		hits <- hits %>%
-	      dplyr::group_by(queryHits) %>%
+	      dplyr::group_by(.data$queryHits) %>%
 	      dplyr::summarise(n=dplyr::n())
 	} else {
 		# assign supporting evidence to the call with the highest QUAL
 		hits$QUAL <- S4Vectors::mcols(querygr)[[breakpointScoreColumn]][hits$queryHits]
 	    hits <- hits %>%
-	      dplyr::arrange(desc(QUAL), queryHits) %>%
-	      dplyr::distinct(subjectHits, .keep_all=TRUE) %>%
-	      dplyr::group_by(queryHits) %>%
-	      dplyr::summarise(n=n())
+	      dplyr::arrange(desc(.data$QUAL), .data$queryHits) %>%
+	      dplyr::distinct(.data$subjectHits, .keep_all=TRUE) %>%
+	      dplyr::group_by(.data$queryHits) %>%
+	      dplyr::summarise(n=dplyr::n())
 	}
     hitscounts[hits$queryHits] <- hits$n
     return(hitscounts)
@@ -406,7 +406,9 @@ breakpointGRangesToVCF <- function(gr, ...) {
 	if (is.null(gr$insSeq)) {
 		gr$insSeq = rep("", length(gr))
 	}
-	nominalgr = GRanges(seqnames=GenomeInfoDb::seqnames(gr), ranges=IRanges::IRanges(start=(end(gr) + start(gr)) / 2, width=1))
+	nominalgr = GRanges(seqnames=GenomeInfoDb::seqnames(gr), 
+	                    ranges=IRanges::IRanges(start=(end(gr) + start(gr)) / 2, 
+	                                            width=1))
 	if (is.null(gr$REF)) {
 		gr$REF = rep("N", length(gr))
 	}
@@ -425,7 +427,10 @@ breakpointGRangesToVCF <- function(gr, ...) {
 		QUAL=gr$QUAL,
 		FILTER=gr$FILTER)
 	
-	VCF(rowRanges = GRanges(), colData = DataFrame(), exptData = list(header = VCFHeader()), fixed = DataFrame(), info = DataFrame(), geno = SimpleList(), ..., collapsed=FALSE, verbose = FALSE)
+	VariantAnnotation::VCF(rowRanges = GRanges(), colData = S4Vectors::DataFrame(), 
+	    exptData = list(header = VCFHeader()), fixed = S4Vectors::DataFrame(), 
+	    info = DataFrame(), geno = S4Vectors::SimpleList(), ..., collapsed=FALSE, 
+	    verbose = FALSE)
 
 }
 

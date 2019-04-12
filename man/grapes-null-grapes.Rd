@@ -2,12 +2,13 @@
 % Please edit documentation in R/util.R
 \name{\%null\%}
 \alias{\%null\%}
-\title{Uses b if a is NULL
- @param a,b objects to be tested or coerced.}
+\title{Uses b if a is NULL}
 \usage{
 a \%null\% b
 }
+\arguments{
+\item{a, b}{objects to be tested or coerced.}
+}
 \description{
 Uses b if a is NULL
- @param a,b objects to be tested or coerced.
 }

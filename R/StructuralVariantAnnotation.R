@@ -24,6 +24,8 @@
 #' @import rtracklayer
 #' @import Biostrings
 #' @import GenomicRanges
-#' @importFrom dplyr group_by summarise n arrange distinct bind_rows filter lead %>%
+#' @importFrom dplyr group_by summarise n arrange distinct bind_rows filter 
+#' lead %>% desc
 #' @importFrom methods as is setMethod setGeneric
+#' @importFrom rlang .data
 NULL

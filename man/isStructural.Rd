@@ -19,6 +19,8 @@ isStructural(x, ...)
 \arguments{
 \item{x}{A VCF object.}
 
+\item{...}{Internal parameters.}
+
 \item{singleAltOnly}{Whether only single ALT values are accepted. Default is
 set to TRUE.}
 }

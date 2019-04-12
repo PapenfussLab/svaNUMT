@@ -19,6 +19,7 @@
 #' @details The function takes a VCF object as input, and returns a logical
 #' value for each row, determining whether the variant is a symbolic allele.
 #' @param x A VCF object.
+#' @param ... Internal parameters.
 #' @return A logical list of which the length is the same with the input object.
 #' @examples
 #' vcf.file <- system.file("extdata", "gridss.vcf", package = "StructuralVariantAnnotation")
@@ -61,6 +62,7 @@ setMethod("isSymbolic", "ExpandedVCF",
 #' @details The function takes a VCF object as input, and returns a logical
 #' value for each row, determining whether the variant is a structural variant.
 #' @param x A VCF object.
+#' @param ... Internal parameters.
 #' @return A logical list of which the length is the same with the input object.
 #' @examples
 #' vcf.file <- system.file("extdata", "gridss.vcf", package = "StructuralVariantAnnotation")
@@ -582,7 +584,7 @@ align_breakpoints <- function(vcf, align=c("centre"), is_higher_breakend=names(v
 		return(vcf)
 	}
 	align = match.arg(align)
-	if (!all(elementNROWS(info(vcf)$CIPOS) == 2)) {
+	if (!all(S4Vectors::elementNROWS(info(vcf)$CIPOS) == 2)) {
 		stop("CIPOS not specified for all variants.")
 	}
 	is_higher_breakend[is.na(is_higher_breakend)] = FALSE

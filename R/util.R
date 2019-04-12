@@ -44,7 +44,7 @@ setMethod(".unXStringSet", "XStringSet", function(x) as.character(x))
 }
 
 #' Uses b if a is NULL
-#'  @param a,b objects to be tested or coerced.
+#' @param a,b objects to be tested or coerced.
 '%null%' <- function(a, b) {
 	if (is.null(a)) return(b)
 	return (a)
