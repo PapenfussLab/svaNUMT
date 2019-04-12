@@ -5,8 +5,8 @@
 \title{Finding overlapping breakpoints between two breakpoint sets}
 \usage{
 findBreakpointOverlaps(query, subject, maxgap = -1L, minoverlap = 0L,
-  ignore.strand = FALSE, sizemargin = 0.25,
-  restrictMarginToSizeMultiple = 0.5)
+  ignore.strand = FALSE, sizemargin = NULL,
+  restrictMarginToSizeMultiple = NULL)
 }
 \arguments{
 \item{query, subject}{Both of the input objects should be GRanges objects.
@@ -20,7 +20,7 @@ overlapping positions between breakend intervals. Both should be scalar integers
 allows non-negative values, and minoverlap allows positive values.
 See GenomicRanges::findOverlaps-methods for details.}
 
-\item{ignore.strand}{Default value is FALSE. strand inforamtion is ignored when set to
+\item{ignore.strand}{Default value is FALSE. strand information is ignored when set to
 TRUE.
 See GenomicRanges::findOverlaps-methods for details.}
 

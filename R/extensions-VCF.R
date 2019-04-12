@@ -90,7 +90,7 @@ setMethod("isStructural", "ExpandedVCF",
     a <- elementExtract(alt(vcf))
     result <- ifelse(!isStructural(vcf), 0,
 		elementExtract(info(vcf)$SVLEN) %na%
-		(elementExtract(info(vcf)$END) - start(rowRanges(vcf))) %na%
+		(elementExtract(info(vcf)$END) - start(SummarizedExperiment::rowRanges(vcf))) %na%
 		(ifelse(isSymbolic(vcf), NA_integer_, IRanges::nchar(a) - IRanges::nchar(r))))
     return(result)
 }
@@ -173,7 +173,7 @@ setMethod("breakpointRanges", "VCF",
 	assertthat::assert_that(!is.null(row.names(vcf)))
 	assertthat::assert_that(assertthat::noNA(row.names(vcf)))
 	assertthat::assert_that(!any(duplicated(row.names(vcf))))
-	gr <- rowRanges(vcf)
+	gr <- SummarizedExperiment::rowRanges(vcf)
 	gr$REF <- as.character(ref(vcf))
 	gr$ALT <- as.character(elementExtract(alt(vcf), 1))
 	gr$vcfId <- names(vcf)
@@ -229,7 +229,7 @@ setMethod("breakpointRanges", "VCF",
 			strand(cgr) <- "+"
 			mategr <- cgr
 			strand(mategr) <- "-"
-			ranges(mategr) <- IRanges(start=start(cgr) + nchar(cgr$REF) - commonPrefixLength + 1, width=1)
+			ranges(mategr) <- IRanges::IRanges(start=start(cgr) + nchar(cgr$REF) - commonPrefixLength + 1, width=1)
 
 			names(mategr) <- paste0(names(cgr), suffix, 2)
 			names(cgr) <- paste0(names(cgr), suffix, 1)
@@ -266,7 +266,7 @@ setMethod("breakpointRanges", "VCF",
 			if (any(is.na(end))) {
 				stop(paste("Variant of undefined length: ", paste(names(cgr)[is.na(end),], collapse=", ")))
 			}
-			ranges(mategr) <- IRanges(start=end + ifelse(dup, 0, 1), width=1)
+			ranges(mategr) <- IRanges::IRanges(start=end + ifelse(dup, 0, 1), width=1)
 
 			cistartoffset <- elementExtract(info(cvcf)$CIEND, 1)
 			ciendoffset <- elementExtract(info(cvcf)$CIEND, 2)
@@ -315,9 +315,9 @@ setMethod("breakpointRanges", "VCF",
 			cgr3 <- cgr1
 			cgr4 <- cgr2
 
-			ranges(cgr2) <- IRanges(start=end + 1, width=1)
-			ranges(cgr3) <- IRanges(start=start(cgr1) - 1, width=1)
-			ranges(cgr4) <- IRanges(start=end, width=1)
+			ranges(cgr2) <- IRanges::IRanges(start=end + 1, width=1)
+			ranges(cgr3) <- IRanges::IRanges(start=start(cgr1) - 1, width=1)
+			ranges(cgr4) <- IRanges::IRanges(start=end, width=1)
 			strand(cgr1) <- "-"
 			strand(cgr2) <- "-"
 			strand(cgr3) <- "+"
@@ -374,7 +374,7 @@ setMethod("breakpointRanges", "VCF",
 				cgr <- cgr[!toRemove,]
 				}
 			mategr <- cgr[cgr$partner,]
-			cgr$svLen <- ifelse(seqnames(cgr)==seqnames(mategr), abs(start(cgr) - start(mategr)) - 1, NA_integer_)
+			cgr$svLen <- ifelse(GenomeInfoDb::seqnames(cgr)==GenomeInfoDb::seqnames(mategr), abs(start(cgr) - start(mategr)) - 1, NA_integer_)
 			# make deletion-like events have a -ve svLen
 			cgr$svLen <- ifelse(strand(cgr) != strand(mategr) &
 					((start(cgr) < start(mategr) & strand(cgr) == "+") |
@@ -422,9 +422,9 @@ setMethod("breakpointRanges", "VCF",
 			width(cgr) <- 1
 			mategr <- cgr
 			# Hack so we can add new seqlevels if required
-			seqlevels(mategr) <- unique(c(seqlevels(mategr), info(cvcf)$CHR2))
-			seqnames(mategr)[seq(1, length(mategr))] <- info(cvcf)$CHR2
-			ranges(mategr) <- IRanges(start=info(cvcf)$END, width=1)
+			GenomeInfoDb::seqlevels(mategr) <- unique(c(GenomeInfoDb::seqlevels(mategr), info(cvcf)$CHR2))
+			GenomeInfoDb::seqnames(mategr)[seq(1, length(mategr))] <- info(cvcf)$CHR2
+			ranges(mategr) <- IRanges::IRanges(start=info(cvcf)$END, width=1)
 			strand(cgr) <- ifelse(info(cvcf)$CT %in% c("3to3", "3to5"), "+", "-")
 			strand(mategr) <- ifelse(info(cvcf)$CT %in% c("3to3", "5to3"), "+", "-")
 
@@ -458,9 +458,9 @@ setMethod("breakpointRanges", "VCF",
 			width(cgr) <- 1
 			mategr <- cgr
 			# Hack so we can add new seqlevels if required
-			seqlevels(mategr) <- unique(c(seqlevels(mategr), info(cvcf)$CHR2))
-			seqnames(mategr)[seq(1, length(mategr))] <- info(cvcf)$CHR2
-			ranges(mategr) <- IRanges(start=info(cvcf)$END, width=1)
+			GenomeInfoDb::seqlevels(mategr) <- unique(c(GenomeInfoDb::seqlevels(mategr), info(cvcf)$CHR2))
+			GenomeInfoDb::seqnames(mategr)[seq(1, length(mategr))] <- info(cvcf)$CHR2
+			ranges(mategr) <- IRanges::IRanges(start=info(cvcf)$END, width=1)
 			# no direction information is reported
 			strand(cgr) <- "*"
 			strand(mategr) <- "*"
@@ -485,7 +485,7 @@ setMethod("breakpointRanges", "VCF",
 	}
 	# incorporate microhomology and confidence intervals
 	if (!nominalPosition) {
-		ranges(outgr) <- IRanges(start=start(outgr) + outgr$cistartoffset, width=outgr$ciwidth + 1, names=names(outgr))
+		ranges(outgr) <- IRanges::IRanges(start=start(outgr) + outgr$cistartoffset, width=outgr$ciwidth + 1, names=names(outgr))
 	}
 	outgr$processed <- NULL
 	outgr$cistartoffset <- NULL
@@ -571,10 +571,10 @@ align_breakpoints <- function(vcf, align=c("centre"), is_higher_breakend=names(v
 		stop("CIPOS not specified for all variants.")
 	}
 	is_higher_breakend[is.na(is_higher_breakend)] = FALSE
-	nominal_start = start(rowRanges(vcf))
+	nominal_start = start(SummarizedExperiment::rowRanges(vcf))
 	cipos = t(matrix(unlist(info(vcf)$CIPOS), nrow=2))
 	ciwdith = cipos[,2] - cipos[,1]
-	orientations = .vcfAltToStrandPair(rowRanges(vcf)$ALT)
+	orientations = .vcfAltToStrandPair(SummarizedExperiment::rowRanges(vcf)$ALT)
 	if (align == "centre") {
 		citargetpos = nominal_start + cipos[,1] + ciwdith / 2.0
 		adjust_by = citargetpos - nominal_start
@@ -585,7 +585,7 @@ align_breakpoints <- function(vcf, align=c("centre"), is_higher_breakend=names(v
 	}
 	isbp = stringr::str_detect(VariantAnnotation::fixed(vcf)$ALT, "[\\]\\[]")
 	is_adjusted_bp =  isbp & !is.na(adjust_by) & adjust_by != 0
-	rowRanges(vcf) = shift(rowRanges(vcf), ifelse(!is_adjusted_bp, 0, adjust_by))
+	SummarizedExperiment::rowRanges(vcf) = shift(SummarizedExperiment::rowRanges(vcf), ifelse(!is_adjusted_bp, 0, adjust_by))
 	info(vcf)$CIPOS = info(vcf)$CIPOS - adjust_by
 	if (!is.null(info(vcf)$CIEND)) {
 		info(vcf)$CIEND = info(vcf)$CIEND - adjust_by
@@ -593,7 +593,7 @@ align_breakpoints <- function(vcf, align=c("centre"), is_higher_breakend=names(v
 	if (!is.null(info(vcf)$IHOMPOS)) {
 		info(vcf)$IHOMPOS = info(vcf)$IHOMPOS - adjust_by
 	}
-	alt = unlist(rowRanges(vcf)$ALT)
+	alt = unlist(SummarizedExperiment::rowRanges(vcf)$ALT)
 	partner_alt = stringr::str_match(alt, "^([^\\]\\[]*)[\\]\\[]([^:]+):([0-9]+)([\\]\\[])([^\\]\\[]*)$")
 	# [,2] anchoring bases
 	# [,3] partner chr

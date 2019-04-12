@@ -20,10 +20,10 @@
 #' @name StructuralVariantAnnotation
 #' @import assertthat
 #' @import BiocGenerics
-#' @importFrom VariantAnnotation readVcf 
-#' @importFrom stringr str_match str_extract str_length str_pad str_detect str_sub 
+#' @import VariantAnnotation
 #' @import rtracklayer
 #' @import Biostrings
 #' @import GenomicRanges
 #' @importFrom dplyr group_by summarise n arrange distinct bind_rows filter lead %>%
+#' @importFrom methods as is setMethod setGeneric
 NULL

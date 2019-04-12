@@ -1,7 +1,7 @@
 Package: StructuralVariantAnnotation
 Type: Package
 Title: Variant annotations for structural variants
-Version: 0.99.4
+Version: 0.99.7
 Date: 2019-04-05
 Authors@R: c(
 	person("Daniel", "Cameron", email="daniel.l.cameron@gmail.com", role=c("aut", "cre"), comment=c(ORCID = "0000-0002-0951-7116")),
@@ -22,7 +22,8 @@ Imports:
     assertthat,
     Biostrings,
     stringr,
-    dplyr
+    dplyr,
+    methods
 Suggests:
     BSgenome.Hsapiens.UCSC.hg19,
     devtools,
@@ -34,7 +35,11 @@ Suggests:
     ggbio,
     biovizBase,
     circlize,
-    tictoc
+    tictoc,
+    GenomeInfoDb,
+    IRanges,
+    S4Vectors,
+    SummarizedExperiment
 RoxygenNote: 6.1.1
 Encoding: UTF-8
 VignetteBuilder: knitr

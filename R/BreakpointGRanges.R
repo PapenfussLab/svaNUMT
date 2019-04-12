@@ -47,7 +47,7 @@ partner <- function(gr) {
 #' overlapping positions between breakend intervals. Both should be scalar integers. maxgap
 #' allows non-negative values, and minoverlap allows positive values.
 #' See GenomicRanges::findOverlaps-methods for details.
-#' @param ignore.strand Default value is FALSE. strand inforamtion is ignored when set to
+#' @param ignore.strand Default value is FALSE. strand information is ignored when set to
 #' TRUE.
 #' See GenomicRanges::findOverlaps-methods for details.
 #' @param sizemargin Error margin in allowable size to prevent matching of events
@@ -72,40 +72,56 @@ partner <- function(gr) {
 #' findBreakpointOverlaps(query.gr, subject.gr, maxgap=100, sizemargin=0.5)
 #' @return A dataframe containing index and error stats of overlapping breakpoints.
 #'@export
-findBreakpointOverlaps <- function(query, subject, maxgap=-1L, minoverlap=0L, ignore.strand=FALSE, sizemargin=0.25, restrictMarginToSizeMultiple=0.5) {
-	hits <- dplyr::bind_rows(
-		as.data.frame(findOverlaps(query, subject, maxgap=maxgap, minoverlap=minoverlap, type="any", select="all", ignore.strand=ignore.strand), row.names=NULL),
-		as.data.frame(findOverlaps(partner(query), partner(subject), maxgap=maxgap, minoverlap=minoverlap, type="any", select="all", ignore.strand=ignore.strand), row.names=NULL))
-	#as.data.frame(findOverlaps(partner(query), partner(subject), maxgap=maxgap, minoverlap=minoverlap, type="any", select="all", ignore.strand=ignore.strand), row.names=NULL))
-
-	# we now want to do:
-	# hits <- hits[duplicated(hits),] # both breakends match
-	# but for large hit sets (such as focal false positive loci) we run out of memory (>32GB)
-	# instead, we sort then check that we match the next record
-	hits = hits %>% dplyr::arrange(queryHits, subjectHits) %>%
-		dplyr::filter(!is.na(dplyr::lead(.$queryHits)) & !is.na(dplyr::lead(.$subjectHits)) & dplyr::lead(.$queryHits) == .$queryHits & dplyr::lead(.$subjectHits) == .$subjectHits)
+findBreakpointOverlaps <- function(query, subject, maxgap=-1L, minoverlap=0L, ignore.strand=FALSE, sizemargin=NULL, restrictMarginToSizeMultiple=NULL) {
+	localhits = findOverlaps(query, subject, maxgap=maxgap, minoverlap=minoverlap, type="any", select="all", ignore.strand=ignore.strand)
+	remotehits = findOverlaps(partner(query), partner(subject), maxgap=maxgap, minoverlap=minoverlap, type="any", select="all", ignore.strand=ignore.strand)
+	## duplicated() version:
+	#hits = Hits(c(queryHits(localhits), queryHits(remotehits)), c(subjectHits(localhits), subjectHits(remotehits)), nLnode=nLnode(localhits), nRnode=nRnode(localhits), sort.by.query=TRUE)
+	#hits = hits[duplicated(hits)]
+	
+	## intersect() version:
+	hits = BiocGenerics::intersect(localhits, remotehits)
+	
+	## dplyr() version:
+	#hits <- dplyr::bind_rows(
+	#	as.data.frame(localhits, row.names=NULL),
+	#	as.data.frame(remotehits, row.names=NULL))
+	#hits = hits %>% dplyr::arrange(queryHits, subjectHits) %>%
+	#	dplyr::filter(!is.na(dplyr::lead(.$queryHits)) & !is.na(dplyr::lead(.$subjectHits)) & dplyr::lead(.$queryHits) == .$queryHits & dplyr::lead(.$subjectHits) == .$subjectHits)
+	
+	## dplyr() exploiting the sorted nature of the findOverlaps():
+	#hits = Hits(c(queryHits(localhits), queryHits(remotehits)), c(subjectHits(localhits), subjectHits(remotehits)), nLnode=nLnode(localhits), nRnode=nRnode(localhits), sort.by.query=TRUE)
+	#queryLead  = dplyr::lead(queryHits(hits))
+	#querySubject  = dplyr::lead(queryHits(hits))
+	#hits = hits[
+	#	!is.na(queryLead) &d
+	#	!is.na(querySubject) &
+	#	queryLead == queryHits(hits) &
+	#	querySubject == subjectHits(hits)]
+	
 	if (!is.null(sizemargin) && !is.na(sizemargin)) {
 		# take into account confidence intervals when calculating event size
 		callwidth <- .distance(query, partner(query))
 		truthwidth <- .distance(subject, partner(subject))
 		callsize <- callwidth + (query$insLen %na% 0)
 		truthsize <- truthwidth + (subject$insLen %na% 0)
-		hits$sizeerror <- .distance(
-			IRanges(start=callsize$min[hits$queryHits], end=callsize$max[hits$queryHits]),
-			IRanges(start=truthsize$min[hits$subjectHits], end=truthsize$max[hits$subjectHits])
+		sizeerror <- .distance(
+			IRanges::IRanges(start=callsize$min[S4Vectors::queryHits(hits)], end=callsize$max[S4Vectors::queryHits(hits)]),
+			IRanges::IRanges(start=truthsize$min[S4Vectors::subjectHits(hits)], end=truthsize$max[S4Vectors::subjectHits(hits)])
 			)$min
 		# event sizes must be within sizemargin
-		hits <- hits[hits$sizeerror - 1 < sizemargin * pmin(callsize$max[hits$queryHits], truthsize$max[hits$subjectHits]),]
+		hits <- hits[sizeerror - 1 < sizemargin * pmin(callsize$max[S4Vectors::queryHits(hits)], truthsize$max[S4Vectors::subjectHits(hits)]),]
 		# further restrict breakpoint positions for small events
-		hits$localbperror <- .distance(query[hits$queryHits], subject[hits$subjectHits])$min
-		hits$remotebperror <- .distance(partner(query)[hits$queryHits], partner(subject)[hits$subjectHits])$min
+		localbperror <- .distance(query[S4Vectors::queryHits(hits)], subject[S4Vectors::subjectHits(hits)])$min
+		remotebperror <- .distance(partner(query)[S4Vectors::queryHits(hits)], partner(subject)[S4Vectors::subjectHits(hits)])$min
 		if (!is.null(restrictMarginToSizeMultiple)) {
-			allowablePositionError <- (pmin(callsize$max[hits$queryHits], truthsize$max[hits$subjectHits]) * restrictMarginToSizeMultiple + 1)
-			hits <- hits[hits$localbperror <= allowablePositionError & hits$remotebperror <= allowablePositionError, ]
+			allowablePositionError <- (pmin(callsize$max[S4Vectors::queryHits(hits)], truthsize$max[S4Vectors::subjectHits(hits)]) * restrictMarginToSizeMultiple + 1)
+			hits <- hits[localbperror <= allowablePositionError & remotebperror <= allowablePositionError, ]
 		}
 	}
 	return(hits)
 }
+# TODO: new function to annotate a Hits object with sizeerror, localbperror, and remotebperror
 .distance <- function(r1, r2) {
 	return(data.frame(
 		min=pmax(0, pmax(start(r1), start(r2)) - pmin(end(r1), end(r2))),
@@ -140,10 +156,10 @@ findBreakpointOverlaps <- function(query, subject, maxgap=-1L, minoverlap=0L, ig
 #' @export
 countBreakpointOverlaps <- function(querygr, subjectgr, countOnlyBest=FALSE,
 									breakpointScoreColumn = "QUAL", maxgap=-1L,
-									minoverlap=0L, ignore.strand=FALSE, sizemargin=0.25,
-									restrictMarginToSizeMultiple=0.5) {
+									minoverlap=0L, ignore.strand=FALSE, sizemargin=NULL,
+									restrictMarginToSizeMultiple=NULL) {
 	hitscounts <- rep(0, length(querygr))
-	hits <- findBreakpointOverlaps(querygr, subjectgr, maxgap, minoverlap, ignore.strand, sizemargin=sizemargin, restrictMarginToSizeMultiple=restrictMarginToSizeMultiple)
+	hits <- as.data.frame(findBreakpointOverlaps(querygr, subjectgr, maxgap, minoverlap, ignore.strand, sizemargin=sizemargin, restrictMarginToSizeMultiple=restrictMarginToSizeMultiple))
 	if (!countOnlyBest) {
 		hits <- hits %>%
 	      dplyr::group_by(queryHits) %>%
@@ -247,12 +263,12 @@ extractReferenceSequence <- function(gr, ref, anchoredBases, followingBases=anch
 	assertthat::assert_that(is(gr, "GRanges"))
 	assertthat::assert_that(is(ref, "BSgenome"))
 	gr <- .constrict(gr)
-	seqgr <- GRanges(seqnames=seqnames(gr), ranges=IRanges(
+	seqgr <- GRanges(seqnames=GenomeInfoDb::seqnames(gr), ranges=IRanges::IRanges(
 		start=start(gr) - ifelse(strand(gr) == "-", followingBases, anchoredBases - 1),
 		end=end(gr) + ifelse(strand(gr) == "-", anchoredBases - 1, followingBases)))
 	startPad <- pmax(0, 1 - start(seqgr))
-	endPad <- pmax(0, end(seqgr) - seqlengths(ref)[as.character(seqnames(seqgr))])
-	GenomicRanges::ranges(seqgr) <- IRanges(start=start(seqgr) + startPad, end=end(seqgr) - endPad)
+	endPad <- pmax(0, end(seqgr) - GenomeInfoDb::seqlengths(ref)[as.character(GenomeInfoDb::seqnames(seqgr))])
+	GenomicRanges::ranges(seqgr) <- IRanges::IRanges(start=start(seqgr) + startPad, end=end(seqgr) - endPad)
 	seq <- Biostrings::getSeq(ref, seqgr)
 	seq <- paste0(stringr::str_pad("", startPad, pad="N"), as.character(seq), stringr::str_pad("", endPad, pad="N"))
 	# DNAStringSet doesn't like out of bounds subsetting
@@ -273,7 +289,7 @@ extractReferenceSequence <- function(gr, ref, anchoredBases, followingBases=anch
 	roundDown <- isLower | strand(gr) == "-"
 	if (position == "middle") {
 		pos <- (start(gr) + end(gr)) / 2
-		GenomicRanges::ranges(gr) <- IRanges(
+		GenomicRanges::ranges(gr) <- IRanges::IRanges(
 			start=ifelse(roundDown,floor(pos), ceiling(pos)),
 			width=1, names=names(gr))
 
@@ -281,7 +297,7 @@ extractReferenceSequence <- function(gr, ref, anchoredBases, followingBases=anch
 		stop(paste("Unrecognised position", position))
 	}
 	if (!is.null(ref)) {
-		GenomicRanges::ranges(gr) <- IRanges(start=pmin(pmax(1, start(gr)), seqlengths(ref)[as.character(seqnames(gr))]), width=1)
+		GenomicRanges::ranges(gr) <- IRanges::IRanges(start=pmin(pmax(1, start(gr)), GenomeInfoDb::seqlengths(ref)[as.character(GenomeInfoDb::seqnames(gr))]), width=1)
 	}
 	return(gr)
 }
@@ -355,27 +371,6 @@ calculateReferenceHomology <- function(gr, ref,
 }
 
 
-#' Identifies breakpoint sequences with signficant homology to BLAST database
-#' sequences. Apparent breakpoints containing such sequence are better explained
-#' by the sequence from the BLAST database such as by alternate assemblies.
-#' 
-#' @details
-#' See https://github.com/mhahsler/rBLAST for rBLAST package installation
-#' instructions
-#' Download and install the package from AppVeyor or install via 
-#' install_github("mhahsler/rBLAST") (requires the R package devtools)
- calculateBlastHomology <- function(gr, ref, db, anchorLength=150) {
-# 	requireNamespace("rBLAST", quietly=FALSE)
-# 	blastseq <- DNAStringSet(breakpointSequence(gr, ref, anchorLength))
-# 	bl <- rBLAST::blast(db=db)
-# 	cl <- predict(bl, blastseq)
-# 	cl$index <- as.integer(substring(cl$QueryID, 7))
-# 	cl$leftOverlap <- anchorLength - cl$Q.start + 1
-# 	cl$rightOverlap <- cl$Q.end - (nchar(blastseq) - anchorLength)
-# 	cl$minOverlap <- pmin(cl$leftOverlap, cl$rightOverlap)
-# 	return(cl)
-}
-
 #' Converts to breakend notation
 .toVcfBreakendNotationAlt = function(gr, insSeq=gr$insSeq, ref=gr$REF) {
 	assert_that(all(width(gr) == 1))
@@ -388,8 +383,8 @@ calculateReferenceHomology <- function(gr, ref,
 	partnergr = gr[gr$partner]
 	partnerDirectionChar = ifelse(strand(partnergr) == "+", "]", "[")
 	breakpointAlt = ifelse(as.character(strand(gr)) == "+",
-						   paste0(ref, insSeq, partnerDirectionChar, seqnames(partnergr), ":", start(partnergr), partnerDirectionChar),
-						   paste0(partnerDirectionChar, seqnames(partnergr), ":", start(partnergr), partnerDirectionChar, insSeq, ref))
+						   paste0(ref, insSeq, partnerDirectionChar, GenomeInfoDb::seqnames(partnergr), ":", start(partnergr), partnerDirectionChar),
+						   paste0(partnerDirectionChar, GenomeInfoDb::seqnames(partnergr), ":", start(partnergr), partnerDirectionChar, insSeq, ref))
 	return (ifelse(isBreakpoint, breakpointAlt, breakendAlt))
 }
 
@@ -402,7 +397,7 @@ breakpointGRangesToVCF <- function(gr) {
 	if (is.null(gr$insSeq)) {
 		gr$insSeq = rep("", length(gr))
 	}
-	nominalgr = GRanges(seqnames=seqnames(gr), ranges=IRanges(start=(end(gr) + start(gr)) / 2, width=1))
+	nominalgr = GRanges(seqnames=GenomeInfoDb::seqnames(gr), ranges=IRanges::IRanges(start=(end(gr) + start(gr)) / 2, width=1))
 	if (is.null(gr$REF)) {
 		gr$REF = rep("N", length(gr))
 	}
@@ -421,5 +416,6 @@ breakpointGRangesToVCF <- function(gr) {
 		QUAL=gr$QUAL,
 		FILTER=gr$FILTER)
 	VCF(rowRanges = GRanges(), colData = DataFrame(), exptData = list(header = VCFHeader()), fixed = DataFrame(), info = DataFrame(), geno = SimpleList(), ..., collapsed=FALSE, verbose = FALSE)
+
 }
 

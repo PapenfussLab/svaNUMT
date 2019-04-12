@@ -35,12 +35,8 @@ test_that(".constrict", {
 		))), hg19)
 	expect_equal(start(gr), c(1, 16571))
 })
-
-justHits <- function(df) {
-	return(data.frame(queryHits=df$queryHits, subjectHits=df$subjectHits))
-}
 test_that("findBreakpointOverlaps", {
-	expect_equal(justHits(findBreakpointOverlaps(breakpointRanges(.testrecord(c(
+	expect_equal(as.data.frame(findBreakpointOverlaps(breakpointRanges(.testrecord(c(
 			"chr1	100000	a	N	N[chr1:100100[	.	.	SVTYPE=BND;PARID=b",
 			"chr1	100100	b	N	]chr1:100000]N	.	.	SVTYPE=BND;PARID=a",
 			"chr1	100000	c	N	N[chr1:100200[	.	.	SVTYPE=BND;PARID=d",
@@ -50,7 +46,7 @@ test_that("findBreakpointOverlaps", {
 			"chr1	100200	d	N	]chr1:100000]N	.	.	SVTYPE=BND;PARID=c"))))),
 		data.frame(queryHits=c(3,4), subjectHits=c(1,2)))
 
-	expect_equal(justHits(findBreakpointOverlaps(breakpointRanges(.testrecord(c(
+	expect_equal(as.data.frame(findBreakpointOverlaps(breakpointRanges(.testrecord(c(
 			"chr1	100000	a	N	N[chr1:100100[	.	.	SVTYPE=BND;PARID=b",
 			"chr1	100100	b	N	]chr1:100000]N	.	.	SVTYPE=BND;PARID=a",
 			"chr1	100000	c	N	N[chr1:100200[	.	.	SVTYPE=BND;PARID=d",
@@ -61,21 +57,21 @@ test_that("findBreakpointOverlaps", {
 		maxgap=2000, sizemargin=NULL)),
 		data.frame(queryHits=c(1,2,3,4), subjectHits=c(1,2,1,2)))
 
-	expect_equal(justHits(findBreakpointOverlaps(breakpointRanges(.testrecord(c(
+	expect_equal(as.data.frame(findBreakpointOverlaps(breakpointRanges(.testrecord(c(
 			"chr1	1	a	N	N[chr1:100100[	.	.	SVTYPE=BND;CIPOS=0,100000;PARID=b",
 			"chr1	100100	b	N	]chr1:1]N	.	.	SVTYPE=BND;PARID=a"))),
 		breakpointRanges(.testrecord(c(
 			"chr1	100000	c	N	N[chr1:100100[	.	.	SVTYPE=BND;PARID=d",
 			"chr1	100100	d	N	]chr1:100000]N	.	.	SVTYPE=BND;PARID=c"))))),
 		data.frame(queryHits=c(1,2), subjectHits=c(1,2)))
-	expect_equal(justHits(findBreakpointOverlaps(breakpointRanges(.testrecord(c(
+	expect_equal(as.data.frame(findBreakpointOverlaps(breakpointRanges(.testrecord(c(
 			"chr1	10000	a	N	<DEL>	.	.	SVTYPE=DEL;SVLEN=-1000"))),
 		breakpointRanges(.testrecord(c(
 			"chr1	10000	c	N	N[chr1:11000[	.	.	SVTYPE=BND;PARID=d",
 			"chr1	11000	d	N	]chr1:100000]N	.	.	SVTYPE=BND;PARID=c"))),
 		maxgap=1)),
 		data.frame(queryHits=c(1,2), subjectHits=c(1,2)))
-	expect_equal(justHits(findBreakpointOverlaps(breakpointRanges(.testrecord(c(
+	expect_equal(as.data.frame(findBreakpointOverlaps(breakpointRanges(.testrecord(c(
 			"chr1	10000	a	N	<DEL>	.	.	SVTYPE=DEL;SVLEN=-1000"))),
 		breakpointRanges(.testrecord(c(
 			"chr1	11000	d	N	]chr1:100000]N	.	.	SVTYPE=BND;PARID=c",
@@ -88,7 +84,7 @@ test_that("findBreakpointOverlaps_match_both_sides", {
 	names(gr1) = c("1", "2")
 	gr2 = GRanges(seqnames="1", ranges=IRanges(start=c(100, 100), width=1),  strand="+", partner=c("2", "1"))
 	names(gr2) = c("1", "2")
-	expect_equal(nrow(findBreakpointOverlaps(gr1, gr2, sizemargin=NULL)), 0)
+	expect_equal(nrow(as.data.frame(findBreakpointOverlaps(gr1, gr2, sizemargin=NULL))), 0)
 })
 
 test_that("findBreakpointOverlaps: delly vs truth", {
@@ -100,7 +96,7 @@ test_that("findBreakpointOverlaps: delly vs truth", {
 		"chr12	100419669	truth_8545_h	G	]chr12:6905247]g	.	.	EVENT=truth_8545_;MATEID=truth_8545_o;PARID=truth_8545_o;SVTYPE=BND"
 		)))
 	hits <- findBreakpointOverlaps(grdelly, grtruth, maxgap=200, ignore.strand=TRUE)
-	expect_equal(2, nrow(hits))
+	expect_equal(2, nrow(as.data.frame(hits)))
 })
 
 test_that("countBreakpointOverlaps", {
@@ -217,17 +213,17 @@ test_that("calculateBlastHomology", {
 	#bh <- calculateBlastHomology(gr, hg19, "~/blastdb/16SMicrobial")
 
 })
-test_that("performance_test_partner", {
-	n = 10000
-	gr = GRanges(
-		seqnames="1",
-		ranges=IRanges(start=1:(2*n), width=1),
-		partner=c(paste0(1:n, "o"), paste0(1:n, "h")))
-	names(gr)=c(paste0(1:n, "h"), paste0(1:n, "o"))
-	tictoc::tic(paste0("Start", n))
-	pgr = partner(gr)
-	tictoc::toc()
-})
+# test_that("performance_test_partner", {
+# 	n = 10000
+# 	gr = GRanges(
+# 		seqnames="1",
+# 		ranges=IRanges(start=1:(2*n), width=1),
+# 		partner=c(paste0(1:n, "o"), paste0(1:n, "h")))
+# 	names(gr)=c(paste0(1:n, "h"), paste0(1:n, "o"))
+# 	tictoc::tic(paste0("Start", n))
+# 	pgr = partner(gr)
+# 	tictoc::toc()
+# })
 
 
 
