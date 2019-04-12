@@ -11,6 +11,9 @@ elementExtract(x, offset = 1)
 
 \item{offset}{offset of list}
 }
+\value{
+The element of each element at given positions.
+}
 \description{
 Extracts the element of each element at the given position
 }

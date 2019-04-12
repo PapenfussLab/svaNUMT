@@ -13,6 +13,9 @@
 
 \item{ref}{reference sequence of the GRanges.}
 }
+\value{
+breakendAlt or breakpointAlt depending on whether the variant is partnered.
+}
 \description{
 Converts to breakend notation
 }

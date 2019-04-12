@@ -2,7 +2,7 @@
 % Please edit documentation in R/unittesthelper.R
 \name{.testfile}
 \alias{.testfile}
-\title{testthat helper utility to locate files used
+\title{Testthat helper utility to locate files used
 for package tests}
 \usage{
 .testfile(filename, location = "extdata")
@@ -12,7 +12,10 @@ for package tests}
 
 \item{location}{Directory of the test file.}
 }
+\value{
+Returns the file to be tested.
+}
 \description{
-testthat helper utility to locate files used
+Testthat helper utility to locate files used
 for package tests
 }

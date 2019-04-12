@@ -15,6 +15,9 @@ breakend SV records.}
 ... are additional arguments passed to methods. See VCF class in 
 VariantAnnotation for more details.}
 }
+\value{
+A VCF object.
+}
 \description{
 Converts the given breakpoint GRanges object to VCF format in breakend
 notation.

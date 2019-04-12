@@ -26,6 +26,10 @@ for inexact homology to be detected even in the presence of indels.}
 
 \item{gapExtension}{see Biostrings::pairwiseAlignment}
 }
+\value{
+A dataframe containing the length of inexact homology between the 
+breakpoint sequence and the reference.
+}
 \description{
 Calculates the length of inexact homology between the breakpoint sequence
 and the reference

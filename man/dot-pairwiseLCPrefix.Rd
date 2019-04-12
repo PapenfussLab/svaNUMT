@@ -13,6 +13,9 @@ each string pair}
 
 \item{ignore.case}{Whether cases in the strings should be ignored.}
 }
+\value{
+The length of the longest common prefix for each string pair.
+}
 \description{
 vectorised pairwise longest common prefix
 Returns the length of the longest common prefix for

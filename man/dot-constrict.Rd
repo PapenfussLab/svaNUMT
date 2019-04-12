@@ -13,6 +13,9 @@
 
 \item{position}{only 'middle' position is accepted.}
 }
+\value{
+A constricted GRanges object.
+}
 \description{
 constrict
 }

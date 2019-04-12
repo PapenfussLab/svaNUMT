@@ -9,6 +9,9 @@ a \%na\% b
 \arguments{
 \item{a, b}{objects to be tested or coerced.}
 }
+\value{
+The altered object.
+}
 \description{
 Replaces the NA values in a with corresponding values in b
 }

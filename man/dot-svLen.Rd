@@ -9,6 +9,9 @@
 \arguments{
 \item{vcf}{VCF object}
 }
+\value{
+Structural variant lengths of the first allele.
+}
 \description{
 Returns the structural variant length of the first allele
 }

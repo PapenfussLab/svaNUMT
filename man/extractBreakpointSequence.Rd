@@ -16,6 +16,9 @@ extractBreakpointSequence(gr, ref, anchoredBases,
 
 \item{remoteBases}{Number of bases from other side of breakpoint to extract}
 }
+\value{
+Breakpoint sequence around the variant position.
+}
 \description{
 Extracts the breakpoint sequence.
 }

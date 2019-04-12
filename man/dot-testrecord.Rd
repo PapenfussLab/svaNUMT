@@ -2,13 +2,16 @@
 % Please edit documentation in R/unittesthelper.R
 \name{.testrecord}
 \alias{.testrecord}
-\title{loads a VCF containing the given records}
+\title{Loading a VCF containing the given records}
 \usage{
 .testrecord(record)
 }
 \arguments{
 \item{record}{string vector of record to write}
 }
+\value{
+A VCF object.
+}
 \description{
-loads a VCF containing the given records
+Loading a VCF containing the given records
 }

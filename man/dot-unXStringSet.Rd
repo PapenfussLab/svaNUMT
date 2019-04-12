@@ -7,7 +7,10 @@
 .unXStringSet(x)
 }
 \arguments{
-\item{x}{an XStringSet.}
+\item{x}{An XStringSet.}
+}
+\value{
+A character.
 }
 \description{
 converts an XStringSet to a character

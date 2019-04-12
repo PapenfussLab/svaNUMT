@@ -16,6 +16,9 @@ extractReferenceSequence(gr, ref, anchoredBases,
 
 \item{followingBases}{Number of reference bases past breakpoint to extract}
 }
+\value{
+Reference sequence around the breakpoint position.
+}
 \description{
 Returns the reference sequence around the breakpoint position
 }

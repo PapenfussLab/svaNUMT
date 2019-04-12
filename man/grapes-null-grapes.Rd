@@ -9,6 +9,9 @@ a \%null\% b
 \arguments{
 \item{a, b}{objects to be tested or coerced.}
 }
+\value{
+An un-null object.
+}
 \description{
 Uses b if a is NULL
 }

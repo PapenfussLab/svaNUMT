@@ -12,7 +12,7 @@ pairs2breakpointgr(pairs, placeholderName = "bedpe")
 \item{placeholderName}{prefix to use to ensure each entry has a unique ID.}
 }
 \value{
-breakpoint GRanges object
+Breakpoint GRanges object.
 }
 \description{
 Converts a BEDPE Pairs containing pairs of GRanges loaded using to a breakpoint GRanges object.

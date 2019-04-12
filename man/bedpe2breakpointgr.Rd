@@ -12,7 +12,7 @@ bedpe2breakpointgr(file, placeholderName = "bedpe")
 \item{placeholderName}{Prefix to use to ensure each entry has a unique ID.}
 }
 \value{
-breakpoint GRanges object
+Breakpoint GRanges object.
 }
 \description{
 Loading a breakpoint GRanges from a BEDPE file

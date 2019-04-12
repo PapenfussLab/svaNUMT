@@ -14,6 +14,9 @@ align_breakpoints(vcf, align = c("centre"),
 
 \item{is_higher_breakend}{Breakpoint ID ordering.}
 }
+\value{
+A VCF object with adjusted nominal positions.
+}
 \description{
 Adjusting the nominal position of a pair of partnered breakpoint.
 }
