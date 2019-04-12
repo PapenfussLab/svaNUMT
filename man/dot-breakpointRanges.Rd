@@ -2,7 +2,7 @@
 % Please edit documentation in R/extensions-VCF.R
 \name{.breakpointRanges}
 \alias{.breakpointRanges}
-\title{Function for extracting the structural variants as a BreakendGRanges}
+\title{Function for extracting structural variants as GRanges}
 \usage{
 .breakpointRanges(vcf, nominalPosition = FALSE,
   placeholderName = "svrecord", suffix = "_bp", info_columns = NULL,
@@ -15,12 +15,12 @@
 nominal VCF position, or to call the confidence interval (incorporating
 any homology present).}
 
+\item{placeholderName}{variant name prefix to assign to unnamed variants}
+
 \item{suffix}{suffix to append}
 
 \item{info_columns}{VCF INFO columns to include in the GRanges object}
-
-\item{prefix}{variant name prefix to assign to unnamed variants}
 }
 \description{
-Function for extracting the structural variants as a BreakendGRanges
+Function for extracting structural variants as GRanges
 }

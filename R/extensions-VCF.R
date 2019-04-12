@@ -15,7 +15,7 @@
     res
 }
 
-#' Determines whether the variant is a symbolic allele
+#' Determining whether the variant is a symbolic allele.
 #' @details The function takes a VCF object as input, and returns a logical
 #' value for each row, determining whether the variant is a symbolic allele.
 #' @param x A VCF object.
@@ -29,14 +29,24 @@ setGeneric("isSymbolic", signature="x",
            function(x, ...)
                standardGeneric("isSymbolic")
 )
+
+#' @describeIn isSymbolic Determining whether a CollapsedVCF object is a symbolic 
+#' allele. Only single ALT values are accepted.
 setMethod("isSymbolic", "CollapsedVCF",
           function(x, ..., singleAltOnly=TRUE)
               .dispatchPerAllele_CollapsedVCF(.isSymbolic, x, singleAltOnly)
 )
+#' @describeIn isSymbolic Determining whether a ExpandedVCF object is a symbolic 
+#' allele
+#' 
 setMethod("isSymbolic", "ExpandedVCF",
           function(x, ...)
               .dispatchPerAllele_ExpandedVCF(.isSymbolic, x)
 )
+#' Determining whether the variant is a symbolic allele.
+#' @param r Reference vector.
+#' @param a ALT vector.
+#' @return A logical list of which the length is the same with the input object.
 .isSymbolic <- function(r, a) {
     result <- grepl("<", a, fixed=TRUE) |
         grepl("[", a, fixed=TRUE) |
@@ -59,10 +69,14 @@ setGeneric("isStructural", signature="x",
            function(x, ...)
                standardGeneric("isStructural")
 )
+#' @describeIn isStructural Determining whether a CollapsedVCF object is a 
+#' strucrual variant. Only single ALT values are accepted.
 setMethod("isStructural", "CollapsedVCF",
           function(x, ..., singleAltOnly=TRUE)
               .dispatchPerAllele_CollapsedVCF(.isStructural, x, singleAltOnly)
 )
+#' @describeIn isStructural Determining whether a ExpandedVCF object is a 
+#' structural variant.
 setMethod("isStructural", "ExpandedVCF",
           function(x, ...)
               .dispatchPerAllele_ExpandedVCF(.isStructural, x)
@@ -99,13 +113,16 @@ setMethod("isStructural", "ExpandedVCF",
 	assertthat::assert_that(is(vcf, "VCF"))
     all(S4Vectors::elementNROWS(alt(vcf)) == 1)
 }
+
+#' @describeIn isStructural Determining whether a VCF object is a structural
+#' variant.
 setMethod("isStructural", "VCF",
 		  function(x, ...)
 		  	.dispatchPerAllele_ExpandedVCF(.isStructural, x)
 )
 
 
-#' Extracting the structural variants as a BreakendGRanges
+#' Extracting the structural variants as a GRanges.
 #'
 #' @details
 #' Structural variants are converted to breakend notation.
@@ -142,17 +159,18 @@ setGeneric("breakpointRanges", signature="x",
 		   function(x, ...)
 		   		standardGeneric("breakpointRanges")
 )
+#' @describeIn breakpointRanges Extracting structural variants as GRanges.
 setMethod("breakpointRanges", "VCF",
 		  function(x, ...)
 		  	.breakpointRanges(x, ...)
 )
 
-#' Function for extracting the structural variants as a BreakendGRanges
+#' Function for extracting structural variants as GRanges
 #' @param vcf a VCF object
 #' @param nominalPosition Determines whether to call the variant at the
 #'    nominal VCF position, or to call the confidence interval (incorporating
 #'    any homology present).
-#' @param prefix variant name prefix to assign to unnamed variants
+#' @param placeholderName variant name prefix to assign to unnamed variants
 #' @param suffix suffix to append
 #' @param info_columns VCF INFO columns to include in the GRanges object
 .breakpointRanges <- function(vcf, nominalPosition=FALSE,
@@ -506,7 +524,7 @@ setMethod("breakpointRanges", "VCF",
 	}
 	return(outgr)
 }
-#' Extracts unpartnered breakend structural variants as a GRanges
+#' Extracting unpartnered breakend structural variants as a GRanges
 #'
 #' @details
 #' The VCF standard supports single breakends where a breakend is not part of a
@@ -536,6 +554,8 @@ setGeneric("breakendRanges", signature="x",
 		   function(x, ...)
 		   	standardGeneric("breakendRanges")
 )
+#' @describeIn breakendRanges Extracting unpartnered structural variants as 
+#' GRanges.
 setMethod("breakendRanges", "VCF",
 		  function(x, ...)
 		  	.breakpointRanges(x, unpartneredBreakends=TRUE, ...)
@@ -545,10 +565,12 @@ setMethod("breakendRanges", "VCF",
 #' @param nominalPosition Determines whether to call the variant at the
 #'    nominal VCF position, or to call the confidence interval (incorporating
 #'    any homology present).
-#' @param prefix variant name prefix to assign to unnamed variants
+#' @param placeholderName variant name prefix to assign to unnamed variants
 #' @param suffix suffix to append
 #' @param info_columns VCF INFO columns to include in the GRanges object
-.breakendRanges <- function(vcf, nominalPosition=FALSE, placeholderName="svrecord", suffix="_bp", info_columns=NULL) {
+.breakendRanges <- function(vcf, nominalPosition=FALSE, 
+                            placeholderName="svrecord", suffix="_bp", 
+                            info_columns=NULL) {
 }
 
 .hasMetadataInfo <- function(vcf, field) {

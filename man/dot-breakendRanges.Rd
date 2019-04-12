@@ -14,11 +14,11 @@
 nominal VCF position, or to call the confidence interval (incorporating
 any homology present).}
 
+\item{placeholderName}{variant name prefix to assign to unnamed variants}
+
 \item{suffix}{suffix to append}
 
 \item{info_columns}{VCF INFO columns to include in the GRanges object}
-
-\item{prefix}{variant name prefix to assign to unnamed variants}
 }
 \description{
 Function for extracting the unpartnered structural variants as a GRanges
