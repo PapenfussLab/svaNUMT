@@ -16,5 +16,6 @@ by the sequence from the BLAST database such as by alternate assemblies.
 \details{
 See https://github.com/mhahsler/rBLAST for rBLAST package installation
 instructions
-Download and install the package from AppVeyor or install via install_github("mhahsler/rBLAST") (requires the R package devtools)
+Download and install the package from AppVeyor or install via 
+install_github("mhahsler/rBLAST") (requires the R package devtools)
 }

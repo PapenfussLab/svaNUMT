@@ -354,25 +354,28 @@ calculateReferenceHomology <- function(gr, ref,
 		inexactscore=ibpscore))
 }
 
+
 #' Identifies breakpoint sequences with signficant homology to BLAST database
 #' sequences. Apparent breakpoints containing such sequence are better explained
 #' by the sequence from the BLAST database such as by alternate assemblies.
-#'
+#' 
 #' @details
 #' See https://github.com/mhahsler/rBLAST for rBLAST package installation
 #' instructions
-#' Download and install the package from AppVeyor or install via install_github("mhahsler/rBLAST") (requires the R package devtools)
-calculateBlastHomology <- function(gr, ref, db, anchorLength=150) {
-	requireNamespace("rBLAST", quietly=FALSE)
-	blastseq <- DNAStringSet(breakpointSequence(gr, ref, anchorLength))
-	bl <- rBLAST::blast(db=db)
-	cl <- predict(bl, blastseq)
-	cl$index <- as.integer(substring(cl$QueryID, 7))
-	cl$leftOverlap <- anchorLength - cl$Q.start + 1
-	cl$rightOverlap <- cl$Q.end - (nchar(blastseq) - anchorLength)
-	cl$minOverlap <- pmin(cl$leftOverlap, cl$rightOverlap)
-	return(cl)
+#' Download and install the package from AppVeyor or install via 
+#' install_github("mhahsler/rBLAST") (requires the R package devtools)
+ calculateBlastHomology <- function(gr, ref, db, anchorLength=150) {
+# 	requireNamespace("rBLAST", quietly=FALSE)
+# 	blastseq <- DNAStringSet(breakpointSequence(gr, ref, anchorLength))
+# 	bl <- rBLAST::blast(db=db)
+# 	cl <- predict(bl, blastseq)
+# 	cl$index <- as.integer(substring(cl$QueryID, 7))
+# 	cl$leftOverlap <- anchorLength - cl$Q.start + 1
+# 	cl$rightOverlap <- cl$Q.end - (nchar(blastseq) - anchorLength)
+# 	cl$minOverlap <- pmin(cl$leftOverlap, cl$rightOverlap)
+# 	return(cl)
 }
+
 #' Converts to breakend notation
 .toVcfBreakendNotationAlt = function(gr, insSeq=gr$insSeq, ref=gr$REF) {
 	assert_that(all(width(gr) == 1))
@@ -389,6 +392,7 @@ calculateBlastHomology <- function(gr, ref, db, anchorLength=150) {
 						   paste0(partnerDirectionChar, seqnames(partnergr), ":", start(partnergr), partnerDirectionChar, insSeq, ref))
 	return (ifelse(isBreakpoint, breakpointAlt, breakendAlt))
 }
+
 #' Converts the given breakpoint GRanges object to VCF format in breakend
 #' notation.
 #'
@@ -416,7 +420,6 @@ breakpointGRangesToVCF <- function(gr) {
 		REF=gr$REF,
 		QUAL=gr$QUAL,
 		FILTER=gr$FILTER)
-
 	VCF(rowRanges = GRanges(), colData = DataFrame(), exptData = list(header = VCFHeader()), fixed = DataFrame(), info = DataFrame(), geno = SimpleList(), ..., collapsed=FALSE, verbose = FALSE)
 }
 
