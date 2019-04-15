@@ -208,11 +208,11 @@ test_that("calculateReferenceHomology", {
 	))), hg19, 5)$inexacthomlen[1]))
 })
 
-test_that("calculateBlastHomology", {
-	#Sys.setenv(PATH=paste(Sys.getenv("PATH"), "/usr/local/bioinf/bin", sep=":"))
-	#bh <- calculateBlastHomology(gr, hg19, "~/blastdb/16SMicrobial")
-
-})
+#test_that("calculateBlastHomology", {
+#	Sys.setenv(PATH=paste(Sys.getenv("PATH"), "/usr/local/bioinf/bin", sep=":"))
+#	bh <- calculateBlastHomology(gr, hg19, "~/blastdb/16SMicrobial")
+#
+#})
 # test_that("performance_test_partner", {
 # 	n = 10000
 # 	gr = GRanges(
