@@ -148,8 +148,7 @@ indicating the end of the link using GRanges format, which we can add to `gr` us
 suppressPackageStartupMessages(library(plyranges))
 suppressPackageStartupMessages(library(ggbio))
 seqlevels(gr)<-sub(pattern = 'chr', replacement = '', seqlevels(gr))
-gr.circos <- gr %>% 
-	mutate(to.gr=GRanges(seqnames(partner(gr)),ranges(partner(gr))))
+gr.circos <- gr %>% mutate(to.gr=GRanges(seqnames(partner(gr)),ranges(partner(gr))))
 seqlevels(gr.circos)<-seqlevels(biovizBase::hg19sub)
 ```
 We can then plot the breakpoints agains referece genomes.

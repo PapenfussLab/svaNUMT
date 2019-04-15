@@ -22,9 +22,9 @@
 #' @param ... Internal parameters.
 #' @return A logical list of which the length is the same with the input object.
 #' @examples
-#' vcf.file <- system.file("extdata", "gridss.vcf", package = "StructuralVariantAnnotation")
+#' \dontrun{vcf.file <- system.file("extdata", "gridss.vcf", package = "StructuralVariantAnnotation")
 #' vcf <- VariantAnnotation::readVcf(vcf.file, "hg19")
-#' isSymbolic(vcf)
+#' isSymbolic(vcf)}
 #' @export
 setGeneric("isSymbolic", signature="x",
            function(x, ...)
@@ -65,9 +65,9 @@ setMethod("isSymbolic", "ExpandedVCF",
 #' @param ... Internal parameters.
 #' @return A logical list of which the length is the same with the input object.
 #' @examples
-#' vcf.file <- system.file("extdata", "gridss.vcf", package = "StructuralVariantAnnotation")
+#' \dontrun{vcf.file <- system.file("extdata", "gridss.vcf", package = "StructuralVariantAnnotation")
 #' vcf <- VariantAnnotation::readVcf(vcf.file, "hg19")
-#' isStructural(vcf)
+#' isStructural(vcf)}
 #' @export
 setGeneric("isStructural", signature="x",
            function(x, ...)
@@ -148,11 +148,11 @@ setMethod("isStructural", "VCF",
 #' @param ... Parameters of \code{.breakpointRanges()}. See below.
 #' @return A GRanges object of SVs.
 #' @examples
-#' vcf.file <- system.file("extdata", "vcf4.2.example.sv.vcf",
+#' \dontrun{vcf.file <- system.file("extdata", "vcf4.2.example.sv.vcf",
 #'                          package = "StructuralVariantAnnotation")
 #' vcf <- VariantAnnotation::readVcf(vcf.file, "hg19")
 #' breakpointRanges(vcf)
-#' breakpointRanges(vcf, nominalPosition=TRUE)
+#' breakpointRanges(vcf, nominalPosition=TRUE)}
 #' @export
 setGeneric("breakpointRanges", signature="x",
 		   function(x, ...)
@@ -545,11 +545,11 @@ setMethod("breakpointRanges", "VCF",
 #' more details.
 #' @return A GRanges object of SVs.
 #' @examples
-#' vcf.file <- system.file("extdata", "gridss.vcf",
+#' \dontrun{vcf.file <- system.file("extdata", "gridss.vcf",
 #'                          package = "StructuralVariantAnnotation")
 #' vcf <- VariantAnnotation::readVcf(vcf.file, "hg19")
 #' breakendRanges(vcf)
-#' breakendRanges(vcf, nominalPosition=TRUE)
+#' breakendRanges(vcf, nominalPosition=TRUE)}
 #' @export
 setGeneric("breakendRanges", signature="x",
 		   function(x, ...)
