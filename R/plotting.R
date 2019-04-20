@@ -8,10 +8,12 @@
 #' @param gr A GRanges object.
 #' @return A BEDPE-formatted data frame.
 #' @examples
-#' \dontrun{vcf.file <- system.file("extdata", "gridss.vcf", package = "StructuralVariantAnnotation")
+#' #coverting a GRanges object to BEDPE-like dataframe
+#' vcf.file <- system.file("extdata", "gridss.vcf", package = "StructuralVariantAnnotation")
 #' vcf <- VariantAnnotation::readVcf(vcf.file, "hg19")
 #' gr <- breakpointRanges(vcf)
-#' breakpointgr2bedpe(gr)}
+#' breakpointgr2bedpe(gr)
+#' @rdname bedpe2breakpointgr
 #' @export
 breakpointgr2bedpe <- function(gr){
 	bedpe <- data.frame(

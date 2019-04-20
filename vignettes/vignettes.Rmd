@@ -73,20 +73,20 @@ gr
 ```
 
 
-### Exploring breakpoints
+### Breakpoint Overlaps
 
 `findBreakpointOverlaps()` and `countBreakpointOverlaps()` are functions for finding and counting overlaps between breakpoint objects. All breakends must have their partner breakend included in the GRanges. A valid overlap requires that breakends on boths sides overlap.
 
-To demonstrate `findBreakpointOverlaps()` function, we construct a toy `GRanges` object `region.gr` using two partnered breakpoints from `gr`. The output `Hits` object reports the index of overlapping breakpoints (`queryHits` and `subjectHits`), and overlapping distances (`sizeerror`, `localbperror` and `remotebperror`). 
+To demonstrate `findBreakpointOverlaps()` function, we construct a toy `GRanges` object `region.gr` using two partnered breakpoints from `gr`. The output `Hits` object reports the index of overlapping breakpoints (`queryHits` and `subjectHits`). 
 ```{r}
 #toy GRanges `region.gr`
 region.gr <- shift(gr[2:3,],5) 
 # event sizes must be within sizemargin
-findBreakpointOverlaps(gr, region.gr)
+findBreakpointOverlaps(query = gr, subject = region.gr, maxgap = 5)
 ```
 `countBreakpointOverlaps` reports count of overlaps for each breakpoint.
 ```{r}
-countBreakpointOverlaps(gr, region.gr)
+countBreakpointOverlaps(gr, region.gr, maxgap = 5)
 ```
 
 `partner()` returns a `GRanges` object, in which each entry is the partner breakend of those in `gr`.
@@ -142,13 +142,11 @@ to first prepare the breakpoint GRanges. The function requires a sepecial column
 indicating the end of the link using GRanges format, which we can add to `gr` using
 [`plyranges`](https://bioconductor.org/packages/release/bioc/html/plyranges.html).
 ```{r add to.gr}
-#suppressPackageStartupMessages(library(plyranges))
 suppressPackageStartupMessages(library(ggbio))
-seqlevels(gr)<-sub(pattern = 'chr', replacement = '', seqlevels(gr))
-#gr.circos <- gr %>% mutate(to.gr=GRanges(seqnames(partner(gr)),ranges(partner(gr))))
 gr.circos <- gr
-mcols(gr.circos)$to.gr <- granges(partner(gr))
+seqlevelsStyle(gr.circos) <- 'Ensembl' #remove 'chr' prefix
 seqlevels(gr.circos)<-seqlevels(biovizBase::hg19sub)
+mcols(gr.circos)$to.gr <- granges(partner(gr.circos))
 ```
 We can then plot the breakpoints against reference genomes.
 ```{r ggbio}

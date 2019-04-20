@@ -13,7 +13,6 @@
 #' @return A GRanges object in which each entry is the partner breakend of
 #' those in the input object.
 #' @examples
-#' \dontrun{
 #' #reading in a VCF file as \code{vcf}
 #' vcf.file <- system.file("extdata", "gridss.vcf", package = "StructuralVariantAnnotation")
 #' vcf <- VariantAnnotation::readVcf(vcf.file, "hg19")
@@ -21,7 +20,6 @@
 #' gr <- breakpointRanges(vcf)
 #' #output partner breakend of each breakend in \code{gr}
 #' partner(gr)
-#' }
 #'@export
 partner <- function(gr) {
 	assertthat::assert_that(all(gr$partner %in% names(gr)))
@@ -60,7 +58,6 @@ partner <- function(gr) {
 #' at maximum, half the event size. This ensures that small deletion do actually
 #' overlap at least one base pair.
 #' @examples
-#' \dontrun{
 #' #reading in VCF files
 #' query.file <- system.file("extdata", "gridss-na12878.vcf", package = "StructuralVariantAnnotation")
 #' subject.file <- system.file("extdata", "gridss.vcf", package = "StructuralVariantAnnotation")
@@ -73,7 +70,6 @@ partner <- function(gr) {
 #' findBreakpointOverlaps(query.gr, subject.gr)
 #' findBreakpointOverlaps(query.gr, subject.gr, ignore.strand=TRUE)
 #' findBreakpointOverlaps(query.gr, subject.gr, maxgap=100, sizemargin=0.5)
-#' }
 #' @return A dataframe containing index and error stats of overlapping breakpoints.
 #'@export
 findBreakpointOverlaps <- function(query, subject, maxgap=-1L, minoverlap=0L, ignore.strand=FALSE, sizemargin=NULL, restrictMarginToSizeMultiple=NULL) {
@@ -144,7 +140,7 @@ findBreakpointOverlaps <- function(query, subject, maxgap=-1L, minoverlap=0L, ig
 #' @param breakpointScoreColumn Query column defining a score for determining which query breakpoint
 #' is considered the best when countOnlyBest=TRUE.
 #' @examples
-#' \dontrun{#reading in VCF files
+#' #reading in VCF files
 #' query.file <- system.file("extdata", "gridss-na12878.vcf", package = "StructuralVariantAnnotation")
 #' subject.file <- system.file("extdata", "gridss.vcf", package = "StructuralVariantAnnotation")
 #' query.vcf <- VariantAnnotation::readVcf(query.file, "hg19")
@@ -155,7 +151,7 @@ findBreakpointOverlaps <- function(query, subject, maxgap=-1L, minoverlap=0L, ig
 #' #count overlapping breakpoint intervals
 #' countBreakpointOverlaps(query.gr, subject.gr)
 #' countBreakpointOverlaps(query.gr, subject.gr, maxgap=100)
-#' countBreakpointOverlaps(query.gr, subject.gr, maxgap=100, ignore.strand=TRUE, countOnlyBest=TRUE)}
+#' countBreakpointOverlaps(query.gr, subject.gr, maxgap=100, ignore.strand=TRUE, countOnlyBest=TRUE)
 #' @return An integer vector containing the tabulated query overlap hits.
 #' @export
 countBreakpointOverlaps <- function(querygr, subjectgr, countOnlyBest=FALSE,
@@ -188,9 +184,9 @@ countBreakpointOverlaps <- function(querygr, subjectgr, countOnlyBest=FALSE,
 #' @param file A BEDPE file. See \url{https://bedtools.readthedocs.io/en/latest/content/general-usage.html} for details.
 #' @param placeholderName Prefix to use to ensure each entry has a unique ID.
 #' @examples
-#' \dontrun{bedpe.file <- system.file("extdata", "gridss.bedpe", package = "StructuralVariantAnnotation")
+#' bedpe.file <- system.file("extdata", "gridss.bedpe", package = "StructuralVariantAnnotation")
 #' bedpe2breakpointgr(bedpe.file)
-#' bedpe2breakpointgr(bedpe.file, placeholderName='gridss')}
+#' bedpe2breakpointgr(bedpe.file, placeholderName='gridss')
 #' @return Breakpoint GRanges object.
 #' @export
 bedpe2breakpointgr <- function(file, placeholderName="bedpe") {
@@ -200,10 +196,10 @@ bedpe2breakpointgr <- function(file, placeholderName="bedpe") {
 #' @param pairs a Pairs object consisting of two parallel genomic loci.
 #' @param placeholderName prefix to use to ensure each entry has a unique ID.
 #' @examples
-#' \dontrun{bedpe.file <- system.file("extdata", "gridss.bedpe", package = "StructuralVariantAnnotation")
+#' bedpe.file <- system.file("extdata", "gridss.bedpe", package = "StructuralVariantAnnotation")
 #' bedpe.pairs <- rtracklayer::import(bedpe.file)
 #' pairs2breakpointgr(bedpe.pairs)
-#' pairs2breakpointgr(bedpe.pairs, placeholderName='gridss')}
+#' pairs2breakpointgr(bedpe.pairs, placeholderName='gridss')
 #' @return Breakpoint GRanges object.
 #' @export
 pairs2breakpointgr <- function(pairs, placeholderName="bedpe") {
@@ -229,6 +225,8 @@ pairs2breakpointgr <- function(pairs, placeholderName="bedpe") {
 			S4Vectors::mcols(gr)[[col]] <- S4Vectors::mcols(pairs)[[col]]
 		}
 	}
+	#revert score column to QUAL
+	names(mcols(gr))[2]<-'QUAL'
 	return(gr)
 }
 
