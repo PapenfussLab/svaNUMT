@@ -9,7 +9,7 @@ test_that("bedpe2breakpointgr creates unique ids", {
 	expect_equal(c(19356, 1300148+1, 19427, 1302837+1), start(gr))
 	expect_equal(c(19356, 1300151, 19427, 1302840), end(gr))
 	expect_equal(c("+", "+", "-", "+"), as.character(strand(gr)))
-	expect_equal(c(1, 41, 1, 41), gr$score)
+	expect_equal(c(1, 41, 1, 41), gr$QUAL)
 	expect_equal(c("bedpe1_1", "bedpe2_1", "bedpe1_2", "bedpe2_2"), names(gr))
 })
 
