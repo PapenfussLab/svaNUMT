@@ -22,11 +22,11 @@ knitr::opts_chunk$set(#echo = TRUE,
 ```
 
 ## Introduction
-This vignette outlines a workflow of parsing and plotting structural variants from Variant Call Format (VCF) using the `StructuralVariantAnnotation` package. `StructuralVariantAnnotation` contains useful helper functions for reading and interpreting structural variants calls. The packages contains functions for parsing VCFs from a number of popular caller as well as functions for dealing with breakpoints involving two separate genomic loci encoded as `GRanges` objects. 
+This vignette outlines a workflow of parsing and plotting structural variants from Variant Call Format (VCF) using the `StructuralVariantAnnotation` package. `StructuralVariantAnnotation` contains useful helper functions for reading and interpreting structural variants calls. The packages contains functions for parsing VCFs from a number of popular callers as well as functions for dealing with breakpoints involving two separate genomic loci encoded as `GRanges` objects. 
 
 ## Installation
 
-The *StructuralVariationAnnotation* package can be loaded from *Bioconductor* as follows:
+The *StructuralVariationAnnotation* package can be installed from *Bioconductor* as follows:
 
 ```{r installation, eval=FALSE}
 if (!requireNamespace("BiocManager", quietly = TRUE))
@@ -34,7 +34,7 @@ if (!requireNamespace("BiocManager", quietly = TRUE))
 BiocManager::install("StructuralVariantAnnotation")
 ```
 
-## Breakpoint notation revisited
+## Breakpoint notation
 The [VCF standard](https://samtools.github.io/hts-specs/VCFv4.3.pdf) describes two types of SV notations. One is by SV types, i.e. insertions, deletions, inversions, translocations, etc. The other is by breakend notations, often labelled with `SVTYPE=BND`. To describe a SV with breakend notations, each SV has two positions, each captured by one breakend (except for inversions, which has 4 separate records). Each breakend includes a genomic locus, as well as a half interval extending out to the partner breakend. In VCF BND notations, the `ALT` field encodes directional information of the partner breakend.
 
 * 1	200	.	N	N[5:500[	partner breakend immediately after chr1:200, starting from chr5:500 and extending rightwards
@@ -46,8 +46,8 @@ The [VCF standard](https://samtools.github.io/hts-specs/VCFv4.3.pdf) describes t
 ### Data preparation and filtering
 VCF data is parsed into a `VCF` object using `readVCF` function from 
 Bioconductor package `VariantAnnotation`. Simple filters could be applied to a 
-`VCF` object to remove unwanted calls.Details of `VCF` objects can be found by 
-`browseVignettes("VariantAnnotation")`.
+`VCF` object to remove unwanted calls. More information about `VCF` objects can be found by
+consulting the vignetts in the VariantAnnotation package with `browseVignettes("VariantAnnotation")`.
 ```{r input, warning=FALSE, message=FALSE}
 library(VariantAnnotation)
 vcf.file <- system.file("extdata", "gridss.vcf", package = "StructuralVariantAnnotation")
@@ -77,18 +77,15 @@ gr
 
 `findBreakpointOverlaps()` and `countBreakpointOverlaps()` are functions for finding and counting overlaps between breakpoint objects. All breakends must have their partner breakend included in the GRanges. A valid overlap requires that breakends on boths sides overlap.
 
-To demonstrate `findBreakpointOverlaps()` function, we construct a toy `GRanges` object `region.gr` using two partnered breakpoints from `gr`. The output matrix reports the index of overlapping breakpoints (`queryHits` and `subjectHits`), and overlapping distances (`sizeerror`, `localbperror` and `remotebperror`). 
+To demonstrate `findBreakpointOverlaps()` function, we construct a toy `GRanges` object `region.gr` using two partnered breakpoints from `gr`. The output `Hits` object reports the index of overlapping breakpoints (`queryHits` and `subjectHits`), and overlapping distances (`sizeerror`, `localbperror` and `remotebperror`). 
 ```{r}
-#load `plyranges` for GRanges modification
-suppressPackageStartupMessages(library(plyranges))
 #toy GRanges `region.gr`
-region.gr <- gr[2:3,]  %>% dplyr::mutate(end=end+5) %>% dplyr::mutate(start=start+5)
+region.gr <- shift(gr[2:3,],5) 
 # event sizes must be within sizemargin
 findBreakpointOverlaps(gr, region.gr)
 ```
 `countBreakpointOverlaps` reports count of overlaps for each breakpoint.
 ```{r}
-#suppressPackageStartupMessages(library(dplyr))
 countBreakpointOverlaps(gr, region.gr)
 ```
 
@@ -136,7 +133,7 @@ circos.genomicLink(bedpe[,1:3], bedpe[,4:6])
 circos.clear()
 ```
 
-Alternatively, plotting package such as `ggbio()` provides flexible tracks 
+Alternatively, plotting package such as `ggbio` provides flexible tracks 
 function which binds
 with `ggplot2()` objects. It takes `GRanges` objects as input and support circos
 plots.
@@ -145,13 +142,15 @@ to first prepare the breakpoint GRanges. The function requires a sepecial column
 indicating the end of the link using GRanges format, which we can add to `gr` using
 [`plyranges`](https://bioconductor.org/packages/release/bioc/html/plyranges.html).
 ```{r add to.gr}
-suppressPackageStartupMessages(library(plyranges))
+#suppressPackageStartupMessages(library(plyranges))
 suppressPackageStartupMessages(library(ggbio))
 seqlevels(gr)<-sub(pattern = 'chr', replacement = '', seqlevels(gr))
-gr.circos <- gr %>% mutate(to.gr=GRanges(seqnames(partner(gr)),ranges(partner(gr))))
+#gr.circos <- gr %>% mutate(to.gr=GRanges(seqnames(partner(gr)),ranges(partner(gr))))
+gr.circos <- gr
+mcols(gr.circos)$to.gr <- granges(partner(gr))
 seqlevels(gr.circos)<-seqlevels(biovizBase::hg19sub)
 ```
-We can then plot the breakpoints agains referece genomes.
+We can then plot the breakpoints against reference genomes.
 ```{r ggbio}
 p <- ggbio() +
 	circle(gr.circos, geom="link", linked.to="to.gr") +
