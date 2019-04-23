@@ -229,14 +229,22 @@ countBreakpointOverlaps <- function(querygr, subjectgr, countOnlyBest=FALSE,
 #' pairgr <- breakpointgr2pairs(bpgr)
 #' rtracklayer::export(pairgr, con="example.bedpe")
 #' @return Pairs GRanges object suitable for export to BEDPE by rtracklayer
+#' @rdname pairs2breakpointgr
 #' @export
 breakpointgr2pairs <- function(
 		bpgr,
 		writeQualAsScore=TRUE,
 		writeName=TRUE,
-		bedpeName = function(gr) { (gr$sourceId %null% gr$name) %null% names(gr) },
-		firstInPair = function(gr) { seq_along(gr) < match(gr$partner, names(gr)) }) {
+		bedpeName = NULL,
+		firstInPair = NULL) {
 	.assertValidBreakpointGRanges(bpgr, "Cannot convert breakpoint GRanges to Pairs: ", allowSingleBreakends=FALSE)
+	
+	if (is.null(bedpeName)) {
+		bedpeName = function(gr) { (gr$sourceId %null% gr$name) %null% names(gr) }
+	}
+	if (is.null(firstInPair)) {
+		firstInPair = function(gr) { seq_along(gr) < match(gr$partner, names(gr)) }
+	}
 	isFirst = firstInPair(bpgr)
 	pairgr = S4Vectors::Pairs(bpgr[isFirst], partner(bpgr)[isFirst])
 	if (writeName) {

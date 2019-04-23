@@ -19,7 +19,7 @@ As the StructuralVariantAnnotation package is not yet released on CRAN or BioCon
 ```
 #install.packages("devtools")
 library(devtools)
-install_github("PapenfussLab/StructuralVariantAnnotation")
+install_github("PapenfussLab/StructuralVariantAnnotation", ref="pre_bioconductor")
 ```
 
 ## Documentation
@@ -32,10 +32,7 @@ The following are the core functions provided by this package:
 - `findBreakpointOverlaps(gr)` the breakpoint equivalent of findOverlaps()
 - `countBreakpointOverlaps(gr)` the breakpoint equivalent of countOverlaps()
 - `partner(gr)` for returning the breakpoint partners for each breakend
-- `unpack(vcf)` for converting the VCF INFO columns to a data frame
-- `bedpe2breakpointgr(file)` for processing BEDPE files
-
-NB: partner() as it is current implement is quite brittle and is merely a GRanges column gr\$partner that requires the partner breakend to exist in the same GRanges object. Not only is directly user-visible, but any operation that subsets (eg extract only breakends at genes) without including or excluding both breakends will break the GRanges for breakpoint purposes (as will changing gr\$partner or names(gr)).
+- `pair2breakpointgr(file)` for processing BEDPE files loaded using `rtracklayer::import()`
 
 
 

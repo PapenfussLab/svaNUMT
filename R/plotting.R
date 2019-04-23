@@ -13,7 +13,6 @@
 #' vcf <- VariantAnnotation::readVcf(vcf.file, "hg19")
 #' gr <- breakpointRanges(vcf)
 #' breakpointgr2bedpe(gr)
-#' @rdname bedpe2breakpointgr
 #' @export
 breakpointgr2bedpe <- function(gr){
 	bedpe <- data.frame(

@@ -1,7 +1,7 @@
 Package: StructuralVariantAnnotation
 Type: Package
 Title: Variant annotations for structural variants
-Version: 0.99.22
+Version: 0.99.23
 Date: 2019-04-05
 Authors@R: c(
 	person("Daniel", "Cameron", email="daniel.l.cameron@gmail.com", role=c("aut", "cre"), comment=c(ORCID = "0000-0002-0951-7116")),
