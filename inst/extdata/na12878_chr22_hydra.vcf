@@ -16,7 +16,7 @@
 ##INFO=<ID=finalSupport,Number=1,Type=Float,Description="Amount of final support from the mappings in the breakpoint. ">
 ##INFO=<ID=finalWeightedSupport,Number=1,Type=Float,Description="Amount of final weighted support from the mappings in the breakpoint. ">
 ##INFO=<ID=numUniquePairs,Number=1,Type=Integer,Description="Number of pairs in the breakpoint that were uniquely mapped to the genome. ">
-##INFO=<ID=numAnchoredPairs,Number=1,Type=Float,Description="Number of pairs in the breakpoint that were mapped to the genome in an "anchored" fashion (i.e. 1xN). ">
+##INFO=<ID=numAnchoredPairs,Number=1,Type=Float,Description="Number of pairs in the breakpoint that were mapped to the genome in an anchored fashion (i.e. 1xN). ">
 ##INFO=<ID=numMultiplyMappedPairs,Number=1,Type=Integer,Description="Number of pairs in the breakpoint that were multiply mapped to the genome in fashion (i.e. NxN).">
 ##INFO=<ID=CIPOS,Number=2,Type=Integer,Description="PE confidence interval around POS">
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO

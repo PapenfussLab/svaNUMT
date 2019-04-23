@@ -1,6 +1,6 @@
 ---
 title: "StructuralVariantAnnotation Quick Overview"
-author: "Ruining Dong"
+author: "Ruining Dong, Daniel Cameron"
 date: "`r Sys.Date()`"
 output:
   html_document:
