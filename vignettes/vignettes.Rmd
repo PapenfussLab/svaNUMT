@@ -73,6 +73,7 @@ In addition to parsing spec-compliant VCFs, additional logic has been added to e
 Breakpoint ambiguity reported in using the spec-defined `CIPOS` is, by default, incorporated into the GRanges breakend intervals.
 
 ```{r input, warning=FALSE, message=FALSE}
+suppressPackageStartupMessages(library(tidyverse))
 suppressPackageStartupMessages(library(StructuralVariantAnnotation))
 vcf.file <- system.file("extdata", "gridss.vcf", package = "StructuralVariantAnnotation")
 vcf <- VariantAnnotation::readVcf(vcf.file, "hg19")

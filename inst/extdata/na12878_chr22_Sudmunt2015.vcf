@@ -2,8 +2,8 @@
 ##INFO=<ID=END,Number=1,Type=Integer,Description="End position of the variant described in this record">
 ##INFO=<ID=SVLEN,Number=.,Type=Integer,Description="Difference in length between REF and ALT alleles">
 ##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">
-##INFO=<ID=CIPOS,Number=2,Type=Integer>
-##INFO=<ID=CIRPOS,Number=2,Type=Integer>
+##INFO=<ID=CIPOS,Number=2,Type=Integer,Description="">
+##INFO=<ID=CIRPOS,Number=2,Type=Integer,Description="">
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
 chr22	49077539	P2_PM_22_869	N	<DEL>	.	PASS	END=49077788;SVLEN=241;SVTYPE=DEL;CIPOS=0,153;CIRPOS=0,145
 chr22	49878328	P2_PM_22_872	N	<DEL>	.	PASS	END=49878515;SVLEN=179;SVTYPE=DEL;CIPOS=0,153;CIRPOS=0,145
