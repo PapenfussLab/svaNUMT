@@ -10,6 +10,7 @@
 #' in the GRanges.
 #'
 #' @param gr GRanges object of SV breakends
+#' @param selfPartnerSingleBreakends treat single breakends as their own partner.
 #' @return A GRanges object in which each entry is the partner breakend of
 #' those in the input object.
 #' @examples
@@ -21,9 +22,9 @@
 #' #output partner breakend of each breakend in \code{gr}
 #' partner(gr)
 #'@export
-partner <- function(gr) {
-	assertthat::assert_that(all(gr$partner %in% names(gr)))
-	return(gr[gr$partner,])
+partner <- function(gr, selfPartnerSingleBreakends=FALSE) {
+	.assertValidBreakpointGRanges(gr, allowSingleBreakends=selfPartnerSingleBreakends)
+	return(gr[ifelse(selfPartnerSingleBreakends & is.na(gr$partner), names(gr), gr$partner),])
 }
 
 #' Finding overlapping breakpoints between two breakpoint sets
@@ -73,8 +74,12 @@ partner <- function(gr) {
 #' @return A dataframe containing index and error stats of overlapping breakpoints.
 #'@export
 findBreakpointOverlaps <- function(query, subject, maxgap=-1L, minoverlap=0L, ignore.strand=FALSE, sizemargin=NULL, restrictMarginToSizeMultiple=NULL) {
+	.assertValidBreakpointGRanges(query)
+	.assertValidBreakpointGRanges(subject)
+	pquery = partner(query)
+	squery = partner(subject)
 	localhits = findOverlaps(query, subject, maxgap=maxgap, minoverlap=minoverlap, type="any", select="all", ignore.strand=ignore.strand)
-	remotehits = findOverlaps(partner(query), partner(subject), maxgap=maxgap, minoverlap=minoverlap, type="any", select="all", ignore.strand=ignore.strand)
+	remotehits = findOverlaps(pquery, squery, maxgap=maxgap, minoverlap=minoverlap, type="any", select="all", ignore.strand=ignore.strand)
 	## duplicated() version:
 	#hits = Hits(c(queryHits(localhits), queryHits(remotehits)), c(subjectHits(localhits), subjectHits(remotehits)), nLnode=nLnode(localhits), nRnode=nRnode(localhits), sort.by.query=TRUE)
 	#hits = hits[duplicated(hits)]
@@ -98,11 +103,10 @@ findBreakpointOverlaps <- function(query, subject, maxgap=-1L, minoverlap=0L, ig
 	#	!is.na(querySubject) &
 	#	queryLead == queryHits(hits) &
 	#	querySubject == subjectHits(hits)]
-	
 	if (!is.null(sizemargin) && !is.na(sizemargin)) {
 		# take into account confidence intervals when calculating event size
-		callwidth <- .distance(query, partner(query))
-		truthwidth <- .distance(subject, partner(subject))
+		callwidth <- .distance(query, pquery)
+		truthwidth <- .distance(subject, squery)
 		callsize <- callwidth + (query$insLen %na% 0)
 		truthsize <- truthwidth + (subject$insLen %na% 0)
 		sizeerror <- .distance(
@@ -113,7 +117,7 @@ findBreakpointOverlaps <- function(query, subject, maxgap=-1L, minoverlap=0L, ig
 		hits <- hits[sizeerror - 1 < sizemargin * pmin(callsize$max[S4Vectors::queryHits(hits)], truthsize$max[S4Vectors::subjectHits(hits)]),]
 		# further restrict breakpoint positions for small events
 		localbperror <- .distance(query[S4Vectors::queryHits(hits)], subject[S4Vectors::subjectHits(hits)])$min
-		remotebperror <- .distance(partner(query)[S4Vectors::queryHits(hits)], partner(subject)[S4Vectors::subjectHits(hits)])$min
+		remotebperror <- .distance(pquery[S4Vectors::queryHits(hits)], squery[S4Vectors::subjectHits(hits)])$min
 		if (!is.null(restrictMarginToSizeMultiple)) {
 			allowablePositionError <- (pmin(callsize$max[S4Vectors::queryHits(hits)], truthsize$max[S4Vectors::subjectHits(hits)]) * restrictMarginToSizeMultiple + 1)
 			hits <- hits[localbperror <= allowablePositionError & remotebperror <= allowablePositionError, ]
@@ -196,47 +200,107 @@ countBreakpointOverlaps <- function(querygr, subjectgr, countOnlyBest=FALSE,
 	} else {
 		# assign supporting evidence to the call with the highest QUAL
 		hits$QUAL <- S4Vectors::mcols(querygr)[[breakpointScoreColumn]][hits$queryHits]
-	    hits <- hits %>%
-	      dplyr::arrange(desc(.data$QUAL), .data$queryHits) %>%
-	      dplyr::distinct(.data$subjectHits, .keep_all=TRUE) %>%
-	      dplyr::group_by(.data$queryHits) %>%
-	      dplyr::summarise(n=dplyr::n())
+		hits <- hits %>%
+			dplyr::arrange(desc(.data$QUAL), .data$queryHits) %>%
+			dplyr::distinct(.data$subjectHits, .keep_all=TRUE) %>%
+			dplyr::group_by(.data$queryHits) %>%
+			dplyr::summarise(n=dplyr::n())
 	}
-    hitscounts[hits$queryHits] <- hits$n
-    return(hitscounts)
+  hitscounts[hits$queryHits] <- hits$n
+  return(hitscounts)
 }
 
-#' Loading a breakpoint GRanges from a BEDPE file
-#' @details
-#' A BEDPE file is taken as an input and converted to a breakpoint GRanges object. The file is first loaded using
-#' rtracklayer::import as a Pairs object, then converted to GRanges.
-#' @param file A BEDPE file. See \url{https://bedtools.readthedocs.io/en/latest/content/general-usage.html} for details.
-#' @param placeholderName Prefix to use to ensure each entry has a unique ID.
+#' Converts a breakpoint GRanges object to a Pairs object
+#' @param bpgr breakpoint GRanges object
+#' @param writeQualAsScore write the breakpoint GRanges QUAL field as the score
+#' fields for compatibility with BEDPE rtracklayer export
+#' @param writeName write the breakpoint GRanges QUAL field as the score
+#' fields for compatibility with BEDPE rtracklayer export
+#' @param bedpeName function that returns the name to use for the breakpoint.
+#' Defaults to the sourceId, name column, or row names (in that priority) of
+#' the first breakend of each pair.
+#' @param firstInPair function that returns TRUE for breakends that are considered
+#' the first in the pair, and FALSE for the second in pair breakend. By default,
+#' the first in the pair is the breakend with the lower ordinal in the breakpoint
+#' GRanges object.
 #' @examples
-#' bedpe.file <- system.file("extdata", "gridss.bedpe", package = "StructuralVariantAnnotation")
-#' bedpe2breakpointgr(bedpe.file)
-#' bedpe2breakpointgr(bedpe.file, placeholderName='gridss')
-#' @return Breakpoint GRanges object.
+#' vcf.file <- system.file("extdata", "gridss.vcf", package = "StructuralVariantAnnotation")
+#' bpgr <- breakpointRanges(VariantAnnotation::readVcf(vcf.file))
+#' pairgr <- breakpointgr2pairs(bpgr)
+#' rtracklayer::export(pairgr, con="example.bedpe")
+#' @return Pairs GRanges object suitable for export to BEDPE by rtracklayer
 #' @export
-bedpe2breakpointgr <- function(file, placeholderName="bedpe") {
-	return(pairs2breakpointgr(import(file), placeholderName))
+breakpointgr2pairs <- function(
+		bpgr,
+		writeQualAsScore=TRUE,
+		writeName=TRUE,
+		bedpeName = function(gr) { (gr$sourceId %null% gr$name) %null% names(gr) },
+		firstInPair = function(gr) { seq_along(gr) < match(gr$partner, names(gr)) }) {
+	.assertValidBreakpointGRanges(bpgr, "Cannot convert breakpoint GRanges to Pairs: ", allowSingleBreakends=FALSE)
+	isFirst = firstInPair(bpgr)
+	pairgr = S4Vectors::Pairs(bpgr[isFirst], partner(bpgr)[isFirst])
+	if (writeName) {
+		S4Vectors::mcols(pairgr)$name = bedpeName(S4Vectors::first(pairgr))
+	}
+	if (writeQualAsScore) {
+		S4Vectors::mcols(pairgr)$score = S4Vectors::first(pairgr)$QUAL
+	}
+	return(pairgr)
+}
+.assertValidBreakpointGRanges <- function(bpgr, friendlyErrorMessage="", allowSingleBreakends=TRUE) {
+	if (is.null(names(bpgr))) {
+		stop(paste0(friendlyErrorMessage, "Breakpoint GRanges require names"))
+	}
+	if (any(is.na(names(bpgr)))) {
+		stop(paste0(friendlyErrorMessage, "Breakpoint GRanges names cannot be NA"))
+	}
+	if (any(duplicated(names(bpgr)))) {
+		stop(paste0(friendlyErrorMessage, "Breakpoint GRanges names cannot duplicated"))
+	}
+	if (!allowSingleBreakends & any(is.na(bpgr$partner))) {
+		stop(paste0(friendlyErrorMessage, "Breakpoint GRanges contains single breakends"))
+	}
+	if (any(duplicated(gr$partner) & !is.na(gr$partner))) {
+		stop(paste0(friendlyErrorMessage,
+			"Multiple breakends with the sample partner identified. ",
+			"Breakends with multiple partners not currently supported by Breakpoint GRanges."))
+	}
+	else if (any(!is.na(bpgr) & !(bpgr$partner %in% names(bpgr)) | any(!is.na(bpgr) & !(names(bpgr) %in% bpgr$partner)))) {
+		stop(paste0(friendlyErrorMessage,
+			"Unpartnered breakpoint found. ",
+			"All breakpoints must contain a partner in the breakpoint GRanges."))
+	}
 }
 #' Converts a BEDPE Pairs containing pairs of GRanges loaded using to a breakpoint GRanges object.
+#' @details
+#' Breakpoint-level column names will override breakend-level column names.
 #' @param pairs a Pairs object consisting of two parallel genomic loci.
 #' @param placeholderName prefix to use to ensure each entry has a unique ID.
+#' @param firstSuffix first in pair name suffix to ensure breakend name uniqueness
+#' @param secondSuffix second in pair name suffix to ensure breakend name uniqueness
+#' @param nameField Fallback field for row names if the Pairs object does not contain any names.
+#' BEDPE files loaded using rtracklayer use the "name" field.
+#' @param renameScoreToQUAL renames the 'score' column to 'QUAL'.
+#' Performing this rename results in a consistent variant quality score column
+#' name for variant loaded from BEDPE and VCF.
 #' @examples
 #' bedpe.file <- system.file("extdata", "gridss.bedpe", package = "StructuralVariantAnnotation")
 #' bedpe.pairs <- rtracklayer::import(bedpe.file)
-#' pairs2breakpointgr(bedpe.pairs)
-#' pairs2breakpointgr(bedpe.pairs, placeholderName='gridss')
+#' bedpe.bpgr <- pairs2breakpointgr(bedpe.pairs)
 #' @return Breakpoint GRanges object.
 #' @export
-pairs2breakpointgr <- function(pairs, placeholderName="bedpe") {
+pairs2breakpointgr <- function(
+		pairs,
+		placeholderName="bedpe",
+		firstSuffix="_1", secondSuffix="_2",
+		nameField="name",
+		renameScoreToQUAL=TRUE) {
 	n <- names(pairs)
 	if (is.null(n)) {
 		# BEDPE uses the "name" field
-		if ("name" %in% names(S4Vectors::mcols(pairs))) {
-			n <- S4Vectors::mcols(pairs)$name
+		if (nameField %in% names(S4Vectors::mcols(pairs))) {
+			n <- S4Vectors::mcols(pairs)[[nameField]]
+			mcols(pairs)$sourceId <- n
 		} else {
 			n <- rep(NA_character_, length(pairs))
 		}
@@ -245,17 +309,18 @@ pairs2breakpointgr <- function(pairs, placeholderName="bedpe") {
 	n <- ifelse(is.na(n) | n == "" | n =="." | duplicated(n), paste0(placeholderName, seq_along(n)), n)
 	#
 	gr <- c(S4Vectors::first(pairs), S4Vectors::second(pairs))
-	names(gr) <- c(paste0(n, "_1"), paste0(n, "_2"))
-	gr$partner <- c(paste0(n, "_2"), paste0(n, "_1"))
+	names(gr) <- c(paste0(n, firstSuffix), paste0(n, secondSuffix))
+	gr$partner <- c(paste0(n, secondSuffix), paste0(n, firstSuffix))
 	for (col in names(S4Vectors::mcols(pairs))) {
-		if (col %in% c("name")) {
+		if (col %in% nameField) {
 			# drop columns we have processed
 		} else {
 			S4Vectors::mcols(gr)[[col]] <- S4Vectors::mcols(pairs)[[col]]
 		}
 	}
-	#revert score column to QUAL
-	names(mcols(gr))[2]<-'QUAL'
+	if (renameScoreToQUAL) {
+		names(mcols(gr))[which(names(mcols(gr)) == "score")] <- "QUAL"
+		}
 	return(gr)
 }
 

@@ -4,7 +4,7 @@ simple <- readVcf(.testfile("simple.vcf"), "")
 breakend <- readVcf(.testfile("breakend.vcf"), "")
 
 test_that("bedpe2breakpointgr creates unique ids", {
-	gr <- bedpe2breakpointgr(.testfile("unnamed.bedpe"))
+	gr <- pairs2breakpointgr(import(.testfile("unnamed.bedpe")))
 	expect_equal(c("1", "3", "2", "4"), as.character(seqnames(gr)))
 	expect_equal(c(19356, 1300148+1, 19427, 1302837+1), start(gr))
 	expect_equal(c(19356, 1300151, 19427, 1302840), end(gr))
@@ -206,6 +206,21 @@ test_that("calculateReferenceHomology", {
 		"chr12	1000000	aa	A	A[chr12:2000000[	.	.	MATEID=bb;SVTYPE=BND",
 		"chr12	2000000	bb	C	]chr12:1000000]C	.	.	MATEID=aa;SVTYPE=BND"
 	))), hg19, 5)$inexacthomlen[1]))
+})
+test_that("pairs_round_trip", {
+	for (f in c("gridss.bedpe", "unnamed.bedpe")) {
+		pairs = import(system.file("extdata", f, package = "StructuralVariantAnnotation"))
+		gr = pairs2breakpointgr(pairs)
+		pairs2 = breakpointgr2pairs(gr)
+		expect_equal(seqnames(first(pairs)), seqnames(first(pairs2)))
+		expect_equal(start(first(pairs)), start(first(pairs2)))
+		expect_equal(strand(first(pairs)), strand(first(pairs2)))
+		expect_equal(seqnames(second(pairs)), seqnames(second(pairs2)))
+		expect_equal(start(second(pairs)), start(second(pairs2)))
+		expect_equal(strand(second(pairs)), strand(second(pairs2)))
+		expect_equal(mcols(pairs)$name, mcols(pairs2)$name)
+		expect_equal(mcols(pairs)$score, mcols(pairs2)$score)
+	}
 })
 
 #test_that("calculateBlastHomology", {

@@ -4,12 +4,25 @@
 \alias{pairs2breakpointgr}
 \title{Converts a BEDPE Pairs containing pairs of GRanges loaded using to a breakpoint GRanges object.}
 \usage{
-pairs2breakpointgr(pairs, placeholderName = "bedpe")
+pairs2breakpointgr(pairs, placeholderName = "bedpe",
+  firstSuffix = "_1", secondSuffix = "_2", nameField = "name",
+  renameScoreToQUAL = TRUE)
 }
 \arguments{
 \item{pairs}{a Pairs object consisting of two parallel genomic loci.}
 
 \item{placeholderName}{prefix to use to ensure each entry has a unique ID.}
+
+\item{firstSuffix}{first in pair name suffix to ensure breakend name uniqueness}
+
+\item{secondSuffix}{second in pair name suffix to ensure breakend name uniqueness}
+
+\item{nameField}{Fallback field for row names if the Pairs object does not contain any names.
+BEDPE files loaded using rtracklayer use the "name" field.}
+
+\item{renameScoreToQUAL}{renames the 'score' column to 'QUAL'.
+Performing this rename results in a consistent variant quality score column
+name for variant loaded from BEDPE and VCF.}
 }
 \value{
 Breakpoint GRanges object.
@@ -17,9 +30,11 @@ Breakpoint GRanges object.
 \description{
 Converts a BEDPE Pairs containing pairs of GRanges loaded using to a breakpoint GRanges object.
 }
+\details{
+Breakpoint-level column names will override breakend-level column names.
+}
 \examples{
 bedpe.file <- system.file("extdata", "gridss.bedpe", package = "StructuralVariantAnnotation")
 bedpe.pairs <- rtracklayer::import(bedpe.file)
-pairs2breakpointgr(bedpe.pairs)
-pairs2breakpointgr(bedpe.pairs, placeholderName='gridss')
+bedpe.bpgr <- pairs2breakpointgr(bedpe.pairs)
 }

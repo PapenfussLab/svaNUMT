@@ -7,10 +7,12 @@ structural variants
 #@export
 Partner breakend for each breakend.}
 \usage{
-partner(gr)
+partner(gr, selfPartnerSingleBreakends = FALSE)
 }
 \arguments{
 \item{gr}{GRanges object of SV breakends}
+
+\item{selfPartnerSingleBreakends}{treat single breakends as their own partner.}
 }
 \value{
 A GRanges object in which each entry is the partner breakend of

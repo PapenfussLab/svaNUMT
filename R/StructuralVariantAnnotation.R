@@ -4,13 +4,12 @@
 #' and interpreting structural variants calls. The packages contains functions
 #' for parsing VCFs from a number of popular caller as well as functions for
 #' dealing with breakpoints involving two separate genomic loci. The package
-#' supports encoding breakpoints as `GRanges` objects and BEDPE-formatted
-#' data frame.
+#' takes a `GRanges` based breakend-centric approach.
 #'
-#'    * Parse VCF objects with the `breakpointRanges()` function.
+#'    * Parse VCF objects with the `breakpointRanges()` and `breakendRanges()`functions.
 #'    * Find breakpoint overlaps with the `findBreakpointOverlaps()`
 #'   and `countBreakpointOverlaps()` functions.
-#'    * Generate BEDPE files for circos plot with `breakpointgr2bedpe()` function.
+#'    * Generate BEDPE files for circos plot with `breakpointgr2pairs()` function.
 #'    * ...
 #'
 #' For more details on the features of StructuralVariantAnnotation, read the vignette:

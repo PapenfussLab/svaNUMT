@@ -199,7 +199,7 @@ setMethod("breakpointRanges", "VCF",
 	gr <- SummarizedExperiment::rowRanges(vcf)
 	gr$REF <- as.character(ref(vcf))
 	gr$ALT <- as.character(elementExtract(alt(vcf), 1))
-	gr$vcfId <- names(vcf)
+	gr$sourceId <- names(vcf)
 	gr$partner <- rep(NA_character_, length(gr))
 	gr$svtype <- elementExtract(info(vcf)$SVTYPE) %na%
 		# hack ensure that [,2] exists even for zero record vcfs
@@ -514,9 +514,9 @@ setMethod("breakpointRanges", "VCF",
 	outgr$cistartoffset <- NULL
 	outgr$ciwidth <- NULL
 	if (!unpartneredBreakends) {
-		partnerpartnerisself <- partner(outgr)$partner == names(outgr)
+		partnerpartnerisself <- outgr[outgr$partner]$partner == names(outgr)
 		if (!all(partnerpartnerisself)) {
-			warning("Multiple breakends partners for a single breakend found (Ignoring all except first). StructuralVariantAnnotation does not yet support promiscuous breakpoints. Please raise a github enhancement request at https://github.com/d-cameron/StructuralVariantAnnotation/issues if this functionality is desired.")
+			warning("Multiple breakends partners for a single breakend found (Ignoring all except first). StructuralVariantAnnotation does not support promiscuous breakpoints.")
 			outgr <- outgr[partnerpartnerisself,]
 		}
 		# sanity check that all breakpoints partners actually exist
