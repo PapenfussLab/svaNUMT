@@ -145,46 +145,11 @@ findBreakpointOverlaps <- function(query, subject, maxgap=-1L, minoverlap=0L, ig
 #' @param breakpointScoreColumn Query column defining a score for determining which query breakpoint
 #' is considered the best when countOnlyBest=TRUE.
 #' @examples
-#' require(VariantAnnotation)
-#' truth_vcf = readVcf(system.file("extdata", "na12878_chr22_Sudmunt2015.vcf", package = "StructuralVariantAnnotation"))
-#' truth_svgr = breakpointRanges(truth_vcf)
-#' truth_svgr = truth_svgr[seqnames(truth_svgr) == "chr22"]
-#' crest_vcf = readVcf(system.file("extdata", "na12878_chr22_crest.vcf", package = "StructuralVariantAnnotation"))
-#' # Some SV don't report QUAL so we need to use a proxy
-#' VariantAnnotation::fixed(crest_vcf)$QUAL = info(crest_vcf)$left_softclipped_read_count + info(crest_vcf)$left_softclipped_read_count
-#' crest_svgr = breakpointRanges(crest_vcf)
-#' crest_svgr$caller = "crest"
-#' hydra_vcf = readVcf(system.file("extdata", "na12878_chr22_hydra.vcf", package = "StructuralVariantAnnotation"))
-#' hydra_svgr = breakpointRanges(hydra_vcf)
-#' hydra_svgr$caller = "hydra"
-#' svgr = c(crest_svgr, hydra_svgr)
-#' # Annotate calls that match the truth set
-#' svgr$truth_matches = countBreakpointOverlaps(svgr, truth_svgr,
-#'   maxgap=100, sizemargin=0.25, restrictMarginToSizeMultiple=0.5,
-#'   # HYDRA makes duplicate calls and will sometimes report a variant multiple
-#'   # times with slightly different bounds. countOnlyBest prevents these being
-#'   # double-counted as multiple true positives.
-#'   countOnlyBest=TRUE)
-#' # Generate ROC curves
-#' library(tidyverse)
-#' ggplot(as.data.frame(svgr) %>%
-#'   dplyr::select(QUAL, caller, truth_matches) %>%
-#'   dplyr::group_by(caller, QUAL) %>%
-#'   dplyr::summarise(
-#'     calls=n(),
-#'     tp=sum(truth_matches > 0)) %>%
-#'   dplyr::group_by(caller) %>%
-#'   dplyr::arrange(dplyr::desc(QUAL)) %>%
-#'   dplyr::mutate(
-#'     cum_tp=cumsum(tp),
-#'     cum_n=cumsum(calls),
-#'     cum_fp=cum_n - cum_tp,
-#'     Precision=cum_tp / cum_n,
-#'     Recall=cum_tp/length(truth_svgr)) +
-#'   aes(x=Recall, y=Precision, colour=caller) +
-#'   geom_point() +
-#'   geom_line() +
-#'   labs(title="NA12878 chr22 CREST and HYDRA\nSudmunt 2015 truth set")
+#' truth_vcf = VariantAnnotation::readVcf(system.file("extdata", "na12878_chr22_Sudmunt2015.vcf", package = "StructuralVariantAnnotation"))
+#' crest_vcf = VariantAnnotation::readVcf(system.file("extdata", "na12878_chr22_crest.vcf", package = "StructuralVariantAnnotation"))
+#' caller_bpgr = breakpointRanges(crest_vcf)
+#' caller_bpgr$true_positive = countBreakpointOverlaps(caller_bpgr, breakpointRanges(truth_vcf),
+#'   maxgap=100, sizemargin=0.25, restrictMarginToSizeMultiple=0.5, countOnlyBest=TRUE)
 #' @return An integer vector containing the tabulated query overlap hits.
 #' @export
 countBreakpointOverlaps <- function(querygr, subjectgr, countOnlyBest=FALSE,

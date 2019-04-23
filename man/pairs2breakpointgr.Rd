@@ -6,9 +6,7 @@
 \title{Converts a breakpoint GRanges object to a Pairs object}
 \usage{
 breakpointgr2pairs(bpgr, writeQualAsScore = TRUE, writeName = TRUE,
-  bedpeName = function(gr) {     (gr$sourceId \%null\% gr$name) \%null\%
-  names(gr) }, firstInPair = function(gr) {     seq_along(gr) <
-  match(gr$partner, names(gr)) })
+  bedpeName = NULL, firstInPair = NULL)
 
 pairs2breakpointgr(pairs, placeholderName = "bedpe",
   firstSuffix = "_1", secondSuffix = "_2", nameField = "name",
