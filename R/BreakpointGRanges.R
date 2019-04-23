@@ -260,7 +260,7 @@ breakpointgr2pairs <- function(
 	if (!allowSingleBreakends & any(is.na(bpgr$partner))) {
 		stop(paste0(friendlyErrorMessage, "Breakpoint GRanges contains single breakends"))
 	}
-	if (any(duplicated(gr$partner) & !is.na(gr$partner))) {
+	if (any(duplicated(bpgr$partner) & !is.na(bpgr$partner))) {
 		stop(paste0(friendlyErrorMessage,
 			"Multiple breakends with the sample partner identified. ",
 			"Breakends with multiple partners not currently supported by Breakpoint GRanges."))

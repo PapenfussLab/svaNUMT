@@ -5,8 +5,9 @@
 \title{Converts a breakpoint GRanges object to a Pairs object}
 \usage{
 breakpointgr2pairs(bpgr, writeQualAsScore = TRUE, writeName = TRUE,
-  firstInPair = function(gr) {     seq_along(gr) < match(gr$partner,
-  names(gr)) })
+  bedpeName = function(gr) {     (gr$sourceId \%null\% gr$name) \%null\%
+  names(gr) }, firstInPair = function(gr) {     seq_along(gr) <
+  match(gr$partner, names(gr)) })
 }
 \arguments{
 \item{bpgr}{breakpoint GRanges object}
@@ -16,6 +17,10 @@ fields for compatibility with BEDPE rtracklayer export}
 
 \item{writeName}{write the breakpoint GRanges QUAL field as the score
 fields for compatibility with BEDPE rtracklayer export}
+
+\item{bedpeName}{function that returns the name to use for the breakpoint.
+Defaults to the sourceId, name column, or row names (in that priority) of
+the first breakend of each pair.}
 
 \item{firstInPair}{function that returns TRUE for breakends that are considered
 the first in the pair, and FALSE for the second in pair breakend. By default,
