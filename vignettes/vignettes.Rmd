@@ -73,13 +73,11 @@ In addition to parsing spec-compliant VCFs, additional logic has been added to e
 Breakpoint ambiguity reported in using the spec-defined `CIPOS` is, by default, incorporated into the GRanges breakend intervals.
 
 ```{r input, warning=FALSE, message=FALSE}
-suppressPackageStartupMessages(library(tidyverse))
-suppressPackageStartupMessages(library(StructuralVariantAnnotation))
+suppressPackageStartupMessages(require(StructuralVariantAnnotation))
+suppressPackageStartupMessages(require(VariantAnnotation))
 vcf.file <- system.file("extdata", "gridss.vcf", package = "StructuralVariantAnnotation")
 vcf <- VariantAnnotation::readVcf(vcf.file, "hg19")
-breakpointgr <- breakpointRanges(vcf)
-singleBreakendgr <- breakendRanges(vcf)
-gr <- c(breakpointgr, singleBreakendgr)
+gr <- breakpointRanges(vcf)
 ```
 
 `partner()` returns the breakpoint `GRanges` object with the order rearranged
@@ -89,14 +87,45 @@ corresponds with the local breakend.
 partner(gr)
 ```
 
+Single breakends are loaded using the `breakendRanges()` function. The `GRanges` object is of the same form as `breakpointRanges()` but as the breakend partner is not specified, the partner is NA. A single GRanges object can contain both breakend and breakpoint variants.
+
+```{r}
+colo829_vcf <- VariantAnnotation::readVcf(system.file("extdata", "COLO829T.purple.sv.ann.vcf.gz", package = "StructuralVariantAnnotation"))
+colo829_bpgr <- breakpointRanges(colo829_vcf)
+colo829_begr <- breakendRanges(colo829_vcf)
+colo829_gr <- sort(c(colo829_begr, colo829_bpgr))
+colo829_gr[seqnames(colo829_gr) == "6"]
+```
+
+### Ensuring breakpoint consistency
+
+Functions such as `findBreakpointOverlaps()` require the `GRanges` object to be composed entirely of valid breakpoints. Subsetting a breakpoint `GRanges` object can results in one side of a breakpoint getting filtered with the remaining orphaned record no longer valid as its partner no longer exists. Such record can be filtered
+
+```{r}
+colo828_chr6_breakpoints <- colo829_gr[seqnames(colo829_gr) == "6"]
+# A call to findBreakpointOverlaps(colo828_chr6_breakpoints, colo828_chr6_breakpoints)
+# will fail as there are a) single breakends, and b) breakpoints with missing partners
+colo828_chr6_breakpoints <- colo828_chr6_breakpoints[colo828_chr6_breakpoints$partner %in% names(colo828_chr6_breakpoints)]
+# As expected, each call on chr6 only overlaps with itself
+countBreakpointOverlaps(colo828_chr6_breakpoints, colo828_chr6_breakpoints)
+```
+
+Note that if you did want to include inter-chromosomal breakpoints involving chromosome 6, you would need to update the filtering criteria to include records with chr6 on either side. In such cases, the filtering logic can be simplified by the `selfPartnerSingleBreakends` parameter of `partner()`. When `selfPartnerSingleBreakends=TRUE`, the partner of single breakend events is considered to be the single breakend itself.
+
+```{r}
+colo828_chr6_breakpoints <- colo829_gr[
+  seqnames(colo829_gr) == "6" |
+    seqnames(partner(colo829_gr, selfPartnerSingleBreakends=TRUE)) == "6"]
+# this way we keep the chr3<->chr6 breakpoint and don't create any orphans
+head(colo828_chr6_breakpoints, 1)
+```
+
 ### Breakpoint Overlaps
 
 `findBreakpointOverlaps()` and `countBreakpointOverlaps()` are functions for finding and counting overlaps between breakpoint objects. All breakends must have their partner breakend included in the GRanges. A valid overlap requires that breakends on boths sides overlap.
 
 To demonstrate `countBreakpointOverlaps()` function, we use a small subset of data from our structural variant caller benchmarking paper to construct precision recall curves for a pair of callers. 
 ```{r}
-suppressPackageStartupMessages(require(VariantAnnotation))
-suppressPackageStartupMessages(require(tidyverse))
 truth_vcf <- readVcf(system.file("extdata", "na12878_chr22_Sudmunt2015.vcf", package = "StructuralVariantAnnotation"))
 truth_svgr <- breakpointRanges(truth_vcf)
 truth_svgr <- truth_svgr[seqnames(truth_svgr) == "chr22"]
@@ -106,7 +135,7 @@ VariantAnnotation::fixed(crest_vcf)$QUAL <- info(crest_vcf)$left_softclipped_rea
 crest_svgr <- breakpointRanges(crest_vcf)
 crest_svgr$caller <- "crest"
 hydra_vcf <- readVcf(system.file("extdata", "na12878_chr22_hydra.vcf", package = "StructuralVariantAnnotation"))
-hydra_svgr = breakpointRanges(hydra_vcf)
+hydra_svgr <- breakpointRanges(hydra_vcf)
 hydra_svgr$caller <- "hydra"
 svgr <- c(crest_svgr, hydra_svgr)
 svgr$truth_matches <- countBreakpointOverlaps(svgr, truth_svgr,
@@ -128,9 +157,11 @@ svgr$truth_matches <- countBreakpointOverlaps(svgr, truth_svgr,
   countOnlyBest=TRUE)
 ```
 
-Once we know which calls match the truth set, it is relatively straight-forward to generate Precision-Recall and ROC curves for each caller.
+Once we know which calls match the truth set, we can generate Precision-Recall and ROC curves for each caller using one of the many ROC R packages, or directly with dplyr.
 
 ```{r}
+suppressPackageStartupMessages(require(dplyr))
+suppressPackageStartupMessages(require(ggplot2))
 ggplot(as.data.frame(svgr) %>%
   dplyr::select(QUAL, caller, truth_matches) %>%
   dplyr::group_by(caller, QUAL) %>%
@@ -177,8 +208,10 @@ from `circlize`.
 
 To generate a simple circos plot of paired breakpoints:
 ```{r}
-suppressPackageStartupMessages(library(circlize))
-pairs = breakpointgr2pairs(gr)
+suppressPackageStartupMessages(require(circlize))
+colo829_bpgr_with_chr_prefix <- colo829_bpgr
+seqlevelsStyle(colo829_bpgr_with_chr_prefix) <- "UCSC"
+pairs <- breakpointgr2pairs(colo829_bpgr_with_chr_prefix)
 circos.initializeWithIdeogram()
 circos.genomicLink(as.data.frame(S4Vectors::first(pairs)), as.data.frame(S4Vectors::second(pairs)))
 circos.clear()
@@ -186,17 +219,16 @@ circos.clear()
 
 Alternatively, plotting package such as `ggbio` provides flexible tracks 
 function which binds
-with `ggplot2()` objects. It takes `GRanges` objects as input and support circos
+with `ggplot2` objects. It takes `GRanges` objects as input and support circos
 plots.
 To plot structural variant breakpoints in a circos plot using `ggbio`, we need
 to first prepare the breakpoint GRanges. The function requires a sepecial column,
 indicating the end of the link using GRanges format, which we can add to `gr` using
 [`plyranges`](https://bioconductor.org/packages/release/bioc/html/plyranges.html).
 ```{r add to.gr}
-suppressPackageStartupMessages(library(ggbio))
-gr.circos <- gr
-seqlevelsStyle(gr.circos) <- 'Ensembl' #remove 'chr' prefix
-seqlevels(gr.circos)<-seqlevels(biovizBase::hg19sub)
+suppressPackageStartupMessages(require(ggbio))
+gr.circos <- colo829_bpgr[seqnames(colo829_bpgr) %in% seqlevels(biovizBase::hg19sub)]
+seqlevels(gr.circos) <- seqlevels(biovizBase::hg19sub)
 mcols(gr.circos)$to.gr <- granges(partner(gr.circos))
 ```
 We can then plot the breakpoints against reference genomes.

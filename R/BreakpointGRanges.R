@@ -23,8 +23,8 @@
 #' partner(gr)
 #'@export
 partner <- function(gr, selfPartnerSingleBreakends=FALSE) {
-	.assertValidBreakpointGRanges(gr, allowSingleBreakends=selfPartnerSingleBreakends)
-	return(gr[ifelse(selfPartnerSingleBreakends & is.na(gr$partner), names(gr), gr$partner),])
+  .assertValidBreakpointGRanges(gr, allowSingleBreakends=selfPartnerSingleBreakends)
+  return(gr[ifelse(selfPartnerSingleBreakends & is.na(gr$partner), names(gr), gr$partner),])
 }
 
 #' Finding overlapping breakpoints between two breakpoint sets
@@ -74,62 +74,62 @@ partner <- function(gr, selfPartnerSingleBreakends=FALSE) {
 #' @return A dataframe containing index and error stats of overlapping breakpoints.
 #'@export
 findBreakpointOverlaps <- function(query, subject, maxgap=-1L, minoverlap=0L, ignore.strand=FALSE, sizemargin=NULL, restrictMarginToSizeMultiple=NULL) {
-	.assertValidBreakpointGRanges(query)
-	.assertValidBreakpointGRanges(subject)
-	pquery = partner(query)
-	squery = partner(subject)
-	localhits = findOverlaps(query, subject, maxgap=maxgap, minoverlap=minoverlap, type="any", select="all", ignore.strand=ignore.strand)
-	remotehits = findOverlaps(pquery, squery, maxgap=maxgap, minoverlap=minoverlap, type="any", select="all", ignore.strand=ignore.strand)
-	## duplicated() version:
-	#hits = Hits(c(queryHits(localhits), queryHits(remotehits)), c(subjectHits(localhits), subjectHits(remotehits)), nLnode=nLnode(localhits), nRnode=nRnode(localhits), sort.by.query=TRUE)
-	#hits = hits[duplicated(hits)]
-	
-	## intersect() version:
-	hits = BiocGenerics::intersect(localhits, remotehits)
-	
-	## dplyr() version:
-	#hits <- dplyr::bind_rows(
-	#	as.data.frame(localhits, row.names=NULL),
-	#	as.data.frame(remotehits, row.names=NULL))
-	#hits = hits %>% dplyr::arrange(queryHits, subjectHits) %>%
-	#	dplyr::filter(!is.na(dplyr::lead(.$queryHits)) & !is.na(dplyr::lead(.$subjectHits)) & dplyr::lead(.$queryHits) == .$queryHits & dplyr::lead(.$subjectHits) == .$subjectHits)
-	
-	## dplyr() exploiting the sorted nature of the findOverlaps():
-	#hits = Hits(c(queryHits(localhits), queryHits(remotehits)), c(subjectHits(localhits), subjectHits(remotehits)), nLnode=nLnode(localhits), nRnode=nRnode(localhits), sort.by.query=TRUE)
-	#queryLead  = dplyr::lead(queryHits(hits))
-	#querySubject  = dplyr::lead(queryHits(hits))
-	#hits = hits[
-	#	!is.na(queryLead) &d
-	#	!is.na(querySubject) &
-	#	queryLead == queryHits(hits) &
-	#	querySubject == subjectHits(hits)]
-	if (!is.null(sizemargin) && !is.na(sizemargin)) {
-		# take into account confidence intervals when calculating event size
-		callwidth <- .distance(query, pquery)
-		truthwidth <- .distance(subject, squery)
-		callsize <- callwidth + (query$insLen %na% 0)
-		truthsize <- truthwidth + (subject$insLen %na% 0)
-		sizeerror <- .distance(
-			IRanges::IRanges(start=callsize$min[S4Vectors::queryHits(hits)], end=callsize$max[S4Vectors::queryHits(hits)]),
-			IRanges::IRanges(start=truthsize$min[S4Vectors::subjectHits(hits)], end=truthsize$max[S4Vectors::subjectHits(hits)])
-			)$min
-		# event sizes must be within sizemargin
-		hits <- hits[sizeerror - 1 < sizemargin * pmin(callsize$max[S4Vectors::queryHits(hits)], truthsize$max[S4Vectors::subjectHits(hits)]),]
-		# further restrict breakpoint positions for small events
-		localbperror <- .distance(query[S4Vectors::queryHits(hits)], subject[S4Vectors::subjectHits(hits)])$min
-		remotebperror <- .distance(pquery[S4Vectors::queryHits(hits)], squery[S4Vectors::subjectHits(hits)])$min
-		if (!is.null(restrictMarginToSizeMultiple)) {
-			allowablePositionError <- (pmin(callsize$max[S4Vectors::queryHits(hits)], truthsize$max[S4Vectors::subjectHits(hits)]) * restrictMarginToSizeMultiple + 1)
-			hits <- hits[localbperror <= allowablePositionError & remotebperror <= allowablePositionError, ]
-		}
-	}
-	return(hits)
+  .assertValidBreakpointGRanges(query)
+  .assertValidBreakpointGRanges(subject)
+  pquery = partner(query)
+  squery = partner(subject)
+  localhits = findOverlaps(query, subject, maxgap=maxgap, minoverlap=minoverlap, type="any", select="all", ignore.strand=ignore.strand)
+  remotehits = findOverlaps(pquery, squery, maxgap=maxgap, minoverlap=minoverlap, type="any", select="all", ignore.strand=ignore.strand)
+  ## duplicated() version:
+  #hits = Hits(c(queryHits(localhits), queryHits(remotehits)), c(subjectHits(localhits), subjectHits(remotehits)), nLnode=nLnode(localhits), nRnode=nRnode(localhits), sort.by.query=TRUE)
+  #hits = hits[duplicated(hits)]
+  
+  ## intersect() version:
+  hits = BiocGenerics::intersect(localhits, remotehits)
+  
+  ## dplyr() version:
+  #hits <- dplyr::bind_rows(
+  #	as.data.frame(localhits, row.names=NULL),
+  #	as.data.frame(remotehits, row.names=NULL))
+  #hits = hits %>% dplyr::arrange(queryHits, subjectHits) %>%
+  #	dplyr::filter(!is.na(dplyr::lead(.$queryHits)) & !is.na(dplyr::lead(.$subjectHits)) & dplyr::lead(.$queryHits) == .$queryHits & dplyr::lead(.$subjectHits) == .$subjectHits)
+  
+  ## dplyr() exploiting the sorted nature of the findOverlaps():
+  #hits = Hits(c(queryHits(localhits), queryHits(remotehits)), c(subjectHits(localhits), subjectHits(remotehits)), nLnode=nLnode(localhits), nRnode=nRnode(localhits), sort.by.query=TRUE)
+  #queryLead  = dplyr::lead(queryHits(hits))
+  #querySubject  = dplyr::lead(queryHits(hits))
+  #hits = hits[
+  #	!is.na(queryLead) &d
+  #	!is.na(querySubject) &
+  #	queryLead == queryHits(hits) &
+  #	querySubject == subjectHits(hits)]
+  if (!is.null(sizemargin) && !is.na(sizemargin)) {
+    # take into account confidence intervals when calculating event size
+    callwidth <- .distance(query, pquery)
+    truthwidth <- .distance(subject, squery)
+    callsize <- callwidth + (query$insLen %na% 0)
+    truthsize <- truthwidth + (subject$insLen %na% 0)
+    sizeerror <- .distance(
+      IRanges::IRanges(start=callsize$min[S4Vectors::queryHits(hits)], end=callsize$max[S4Vectors::queryHits(hits)]),
+      IRanges::IRanges(start=truthsize$min[S4Vectors::subjectHits(hits)], end=truthsize$max[S4Vectors::subjectHits(hits)])
+    )$min
+    # event sizes must be within sizemargin
+    hits <- hits[sizeerror - 1 < sizemargin * pmin(callsize$max[S4Vectors::queryHits(hits)], truthsize$max[S4Vectors::subjectHits(hits)]),]
+    # further restrict breakpoint positions for small events
+    localbperror <- .distance(query[S4Vectors::queryHits(hits)], subject[S4Vectors::subjectHits(hits)])$min
+    remotebperror <- .distance(pquery[S4Vectors::queryHits(hits)], squery[S4Vectors::subjectHits(hits)])$min
+    if (!is.null(restrictMarginToSizeMultiple)) {
+      allowablePositionError <- (pmin(callsize$max[S4Vectors::queryHits(hits)], truthsize$max[S4Vectors::subjectHits(hits)]) * restrictMarginToSizeMultiple + 1)
+      hits <- hits[localbperror <= allowablePositionError & remotebperror <= allowablePositionError, ]
+    }
+  }
+  return(hits)
 }
 # TODO: new function to annotate a Hits object with sizeerror, localbperror, and remotebperror
 .distance <- function(r1, r2) {
-	return(data.frame(
-		min=pmax(0, pmax(start(r1), start(r2)) - pmin(end(r1), end(r2))),
-		max=pmax(end(r2) - start(r1), end(r1) - start(r2))))
+  return(data.frame(
+    min=pmax(0, pmax(start(r1), start(r2)) - pmin(end(r1), end(r2))),
+    max=pmax(end(r2) - start(r1), end(r1) - start(r2))))
 }
 #' Counting overlapping breakpoints between two breakpoint sets
 #'
@@ -153,24 +153,24 @@ findBreakpointOverlaps <- function(query, subject, maxgap=-1L, minoverlap=0L, ig
 #' @return An integer vector containing the tabulated query overlap hits.
 #' @export
 countBreakpointOverlaps <- function(querygr, subjectgr, countOnlyBest=FALSE,
-									breakpointScoreColumn = "QUAL", maxgap=-1L,
-									minoverlap=0L, ignore.strand=FALSE, sizemargin=NULL,
-									restrictMarginToSizeMultiple=NULL) {
-	hitscounts <- rep(0, length(querygr))
-	hits <- as.data.frame(findBreakpointOverlaps(querygr, subjectgr, maxgap, minoverlap, ignore.strand, sizemargin=sizemargin, restrictMarginToSizeMultiple=restrictMarginToSizeMultiple))
-	if (!countOnlyBest) {
-		hits <- hits %>%
-	      dplyr::group_by(.data$queryHits) %>%
-	      dplyr::summarise(n=dplyr::n())
-	} else {
-		# assign supporting evidence to the call with the highest QUAL
-		hits$QUAL <- S4Vectors::mcols(querygr)[[breakpointScoreColumn]][hits$queryHits]
-		hits <- hits %>%
-			dplyr::arrange(desc(.data$QUAL), .data$queryHits) %>%
-			dplyr::distinct(.data$subjectHits, .keep_all=TRUE) %>%
-			dplyr::group_by(.data$queryHits) %>%
-			dplyr::summarise(n=dplyr::n())
-	}
+                                    breakpointScoreColumn = "QUAL", maxgap=-1L,
+                                    minoverlap=0L, ignore.strand=FALSE, sizemargin=NULL,
+                                    restrictMarginToSizeMultiple=NULL) {
+  hitscounts <- rep(0, length(querygr))
+  hits <- as.data.frame(findBreakpointOverlaps(querygr, subjectgr, maxgap, minoverlap, ignore.strand, sizemargin=sizemargin, restrictMarginToSizeMultiple=restrictMarginToSizeMultiple))
+  if (!countOnlyBest) {
+    hits <- hits %>%
+      dplyr::group_by(.data$queryHits) %>%
+      dplyr::summarise(n=dplyr::n())
+  } else {
+    # assign supporting evidence to the call with the highest QUAL
+    hits$QUAL <- S4Vectors::mcols(querygr)[[breakpointScoreColumn]][hits$queryHits]
+    hits <- hits %>%
+      dplyr::arrange(desc(.data$QUAL), .data$queryHits) %>%
+      dplyr::distinct(.data$subjectHits, .keep_all=TRUE) %>%
+      dplyr::group_by(.data$queryHits) %>%
+      dplyr::summarise(n=dplyr::n())
+  }
   hitscounts[hits$queryHits] <- hits$n
   return(hitscounts)
 }
@@ -197,52 +197,52 @@ countBreakpointOverlaps <- function(querygr, subjectgr, countOnlyBest=FALSE,
 #' @rdname pairs2breakpointgr
 #' @export
 breakpointgr2pairs <- function(
-		bpgr,
-		writeQualAsScore=TRUE,
-		writeName=TRUE,
-		bedpeName = NULL,
-		firstInPair = NULL) {
-	.assertValidBreakpointGRanges(bpgr, "Cannot convert breakpoint GRanges to Pairs: ", allowSingleBreakends=FALSE)
-	
-	if (is.null(bedpeName)) {
-		bedpeName = function(gr) { (gr$sourceId %null% gr$name) %null% names(gr) }
-	}
-	if (is.null(firstInPair)) {
-		firstInPair = function(gr) { seq_along(gr) < match(gr$partner, names(gr)) }
-	}
-	isFirst = firstInPair(bpgr)
-	pairgr = S4Vectors::Pairs(bpgr[isFirst], partner(bpgr)[isFirst])
-	if (writeName) {
-		S4Vectors::mcols(pairgr)$name = bedpeName(S4Vectors::first(pairgr))
-	}
-	if (writeQualAsScore) {
-		S4Vectors::mcols(pairgr)$score = S4Vectors::first(pairgr)$QUAL
-	}
-	return(pairgr)
+  bpgr,
+  writeQualAsScore=TRUE,
+  writeName=TRUE,
+  bedpeName = NULL,
+  firstInPair = NULL) {
+  .assertValidBreakpointGRanges(bpgr, "Cannot convert breakpoint GRanges to Pairs: ", allowSingleBreakends=FALSE)
+  
+  if (is.null(bedpeName)) {
+    bedpeName = function(gr) { (gr$sourceId %null% gr$name) %null% names(gr) }
+  }
+  if (is.null(firstInPair)) {
+    firstInPair = function(gr) { seq_along(gr) < match(gr$partner, names(gr)) }
+  }
+  isFirst = firstInPair(bpgr)
+  pairgr = S4Vectors::Pairs(bpgr[isFirst], partner(bpgr)[isFirst])
+  if (writeName) {
+    S4Vectors::mcols(pairgr)$name = bedpeName(S4Vectors::first(pairgr))
+  }
+  if (writeQualAsScore) {
+    S4Vectors::mcols(pairgr)$score = S4Vectors::first(pairgr)$QUAL
+  }
+  return(pairgr)
 }
 .assertValidBreakpointGRanges <- function(bpgr, friendlyErrorMessage="", allowSingleBreakends=TRUE) {
-	if (is.null(names(bpgr))) {
-		stop(paste0(friendlyErrorMessage, "Breakpoint GRanges require names"))
-	}
-	if (any(is.na(names(bpgr)))) {
-		stop(paste0(friendlyErrorMessage, "Breakpoint GRanges names cannot be NA"))
-	}
-	if (any(duplicated(names(bpgr)))) {
-		stop(paste0(friendlyErrorMessage, "Breakpoint GRanges names cannot duplicated"))
-	}
-	if (!allowSingleBreakends & any(is.na(bpgr$partner))) {
-		stop(paste0(friendlyErrorMessage, "Breakpoint GRanges contains single breakends"))
-	}
-	if (any(duplicated(bpgr$partner) & !is.na(bpgr$partner))) {
-		stop(paste0(friendlyErrorMessage,
-			"Multiple breakends with the sample partner identified. ",
-			"Breakends with multiple partners not currently supported by Breakpoint GRanges."))
-	}
-	else if (any(!is.na(bpgr) & !(bpgr$partner %in% names(bpgr)) | any(!is.na(bpgr) & !(names(bpgr) %in% bpgr$partner)))) {
-		stop(paste0(friendlyErrorMessage,
-			"Unpartnered breakpoint found. ",
-			"All breakpoints must contain a partner in the breakpoint GRanges."))
-	}
+  if (is.null(names(bpgr))) {
+    stop(paste0(friendlyErrorMessage, "Breakpoint GRanges require names"))
+  }
+  if (any(is.na(names(bpgr)))) {
+    stop(paste0(friendlyErrorMessage, "Breakpoint GRanges names cannot be NA"))
+  }
+  if (any(duplicated(names(bpgr)))) {
+    stop(paste0(friendlyErrorMessage, "Breakpoint GRanges names cannot duplicated"))
+  }
+  if (!allowSingleBreakends & any(is.na(bpgr$partner))) {
+    stop(paste0(friendlyErrorMessage, "Breakpoint GRanges contains single breakends"))
+  }
+  if (any(duplicated(bpgr$partner) & !is.na(bpgr$partner))) {
+    stop(paste0(friendlyErrorMessage,
+                "Multiple breakends with the sample partner identified. ",
+                "Breakends with multiple partners not currently supported by Breakpoint GRanges."))
+  }
+  else if (!all(is.na(bpgr$partner) | (bpgr$partner %in% names(bpgr) & names(bpgr) %in% bpgr$partner))) {
+    stop(paste0(friendlyErrorMessage,
+                "Unpartnered breakpoint found. ",
+                "All breakpoints must contain a partner in the breakpoint GRanges."))
+  }
 }
 #' Converts a BEDPE Pairs containing pairs of GRanges loaded using to a breakpoint GRanges object.
 #' @details
