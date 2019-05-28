@@ -7,32 +7,14 @@ of popular callers as well as functions for dealing with
 breakpoints involving two separate genomic loci encoded as
 GRanges objects.
 
-This package is under active development and should be considered as an unstable devel release.
-No guarantees regarding API stability are made and function signatures could change between versions.
-I am very open to implementing suggestions and enhancements requests for features that you would
-find useful in your analysis so please raise them using the issues tab above.
-
 ## Installation
 
-As the StructuralVariantAnnotation package is not yet released on CRAN or BioConductor, the simplest way to install/update is to use the devtools package:
+
+The StructuralVariantAnnotation package can be installed using BioConductor:
 
 ```
-#install.packages("devtools")
-library(devtools)
-install_github("PapenfussLab/StructuralVariantAnnotation", ref="pre_bioconductor")
+if (!requireNamespace("BiocManager", quietly=TRUE)) {
+	install.packages("BiocManager")
+}
+BiocManager::install("StructuralVariantAnnotation")
 ```
-
-## Documentation
-
-Basic R documentation is included but, as this package is still a work in progress, many functions have only skeletal documentation.
-
-The following are the core functions provided by this package:
-
-- `breakpointRanges(vcf)` for converting the SVs in a VCF to a GRanges object containing one entry per breakend. Breakends on the "+" strand indicate a break immediately after the given position, and "-" indicates a break immediately before the given position. As an example, a "-" at the start of a chromosome, connected to a "+" at the end of the chromosome indicates that the chromosome is circular.
-- `findBreakpointOverlaps(gr)` the breakpoint equivalent of findOverlaps()
-- `countBreakpointOverlaps(gr)` the breakpoint equivalent of countOverlaps()
-- `partner(gr)` for returning the breakpoint partners for each breakend
-- `pair2breakpointgr(file)` for processing BEDPE files loaded using `rtracklayer::import()`
-
-
-
