@@ -32,7 +32,7 @@ The following are the core functions provided by this package:
 - `findBreakpointOverlaps(gr)` the breakpoint equivalent of findOverlaps()
 - `countBreakpointOverlaps(gr)` the breakpoint equivalent of countOverlaps()
 - `partner(gr)` for returning the breakpoint partners for each breakend
-- `pair2breakpointgr(file)` for processing BEDPE files loaded using `rtracklayer::import()`
+- `pair2breakpointgr(file)` for processing BEDPE files loaded using `rtracklayer::import()`.
 
 
 
