@@ -11,6 +11,7 @@ breakdancer <- readVcf(.testfile("breakdancer-1.4.5.vcf"), "")
 delly <- readVcf(.testfile("delly-0.6.8.vcf"), "")
 #gasv <- readVcf(.testfile("gasv-20140228.vcf"), "")
 gridss <- readVcf(.testfile("gridss.vcf"), "")
+gridss_missing_partner <- readVcf(.testfile("gridss-missingPartner.vcf"), "")
 #lumpy <- readVcf(.testfile("lumpy-0.2.11.vcf"), "")
 pindel <- readVcf(.testfile("pindel-0.2.5b6.vcf"), "")
 #socrates <- readVcf(.testfile("socrates-1.13.vcf"), "")
@@ -357,6 +358,16 @@ test_that("align_breakpoint should not touch other variants", {
 		"chr1	1000	b21	N	<DEL>	.	.	SVTYPE=DEL;CIPOS=-5,0"))
 	vcf = align_breakpoints(vcf)
 	expect_equal(c("AGT.", ".AGT", "<DEL>"), unlist(rowRanges(vcf)$ALT))
+})
+test_that("breakpointRanges() should default to drop unpaired records.", {
+	gr = breakpointRanges(gridss_missing_partner)
+	expect_equal(2, length(gr))
+})
+test_that("breakpointRanges(inferMissingBreakends=TRUE) should add missing breakends.", {
+	gr = breakpointRanges(gridss_missing_partner, inferMissingBreakends=TRUE)
+	expect_equal(4, length(gr))
+	expect_equal(c(18992158, 84963533, 84350, 4886681), start(gr))
+	expect_equal(c("+", "-"), as.character(strand(gr))[1:2])
 })
 
 

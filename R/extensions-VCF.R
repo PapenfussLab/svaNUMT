@@ -177,10 +177,12 @@ setMethod("breakpointRanges", "VCF",
 #' @param info_columns VCF INFO columns to include in the GRanges object.
 #' @param unpartneredBreakends Determining whether to report unpartnered 
 #' breakends. Default is set to FALSE.
+#' @param inferMissingBreakends Infer missing breakend records from ALT field of records without matching partners
 #' @rdname breakpointRanges
 .breakpointRanges <- function(vcf, nominalPosition=FALSE,
 							  placeholderName="svrecord", suffix="_bp",
-							  info_columns=NULL, unpartneredBreakends=FALSE) {
+							  info_columns=NULL, unpartneredBreakends=FALSE,
+							  inferMissingBreakends=FALSE) {
 	vcf <- vcf[isStructural(vcf),]
 	assertthat::assert_that(.hasSingleAllelePerRecord(vcf))
 	# VariantAnnotation bug: SV row names are not unique
@@ -384,18 +386,41 @@ setMethod("breakpointRanges", "VCF",
 				multimates <- S4Vectors::elementNROWS(info(cvcf)$MATEID) > 1 & is.na(cgr$partner)
 				cgr$partner <- ifelse(is.na(cgr$partner), elementExtract(info(cvcf)$MATEID, 1), cgr$partner)
 				if (any(multimates)) {
-					warning(paste("Ignoring additional mate breakends for variants", names(cgr)[multimates]))
+					warning(paste("Ignoring additional mate breakends for variants.", names(cgr)[multimates]))
 				}
 			}
 			reflen <- S4Vectors::elementNROWS(cgr$REF)
 			cgr$insSeq <- paste0(stringr::str_sub(preBases, reflen + 1), stringr::str_sub(postBases, end=-(reflen + 1)))
 			cgr$insLen <- nchar(cgr$insSeq)
 
-			toRemove <- is.na(cgr$partner) | !(cgr$partner %in% names(cgr))
-			if (any(toRemove)) {
-				warning(paste("Removing", sum(toRemove), "unpaired breakend variants", paste0(names(cgr)[toRemove], collapse=", ")))
-				cgr <- cgr[!toRemove,]
+			isMissingPartner <- is.na(cgr$partner) | !(cgr$partner %in% names(cgr))
+			if (any(isMissingPartner)) {
+				if (inferMissingBreakends) {
+					remoteChrPos = stringr::str_split_fixed(remoteLocation, stringr::fixed(":"), n=2)
+					remoteChr = remoteChrPos[,1]
+					remotePos = as.numeric(remoteChrPos[,2])
+					ipgr = GRanges(seqnames=remoteChr, ranges=IRanges(start=remotePos, end=remotePos), strand=ifelse(bracket=="[", "-", "+"))
+					mcols(ipgr) = mcols(cgr)
+					ipgr$REF = "N"
+					ipgr$ALT = paste0(
+						ifelse(as.logical(strand(ipgr) == "+"), "N", ""),
+						ifelse(as.logical(strand(cgr) == "+"), "]", "["),
+						seqnames(cgr),
+						":",
+						start(cgr),
+						ifelse(as.logical(strand(cgr) == "+"), "]", "["),
+						ifelse(as.logical(strand(ipgr) == "+"), "", "N"))
+					mpgr <- cgr[isMissingPartner,]
+					ipgr <- ipgr[isMissingPartner,]
+					names(ipgr) = paste0("svrecord", length(gr) + 1:length(ipgr), "_bp2")
+					mpgr$partner = names(ipgr)
+					ipgr$partner = names(mpgr)
+					outgr <- c(outgr, mpgr, ipgr)
+				} else {
+					warning(paste("Removing", sum(isMissingPartner), "unpaired breakend variants. Use inferMissingBreakends=TRUE to recover with inferred partner breakends. Missing breakends: ", paste0(names(cgr)[isMissingPartner], collapse=", ")))
 				}
+				cgr <- cgr[!isMissingPartner,]
+			}
 			mategr <- cgr[cgr$partner,]
 			cgr$svLen <- ifelse(GenomeInfoDb::seqnames(cgr)==GenomeInfoDb::seqnames(mategr), abs(start(cgr) - start(mategr)) - 1, NA_integer_)
 			# make deletion-like events have a -ve svLen
