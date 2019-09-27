@@ -1,10 +1,10 @@
 #' Converting breakpoint GRanges to BEDPE-like dataframe
 #' @details
 #' \code{breakpointgr2bedpe} converts a breakpoint GRanges to a BEDPE-formatted
-#' dataframe. The BEDPE format consists of two sets of genomic loci, optinal
+#' dataframe. The BEDPE format consists of two sets of genomic loci, optional
 #' columns of name, score, strand1, strand2 and any user-defined fields.
 #' See \url{https://bedtools.readthedocs.io/en/latest/content/general-usage.html}
-#' for more details of BEDPE format.
+#' for more details on the BEDPE format.
 #' @param gr A GRanges object.
 #' @return A BEDPE-formatted data frame.
 #' @examples
