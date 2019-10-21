@@ -309,6 +309,7 @@ pairs2breakpointgr <- function(
 #' @param anchoredBases Number of bases leading into breakpoint to extract
 #' @param remoteBases Number of bases from other side of breakpoint to extract
 #' @return Breakpoint sequence around the variant position.
+#' @export
 extractBreakpointSequence <- function(gr, ref, anchoredBases, remoteBases=anchoredBases) {
 	localSeq <- extractReferenceSequence(gr, ref, anchoredBases, 0)
 	insSeq <- ifelse(strand(gr) == "-",
@@ -330,6 +331,7 @@ extractBreakpointSequence <- function(gr, ref, anchoredBases, remoteBases=anchor
 #' @param anchoredBases Number of bases leading into breakpoint to extract
 #' @param followingBases Number of reference bases past breakpoint to extract
 #' @return Reference sequence around the breakpoint position.
+#' @export
 extractReferenceSequence <- function(gr, ref, anchoredBases, followingBases=anchoredBases) {
 	assertthat::assert_that(is(gr, "GRanges"))
 	assertthat::assert_that(is(ref, "BSgenome"))
@@ -391,6 +393,7 @@ extractReferenceSequence <- function(gr, ref, anchoredBases, followingBases=anch
 #' @param match see Biostrings::pairwiseAlignment
 #' @return A dataframe containing the length of inexact homology between the 
 #' breakpoint sequence and the reference.
+#' @export
 calculateReferenceHomology <- function(gr, ref,
 									   anchorLength=300,
 									   margin=5,
@@ -476,6 +479,7 @@ calculateReferenceHomology <- function(gr, ref,
 #' ... are additional arguments passed to methods. See VCF class in 
 #' VariantAnnotation for more details.
 #' @return A VCF object.
+#' @export
 breakpointGRangesToVCF <- function(gr, ...) {
 	if (is.null(gr$insSeq)) {
 		gr$insSeq = rep("", length(gr))
