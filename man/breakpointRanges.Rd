@@ -13,7 +13,7 @@ breakpointRanges(x, ...)
 
 .breakpointRanges(vcf, nominalPosition = FALSE,
   placeholderName = "svrecord", suffix = "_bp", info_columns = NULL,
-  unpartneredBreakends = FALSE)
+  unpartneredBreakends = FALSE, inferMissingBreakends = FALSE)
 }
 \arguments{
 \item{x}{A VCF object}
@@ -36,6 +36,8 @@ the nomimal variant position only.}
 
 \item{unpartneredBreakends}{Determining whether to report unpartnered 
 breakends. Default is set to FALSE.}
+
+\item{inferMissingBreakends}{Infer missing breakend records from ALT field of records without matching partners}
 }
 \value{
 A GRanges object of SVs.

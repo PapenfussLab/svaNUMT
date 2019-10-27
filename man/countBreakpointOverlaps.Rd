@@ -31,8 +31,10 @@ objects, based on the output of \code{findBreakpointOverlaps()}.
 See GenomicRanges::countOverlaps-methods
 }
 \examples{
-truth_vcf = VariantAnnotation::readVcf(system.file("extdata", "na12878_chr22_Sudmunt2015.vcf", package = "StructuralVariantAnnotation"))
-crest_vcf = VariantAnnotation::readVcf(system.file("extdata", "na12878_chr22_crest.vcf", package = "StructuralVariantAnnotation"))
+truth_vcf = VariantAnnotation::readVcf(system.file("extdata", "na12878_chr22_Sudmunt2015.vcf", 
+package = "StructuralVariantAnnotation"))
+crest_vcf = VariantAnnotation::readVcf(system.file("extdata", "na12878_chr22_crest.vcf", 
+package = "StructuralVariantAnnotation"))
 caller_bpgr = breakpointRanges(crest_vcf)
 caller_bpgr$true_positive = countBreakpointOverlaps(caller_bpgr, breakpointRanges(truth_vcf),
   maxgap=100, sizemargin=0.25, restrictMarginToSizeMultiple=0.5, countOnlyBest=TRUE)
