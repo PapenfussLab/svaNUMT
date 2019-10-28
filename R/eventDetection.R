@@ -152,22 +152,22 @@ rtDetec <- function(gr, genes, maxgap=10, minscore=0.5){
         #unique() and duplicated() for granges compare RANGES, not names
         rt.gr <- rt.gr[rt.gr$exon != partner(rt.gr)$exon]
         tx.rank <- .scoreByTranscripts(genes, unlist(rt.gr$txs)) 
+        #dataframe of valid retro transcripts
         tx.rank <- tx.rank[tx.rank$score >= minscore,]
+        
         rt.gr <- rt.gr[stringr::str_detect(unstrsplit(rt.gr$txs), paste(tx.rank$tx_name, collapse = "|"))]
         rt.gr$txs <- rt.gr$txs[mapply(stringr::str_detect, rt.gr$txs, paste(tx.rank$tx_name, collapse = "|"))]
         #select insertion site by 
-        insSite.gr <- c(gr[S4Vectors::queryHits(hits.start)[stringr::str_detect(unstrsplit(exons[S4Vectors::subjectHits(hits.start)]$tx_name), 
-                                                            paste(tx.rank$tx_name, collapse = "|"))]],
-                        partner(gr)[S4Vectors::queryHits(hits.end)[stringr::str_detect(unstrsplit(exons[S4Vectors::subjectHits(hits.end)]$tx_name),
-                                                                   paste(tx.rank$tx_name, collapse = "|"))]])
-        insSite.gr$exon <- c(exons[S4Vectors::subjectHits(hits.start)[stringr::str_detect(unstrsplit(exons[S4Vectors::subjectHits(hits.start)]$tx_name),
-                                                                   paste(tx.rank$tx_name, collapse = "|"))]]$exon_id,
-                            exons[S4Vectors::queryHits(hits.end)[stringr::str_detect(unstrsplit(exons[S4Vectors::subjectHits(hits.end)]$tx_name),
-                                                                 paste(tx.rank$tx_name, collapse = "|"))]]$exon_id)
-        insSite.gr$txs <- c(exons[S4Vectors::subjectHits(hits.start)[stringr::str_detect(unstrsplit(exons[S4Vectors::subjectHits(hits.start)]$tx_name),
-                                                                     paste(tx.rank$tx_name, collapse = "|"))]]$tx_name,
-                            exons[S4Vectors::queryHits(hits.end)[stringr::str_detect(unstrsplit(exons[S4Vectors::subjectHits(hits.end)]$tx_name),
-                                                                 paste(tx.rank$tx_name, collapse = "|"))]]$tx_name)
+        hits.start.idx <- stringr::str_detect(unstrsplit(exons[S4Vectors::subjectHits(hits.start)]$tx_name), paste(tx.rank$tx_name, collapse = "|"))
+        hits.end.idx <- stringr::str_detect(unstrsplit(exons[S4Vectors::subjectHits(hits.end)]$tx_name),paste(tx.rank$tx_name, collapse = "|"))
+        
+        insSite.gr <- c(gr[S4Vectors::queryHits(hits.start)[hits.start.idx]], 
+                        partner(gr)[S4Vectors::queryHits(hits.end)[hits.end.idx]])
+        insSite.gr$exon <- c(exons[S4Vectors::subjectHits(hits.start)[hits.start.idx]]$exon_id,
+                             exons[S4Vectors::subjectHits(hits.end)[hits.end.idx]]$exon_id)
+        insSite.gr$txs <- c(exons[S4Vectors::subjectHits(hits.start)[hits.start.idx]]$tx_name,
+                            exons[S4Vectors::subjectHits(hits.end)[hits.end.idx]]$tx_name)
+        insSite.gr$txs <- insSite.gr$txs[sapply(insSite.gr$txs, function(x){x %in% tx.rank$tx_name})]
         insSite.gr <- insSite.gr[!names(insSite.gr) %in% names(rt.gr)]
         insSite.gr <- c(insSite.gr, gr[names(partner(gr)) %in% names(insSite.gr)])
         return(GRangesList(insSite = insSite.gr, rt = rt.gr))
