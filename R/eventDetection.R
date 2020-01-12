@@ -158,8 +158,10 @@ rtDetec <- function(gr, genes, maxgap=10, minscore=0.5){
         rt.gr <- rt.gr[stringr::str_detect(unstrsplit(rt.gr$txs), paste(tx.rank$tx_name, collapse = "|"))]
         rt.gr$txs <- rt.gr$txs[mapply(stringr::str_detect, rt.gr$txs, paste(tx.rank$tx_name, collapse = "|"))]
         #select insertion site by 
-        hits.start.idx <- stringr::str_detect(unstrsplit(exons[S4Vectors::subjectHits(hits.start)]$tx_name), paste(tx.rank$tx_name, collapse = "|"))
-        hits.end.idx <- stringr::str_detect(unstrsplit(exons[S4Vectors::subjectHits(hits.end)]$tx_name),paste(tx.rank$tx_name, collapse = "|"))
+        hits.start.idx <- stringr::str_detect(unstrsplit(exons[S4Vectors::subjectHits(hits.start)]$tx_name), 
+                                              paste(tx.rank$tx_name, collapse = "|"))
+        hits.end.idx <- stringr::str_detect(unstrsplit(exons[S4Vectors::subjectHits(hits.end)]$tx_name),
+                                            paste(tx.rank$tx_name, collapse = "|"))
         
         insSite.gr <- c(gr[S4Vectors::queryHits(hits.start)[hits.start.idx]], 
                         partner(gr)[S4Vectors::queryHits(hits.end)[hits.end.idx]])
@@ -168,6 +170,8 @@ rtDetec <- function(gr, genes, maxgap=10, minscore=0.5){
         insSite.gr$txs <- c(exons[S4Vectors::subjectHits(hits.start)[hits.start.idx]]$tx_name,
                             exons[S4Vectors::subjectHits(hits.end)[hits.end.idx]]$tx_name)
         insSite.gr$txs <- insSite.gr$txs[sapply(insSite.gr$txs, function(x){x %in% tx.rank$tx_name})]
+        
+        
         insSite.gr <- insSite.gr[!names(insSite.gr) %in% names(rt.gr)]
         insSite.gr <- c(insSite.gr, gr[names(partner(gr)) %in% names(insSite.gr)])
         return(GRangesList(insSite = insSite.gr, rt = rt.gr))
