@@ -119,20 +119,27 @@ numtDetec <- function(gr, nonStandardChromosomes=FALSE, max_ins_dist=1000){
 #' @export
 #' 
 rtDetec <- function(gr, genes, maxgap=10, minscore=0.5){
+    message("26.01.2020")
+    #check args
     assertthat::assert_that(class(gr)=="GRanges", msg = "gr should be a GRanges object")
     assertthat::assert_that(length(gr)>0, msg = "gr can't be empty")
     assertthat::assert_that(class(genes)=="TxDb", msg = "genes should be a TxDb object")
     
+    #prepare annotation exons
     GenomeInfoDb::seqlevelsStyle(genes) <- GenomeInfoDb::seqlevelsStyle(gr)[1]
     genes <- GenomeInfoDb::keepSeqlevels(genes, seqlevels(genes)[1:24], pruning.mode = "coarse")
     exons <- exons(genes, columns=c("exon_id", "tx_id", "tx_name","gene_id"))
     
+    #find exon-SV overlaps
+    #return breakpoints overlapping with exons on both ends
     hits.start <- findOverlaps(gr, exons, maxgap = maxgap, type = "start", ignore.strand = TRUE)
     hits.end <- findOverlaps(partner(gr), exons, maxgap = maxgap, type = "end", ignore.strand = TRUE)
     hits <- dplyr::inner_join(dplyr::as_tibble(hits.start), dplyr::as_tibble(hits.end), by="queryHits")
     
+    
+    
     if (nrow(hits)==0) {
-        message("There is no NUMT event detected.")
+        message("There is no retroposed gene detected.")
     }else{
         txs <- mapply(intersect, exons[hits$subjectHits.x]$tx_name, exons[hits$subjectHits.y]$tx_name)
         
@@ -163,17 +170,23 @@ rtDetec <- function(gr, genes, maxgap=10, minscore=0.5){
         hits.end.idx <- stringr::str_detect(unstrsplit(exons[S4Vectors::subjectHits(hits.end)]$tx_name),
                                             paste(tx.rank$tx_name, collapse = "|"))
         
+        
+        
         insSite.gr <- c(gr[S4Vectors::queryHits(hits.start)[hits.start.idx]], 
                         partner(gr)[S4Vectors::queryHits(hits.end)[hits.end.idx]])
         insSite.gr$exon <- c(exons[S4Vectors::subjectHits(hits.start)[hits.start.idx]]$exon_id,
                              exons[S4Vectors::subjectHits(hits.end)[hits.end.idx]]$exon_id)
         insSite.gr$txs <- c(exons[S4Vectors::subjectHits(hits.start)[hits.start.idx]]$tx_name,
                             exons[S4Vectors::subjectHits(hits.end)[hits.end.idx]]$tx_name)
-        insSite.gr$txs <- insSite.gr$txs[sapply(insSite.gr$txs, function(x){x %in% tx.rank$tx_name})]
+        #insSite.gr$txs <- insSite.gr$txs[sapply(insSite.gr$txs, function(x){x %in% tx.rank$tx_name})]
         
         
         insSite.gr <- insSite.gr[!names(insSite.gr) %in% names(rt.gr)]
         insSite.gr <- c(insSite.gr, gr[names(partner(gr)) %in% names(insSite.gr)])
+        
+        #TODO: add L1/Alu annotation for insertion site filtering.
+        
+        
         return(GRangesList(insSite = insSite.gr, rt = rt.gr))
     }
 }
@@ -206,8 +219,8 @@ rtDetec <- function(gr, genes, maxgap=10, minscore=0.5){
     overlapIntron.df <- as.data.frame(table(transcripts.col)/2)
     colnames(overlapIntron.df) <- c("tx_name", "count")
     overlapIntron.df <- merge(overlapIntron.df, 
-          mcols(GenomicFeatures::transcripts(genes, columns=c("tx_name","exon_rank"), 
-                            filter=list(tx_name=overlapIntron.df[,1]))))
+                              mcols(GenomicFeatures::transcripts(genes, columns=c("tx_name","exon_rank"), 
+                                                                 filter=list(tx_name=overlapIntron.df[,1]))))
     return(data.frame(tx_name=overlapIntron.df$tx_name, 
                       score= overlapIntron.df$count / (sapply(overlapIntron.df$exon_rank, length)-1)))
 }

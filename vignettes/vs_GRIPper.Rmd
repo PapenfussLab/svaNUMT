@@ -1,0 +1,84 @@
+---
+title: "vs_gripper"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#library(StructuralVariantAnnotation)
+devtools::load_all()
+library(plyranges)
+```
+
+```{r}
+HG002.vcf <- "/stornext/Home/data/allstaff/d/dong.rn/Papenfuss_lab/projects/sv_benchmark_old/data.HG002/81bfafd1a366f2288882b93e3e0fd56e.vcf"
+HG002.gr <- breakpointRanges(readVcf(HG002.vcf), nominalPosition=TRUE)
+```
+
+```{r}
+library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+hg19.genes <- TxDb.Hsapiens.UCSC.hg19.knownGene
+```
+
+```{r}
+hg002.rt.gr <- rtDetec(HG002.gr, hg19.genes, maxgap=200, minscore=0.3)
+hg002.rt.gr$insSite %>% unique(.)
+```
+
+```{r}
+hg002.rt.gr$rt %>% filter(seqnames=="12")
+```
+```{r}
+read.delim("/stornext/Home/data/allstaff/d/dong.rn/StructuralVariantAnnotation/GRIPper/HG002/HG002/uncategorized.tab.txt", header=FALSE)
+```
+
+
+only one result overlap with GRIPper, now find out why.
+`chr15	40854071	40854220	-	26245986	26252832	CBX3.L	CBX3	3,2,L	589623	35HG002	C15orf57`
+```{r}
+HG002.gr %>% filter((seqnames == "15"&seqnames(partner(HG002.gr))=="7")|(seqnames == "7"&seqnames(partner(HG002.gr))=="15")) %>% filter(FILTER==".")
+
+HG002.gr %>% filter(seqnames == "4", seqnames(partner(HG002.gr))=="7", start>77348100, end<77348500)
+```
+
+
+so manta is able to find this fusion. 
+```{r}
+HG002.gr %>% filter(seqnames == "7", seqnames(partner(HG002.gr))=="7", start>26200000, end<26300000) %>% rtDetec(., hg19.genes, maxgap = 200, minscore=0.1) -> tmp
+
+#%>% filter(FILTER==".")
+```
+
+check cell line data access
+decouple the annotaitons: INTDEl, INS(FUSION), RETROTX 
+
+
+
+
+#Retrieve RepeatMasker
+```{r}
+library(AnnotationHub)
+hub <- AnnotationHub()
+query(hub,c("Homo Sapiens", "repeatmasker", "hg19"))
+
+
+rmsk <- hub[["AH5122"]] %>% `seqlevelsStyle<-`("NCBI")
+seqlvls <- seqlevels(rmsk)[1:24]
+rmsk %>% keepStandardChromosomes(pruning.mode = "coarse") %>% `seqlevels<-`(., value=seqlvls) -> rmsk
+```
+
+```{r}
+HG002.gr %>% filter((seqnames == "15"&seqnames(partner(HG002.gr))=="7")|(seqnames == "7"&seqnames(partner(HG002.gr))=="15")) %>% filter(FILTER==".") %>% findOverlaps(., rmsk, maxgap = 200)
+
+
+```
+
+
+```{r}
+test.gr <- data.frame(seqnames=c("1", "1"), start=c(1, 100), end=c(10, 150)) %>% as_granges()
+
+findOverlaps(test.gr, test.gr, type = "start", maxgap = 100)
+```
