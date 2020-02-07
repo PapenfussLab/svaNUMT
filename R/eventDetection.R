@@ -119,7 +119,7 @@ numtDetec <- function(gr, nonStandardChromosomes=FALSE, max_ins_dist=1000){
 #' @export
 #' 
 rtDetec <- function(gr, genes, maxgap=10, minscore=0.5){
-    message("26.01.2020")
+    #message("26.01.2020")
     #check args
     assertthat::assert_that(class(gr)=="GRanges", msg = "gr should be a GRanges object")
     assertthat::assert_that(length(gr)>0, msg = "gr can't be empty")
@@ -140,6 +140,7 @@ rtDetec <- function(gr, genes, maxgap=10, minscore=0.5){
     
     if (nrow(hits)==0) {
         message("There is no retroposed gene detected.")
+        return(GRanges())
     }else{
         txs <- mapply(intersect, exons[hits$subjectHits.x]$tx_name, exons[hits$subjectHits.y]$tx_name)
         
@@ -178,7 +179,7 @@ rtDetec <- function(gr, genes, maxgap=10, minscore=0.5){
                              exons[S4Vectors::subjectHits(hits.end)[hits.end.idx]]$exon_id)
         insSite.gr$txs <- c(exons[S4Vectors::subjectHits(hits.start)[hits.start.idx]]$tx_name,
                             exons[S4Vectors::subjectHits(hits.end)[hits.end.idx]]$tx_name)
-        #insSite.gr$txs <- insSite.gr$txs[sapply(insSite.gr$txs, function(x){x %in% tx.rank$tx_name})]
+        #insSite.gr$txs <- insSite.gr$txs[sapply(insSite.gr$txs, function(x){x %in% tx.rank$tx_name})]line
         
         
         insSite.gr <- insSite.gr[!names(insSite.gr) %in% names(rt.gr)]
