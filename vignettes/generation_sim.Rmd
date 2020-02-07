@@ -1,0 +1,32 @@
+---
+title: "simSV"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+generating insertion site randomly
+```{r}
+library(BSgenome.Hsapiens.UCSC.hg19)
+library(tidyverse)
+genome <- BSgenome.Hsapiens.UCSC.hg19
+#keepStandardChromosomes(genome, pruning.mode = "coarse")
+seqlengths(genome) %>% as.data.frame()
+```
+
+```{r}
+rr  = data.frame(chr=sample(seqlevels(genome)[1:24], 50, replace=T))
+rr$start = apply(rr, 1, function(x) { 
+         round(runif(1, 0, seqlengths(genome)[x][[1]]), 0) }
+         )
+rr$end = rr$start + runif(1, 1, 5000)  # random intervals of 1-1000 bases
+rr$strand = sample(c("+", "-"))
+
+rr.gr = makeGRangesFromDataFrame(rr)
+
+seqlevelsStyle(rr.gr) <- "NCBI"
+write_csv(as.data.frame(rr.gr), path = "simsv_region.csv")
+```
+
