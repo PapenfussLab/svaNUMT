@@ -17,16 +17,49 @@ seqlengths(genome) %>% as.data.frame()
 ```
 
 ```{r}
-rr  = data.frame(chr=sample(seqlevels(genome)[1:24], 50, replace=T))
+seqlevelsStyle(genome) = "NCBI"
+rr  = data.frame(chr=sample(seqlevels(genome)[1:22], 50, replace=T))
 rr$start = apply(rr, 1, function(x) { 
-         round(runif(1, 0, seqlengths(genome)[x][[1]]), 0) }
+         round(runif(1, 10000, seqlengths(genome)[x][[1]]), 0) }
          )
-rr$end = rr$start + runif(1, 1, 5000)  # random intervals of 1-1000 bases
-rr$strand = sample(c("+", "-"))
+#rr$end = rr$start + runif(50, 10000, 20000)  # random intervals of 1-1000 bases
+rr <- rr %>% mutate(end = start+50000,
+                    type = 'INS')
+                    
 
-rr.gr = makeGRangesFromDataFrame(rr)
+#rr$strand = sample(c("+", "-"))
+#rr.gr = makeGRangesFromDataFrame(rr)
 
-seqlevelsStyle(rr.gr) <- "NCBI"
-write_csv(as.data.frame(rr.gr), path = "simsv_region.csv")
+#write.csv(as.data.frame(rr.gr), file = "simsv_region.csv")
+```
+
+```{cmd}
+awk '/>/ {print $0}' bamsurgeon/simGene_transcripts.fa | sed 's/>//' > bamsurgeon/simGene_txnames.txt
+```
+
+```{r read tx names}
+simGene_txnames <- read.table("/stornext/Bioinf/data/bioinf-data/Papenfuss_lab/projects/StructuralVariantAnnotation/bamsurgeon/simGene_txnames.txt", quote="", comment.char="")
+```
+
+```{r generate varfile}
+rr <- rr %>% mutate(seq = paste("INSLIB", sample(simGene_txnames$V1, 50), sep = ":"),
+                    tsd = sample(7:20, 50, replace = TRUE),
+                    polyA = replicate(50,paste(paste(rep(c('A'), sample(5:10,1)), collapse = ''), c('^'),paste(rep(c('T'), sample(2:5,1)), collapse = ''), sep = '')))
+
+write_delim(rr, path = "/stornext/Bioinf/data/bioinf-data/Papenfuss_lab/projects/StructuralVariantAnnotation/bamsurgeon/simsv_region.csv", delim=" ", col_names = FALSE)
+```
+
+```{r}
+sim.gr <- breakpointRanges(readVcf('/stornext/Bioinf/data/bioinf-data/Papenfuss_lab/projects/StructuralVariantAnnotation/bamsurgeon/HG002_sim_sv.sorted.vcf'))
+```
+```{r}
+sim.rt <- rtDetec(sim.gr, hg19.genes, maxgap = 50, minscore = 0.3)
+
+write_csv2(as_tibble(sim.rt$insSite), 
+           path = '/stornext/Bioinf/data/bioinf-data/Papenfuss_lab/projects/StructuralVariantAnnotation/bamsurgeon/simRT_insSite.csv', 
+           col_names = TRUE)
+write_csv2(as_tibble(sim.rt$rt), 
+           path = '/stornext/Bioinf/data/bioinf-data/Papenfuss_lab/projects/StructuralVariantAnnotation/bamsurgeon/simRT_rt.csv', 
+           col_names = TRUE)
 ```
 
