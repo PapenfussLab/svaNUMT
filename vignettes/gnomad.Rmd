@@ -64,3 +64,12 @@ gnomad.gr %>% filter()
 gnomad.rt <- rtDetec(gnomad.gr, hg19.genes, maxgap = 50, minscore = 0.3)
 ```
 
+```{r}
+write_csv2(as_tibble(gnomad.rt$insSite), 
+           path = '/stornext/Bioinf/data/bioinf-data/Papenfuss_lab/projects/StructuralVariantAnnotation/bamsurgeon/gnomadSV_insSite.csv', 
+           col_names = TRUE)
+write_csv2(as_tibble(gnomad.rt$rt), 
+           path = '/stornext/Bioinf/data/bioinf-data/Papenfuss_lab/projects/StructuralVariantAnnotation/bamsurgeon/gnomadSV_rt.csv', 
+           col_names = TRUE)
+```
+

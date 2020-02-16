@@ -8,3 +8,5 @@ inst/doc
 StructuralVariantAnnotation.Rcheck/
 SVA-Bioc.Rproj
 GRIPper
+.*bam*
+bamsurgeon/addsv.tmp/

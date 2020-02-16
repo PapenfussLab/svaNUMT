@@ -3,9 +3,9 @@
 # adds up to 100 SNPs to a ~770 kb region around the LARGE gene
 # requires samtools/bcftools
 
-REF=/home/dong.rn/home/Papenfuss_lab/StructuralVariantAnnotation/GRIPper/references-hs37d5-hs37d5.fa
+REF=/home/dong.rn/home/StructuralVariantAnnotation/GRIPper/references-hs37d5-hs37d5.fa
 BAM=~/home/Papenfuss_lab/projects/sv_benchmark_old/data.HG002/HG002_hs37d5_60x_1.sc.bam
-VAR=/home/dong.rn/home/StructuralVariantAnnotation/bamsurgeon/sim_rt.txt
+VAR=/home/dong.rn/home/StructuralVariantAnnotation/bamsurgeon/simsv_region.csv
 BAM_OUTPUT=/home/dong.rn/home/StructuralVariantAnnotation/bamsurgeon/HG002_sim_sv.bam
 INS_FASTA=/home/dong.rn/home/StructuralVariantAnnotation/bamsurgeon/simGene_transcripts.fa
 
@@ -29,11 +29,12 @@ if [ $? -ne 0 ]
 then
   echo "addsv.py failed."
   exit 65
-else
-  echo "sorting output bam..."
-  samtools sort -T ../test_data/testregion_sv_mut.sorted.bam -o ../test_data/testregion_sv_mut.sorted.bam ../test_data/testregion_sv_mut.bam
-  mv ../test_data/testregion_sv_mut.sorted.bam ../test_data/testregion_sv_mut.bam
-
-  echo "indexing output bam..."
-  samtools index ../test_data/testregion_sv_mut.bam
-fi
+# else
+#   echo "sv added. need to sort bam"
+#   echo "sorting output bam..."
+#   samtools sort -T ../test_data/testregion_sv_mut.sorted.bam -o ../test_data/testregion_sv_mut.sorted.bam ../test_data/testregion_sv_mut.bam
+#   mv ../test_data/testregion_sv_mut.sorted.bam ../test_data/testregion_sv_mut.bam
+#
+#   echo "indexing output bam..."
+#   samtools index ../test_data/testregion_sv_mut.bam
+# fi
