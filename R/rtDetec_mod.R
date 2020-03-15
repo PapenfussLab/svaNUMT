@@ -1,4 +1,4 @@
-rtDetec <- function(gr, genes, maxgap=100, minscore=0.3){
+rtDetec.mod <- function(gr, genes, maxgap=100, minscore=0.3){
     #message("26.01.2020")
     #check args
     assertthat::assert_that(class(gr)=="GRanges", msg = "gr should be a GRanges object")
@@ -12,7 +12,7 @@ rtDetec <- function(gr, genes, maxgap=100, minscore=0.3){
     
     #------------------------
     #testing only
-    gr <- breakpointRanges(manta)
+    #gr <- breakpointRanges(manta)
     #------------------------
     
     #find exon-SV overlaps:
@@ -29,56 +29,73 @@ rtDetec <- function(gr, genes, maxgap=100, minscore=0.3){
     # 2.return breakpoints of insertionSite-exon 
     hits.insSite <- hits[!same.tx,] %>% 
         bind_rows(.,anti_join(dplyr::as_tibble(hits.start), dplyr::as_tibble(hits.end), by='queryHits')) %>% 
-        bind_rows(., anti_join(dplyr::as_tibble(hits.end), dplyr::as_tibble(hits.start), by='queryHits'))
-            
+        bind_rows(.,anti_join(dplyr::as_tibble(hits.end), dplyr::as_tibble(hits.start), by='queryHits'))
         
     
     if (nrow(hits.tx)+nrow(hits.insSite)==0) {
         message("There is no retroposed gene detected.")
         return(GRanges())
     }else{
+    # 3.filter exon-exon junctions by minscore(>=2 exons)
         txs <- mapply(intersect, exons[hits.tx$subjectHits.x]$tx_name, exons[hits.tx$subjectHits.y]$tx_name)
-        
         rt.gr<- c(gr[hits.tx$queryHits], partner(gr)[hits.tx$queryHits])
         rt.gr$exon <- c(exons[hits.tx$subjectHits.x]$exon_id, exons[hits.tx$subjectHits.y]$exon_id)
         rt.gr$txs <- c(IRanges::CharacterList(txs), IRanges::CharacterList(txs))
         rt.gr <- rt.gr[!sapply(rt.gr$txs, rlang::is_empty)]
-        #print("annotate overlapping exons")
-        for (name in unique(names(rt.gr[duplicated(names(rt.gr))]))) {
-            for (i in 1:length(rt.gr[names(rt.gr) == name]$txs)) {
-                rt.gr[names(rt.gr) == name]$txs[[i]] <- 
-                    .combineMatchingTranscripts(rt.gr, names(rt.gr[duplicated(names(rt.gr))]))[[name]]
-            }
-        }
-        #print("merge transcript annotations in duplicated granges")
+        
+        #message("annotate overlapping exons")
+        #combine matching exons and transcripts of the same breakend
+        names <- unique(names(rt.gr))
+        rt.txs <- sapply(names, function(x) {Reduce(union, rt.gr[names(rt.gr)==x]$txs)})
+        rt.exons <- sapply(names, function(x) {Reduce(union, rt.gr[names(rt.gr)==x]$exon)})
+        rt.gr$txs <- rt.txs[names(rt.gr)]
+        rt.gr$exons <- rt.exons[names(rt.gr)]
+        #remove duplicate breakend records
         rt.gr <- rt.gr[!duplicated(names(rt.gr))]
         #unique() and duplicated() for granges compare RANGES, not names
-        rt.gr <- rt.gr[rt.gr$exon != partner(rt.gr)$exon]
+        # rt.gr <- rt.gr[rt.gr$exons != partner(rt.gr)$exons]
+        
+        
+        #RT filter 1: breakpoint should have at least one set of matching exon
+        rt.gr <- rt.gr[!mapply(identical, partner(rt.gr)$exons, rt.gr$exons) | 
+                          (mapply(identical, partner(rt.gr)$exons, rt.gr$exons) & sapply(rt.gr$exons, length)>1)]
+        
+        #RT filter 2:minimal proportion of exon-exon detected for a transcript
         tx.rank <- .scoreByTranscripts(genes, unlist(rt.gr$txs)) 
         #dataframe of valid retro transcripts
         tx.rank <- tx.rank[tx.rank$score >= minscore,]
-        
+        #remove rows and transcripts which are not in the tx.rank
         rt.gr <- rt.gr[stringr::str_detect(unstrsplit(rt.gr$txs), paste(tx.rank$tx_name, collapse = "|"))]
-        rt.gr$txs <- rt.gr$txs[mapply(stringr::str_detect, rt.gr$txs, paste(tx.rank$tx_name, collapse = "|"))]
-        #select insertion site by 
-        hits.start.idx <- stringr::str_detect(unstrsplit(exons[S4Vectors::subjectHits(hits.start)]$tx_name), 
-                                              paste(tx.rank$tx_name, collapse = "|"))
-        hits.end.idx <- stringr::str_detect(unstrsplit(exons[S4Vectors::subjectHits(hits.end)]$tx_name),
-                                            paste(tx.rank$tx_name, collapse = "|"))
+        rt.gr$txs <- mapply('[', rt.gr$txs, mapply(stringr::str_detect, rt.gr$txs, paste(tx.rank$tx_name, collapse = "|")))
         
         
+        #select insertion site by minscore (tx.rank)
+        # hits.start.idx <- stringr::str_detect(unstrsplit(exons[S4Vectors::subjectHits(hits.start)]$tx_name), paste(tx.rank$tx_name, collapse = "|"))
+        # hits.end.idx <- stringr::str_detect(unstrsplit(exons[S4Vectors::subjectHits(hits.end)]$tx_name),paste(tx.rank$tx_name, collapse = "|"))
         
-        insSite.gr <- c(gr[S4Vectors::queryHits(hits.start)[hits.start.idx]], 
-                        partner(gr)[S4Vectors::queryHits(hits.end)[hits.end.idx]])
-        insSite.gr$exon <- c(exons[S4Vectors::subjectHits(hits.start)[hits.start.idx]]$exon_id,
-                             exons[S4Vectors::subjectHits(hits.end)[hits.end.idx]]$exon_id)
-        insSite.gr$txs <- c(exons[S4Vectors::subjectHits(hits.start)[hits.start.idx]]$tx_name,
-                            exons[S4Vectors::subjectHits(hits.end)[hits.end.idx]]$tx_name)
-        #insSite.gr$txs <- insSite.gr$txs[sapply(insSite.gr$txs, function(x){x %in% tx.rank$tx_name})]line
+    # 4.filter insertion site junctions, reduce duplications
+        #junctions with only one side overlapping with exons:
+        idx <- bind_rows(anti_join(dplyr::as_tibble(hits.start), dplyr::as_tibble(hits.end), by='queryHits'),
+                         anti_join(dplyr::as_tibble(hits.end), dplyr::as_tibble(hits.start), by='queryHits'))
         
-        
+        insSite.gr <- c(gr[hits[!same.tx,]$queryHits], partner(gr)[hits[!same.tx,]$queryHits], gr[idx$queryHits])
+        insSite.gr$exons <- c(exons[hits[!same.tx,]$subjectHits.x]$exon_id, exons[hits[!same.tx,]$subjectHits.y]$exon_id,
+                              exons[idx$subjectHits]$exon_id)
+        insSite.gr$txs <- c(exons[hits[!same.tx,]$subjectHits.x]$tx_name, exons[hits[!same.tx,]$subjectHits.y]$tx_name,
+                            exons[idx$subjectHits]$tx_name)
+        insSite.gr <- insSite.gr[!sapply(insSite.gr$txs, rlang::is_empty)]
+        #combine matching exons and transcripts of the same breakend
+        names <- unique(names(insSite.gr))
+        insSite.txs <- sapply(names, function(x) {Reduce(union, insSite.gr[names(insSite.gr)==x]$txs)})
+        insSite.exons <- sapply(names, function(x) {Reduce(union, insSite.gr[names(insSite.gr)==x]$exons)})
+        insSite.gr$txs <- insSite.txs[names(insSite.gr)]
+        insSite.gr$exons <- insSite.exons[names(insSite.gr)]
+        insSite.gr <- insSite.gr[!duplicated(names(insSite.gr))]
         insSite.gr <- insSite.gr[!names(insSite.gr) %in% names(rt.gr)]
-        insSite.gr <- c(insSite.gr, gr[names(partner(gr)) %in% names(insSite.gr)])
+        insSite.gr <- c(insSite.gr, gr[insSite.gr[!insSite.gr$partner %in% names(insSite.gr)]$partner])
+        insSite.gr$rtFound <- mapply(stringr::str_detect, insSite.gr$txs, paste(tx.rank$tx_name, collapse = "|"))
+        insSite.gr$rtFoundSum <- sapply(insSite.gr$rtFound, function(x) {sum(x) > 0})
+
         
         #TODO: add L1/Alu annotation for insertion site filtering.
         
@@ -86,3 +103,6 @@ rtDetec <- function(gr, genes, maxgap=100, minscore=0.3){
         return(GRangesList(insSite = insSite.gr, rt = rt.gr))
     }
 }
+
+
+
