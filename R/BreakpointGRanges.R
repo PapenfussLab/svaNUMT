@@ -567,7 +567,7 @@ findInsDupOverlaps <- function(query, subject, maxgap=-1L, maxsizedifference=0L)
 	pquery = partner(query)
 	psubject = partner(subject)
 	query$isLowBreakend = start(query) < start(pquery) | (start(query) == start(pquery) & query$ordinal < pquery$ordinal)
-	subject$isLowBreakend = start(subject) < start(pquery) | (start(subject) == start(psubject) & subject$ordinal < psubject$ordinal)
+	subject$isLowBreakend = start(subject) < start(psubject) | (start(subject) == start(psubject) & subject$ordinal < psubject$ordinal)
 	
 	qins_to_sdup = .findOverlaps_queryIns_subjectDup(query, subject, psubject, maxgap=maxgap, maxsizedifference=maxsizedifference)
 	sins_to_qdup = .findOverlaps_queryIns_subjectDup(subject, query, pquery, maxgap=maxgap, maxsizedifference=maxsizedifference)
