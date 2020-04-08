@@ -276,6 +276,9 @@ test_that("simpleEventType", {
 		"chr1	100000	a	N	NNNNNNNNNNNNNNNNNNNNNNNN[chr2:100001[	.	.	SVTYPE=BND;PARID=b",
 		"chr2	100001	b	N	]chr1:100000]NNNNNNNNNNNNNNNNNNNNNNNN	.	.	SVTYPE=BND;PARID=a"
 	)))), c("CTX", "CTX"))
+	expect_equal(simpleEventType(breakendRanges(.testrecord(c(
+		"chr1	100000	a	N	NNNNN.	.	.	SVTYPE=BND"
+	)))), c("BND"))
 })
 test_that("findInsDupOverlaps", {
 	gr1 = breakpointRanges(.testrecord(c(

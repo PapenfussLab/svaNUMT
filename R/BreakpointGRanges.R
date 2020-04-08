@@ -521,6 +521,9 @@ breakpointGRangesToVCF <- function(gr, ...) {
 #' @return Type of simplest explaination of event
 #' @export
 simpleEventType <- function(gr, insertionLengthThreshold=0.5) {
+	if (is.null(gr$partner)) {
+		gr$partner = rep(NA_character_, length(gr))
+	}
 	pgr = partner(gr, selfPartnerSingleBreakends=TRUE)
 	return(
 		ifelse(is.na(gr$partner), "BND", 
@@ -535,6 +538,9 @@ simpleEventType <- function(gr, insertionLengthThreshold=0.5) {
 #' @return Length of the simplest explaination of this breakpoint/breakend.
 #' @export
 simpleEventLength <- function(gr) {
+	if (is.null(gr$partner)) {
+		gr$partner = rep(NA_character_, length(gr))
+	}
 	pgr = partner(gr, selfPartnerSingleBreakends=TRUE)
 	return(
 		ifelse(seqnames(gr) != seqnames(pgr) | as.logical(strand(gr) == strand(pgr) | is.na(gr$partner)), NA_integer_,
