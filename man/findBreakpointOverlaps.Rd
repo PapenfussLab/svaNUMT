@@ -4,9 +4,15 @@
 \alias{findBreakpointOverlaps}
 \title{Finding overlapping breakpoints between two breakpoint sets}
 \usage{
-findBreakpointOverlaps(query, subject, maxgap = -1L, minoverlap = 0L,
-  ignore.strand = FALSE, sizemargin = NULL,
-  restrictMarginToSizeMultiple = NULL)
+findBreakpointOverlaps(
+  query,
+  subject,
+  maxgap = -1L,
+  minoverlap = 0L,
+  ignore.strand = FALSE,
+  sizemargin = NULL,
+  restrictMarginToSizeMultiple = NULL
+)
 }
 \arguments{
 \item{query, subject}{Both of the input objects should be GRanges objects.

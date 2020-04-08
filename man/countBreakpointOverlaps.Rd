@@ -4,10 +4,17 @@
 \alias{countBreakpointOverlaps}
 \title{Counting overlapping breakpoints between two breakpoint sets}
 \usage{
-countBreakpointOverlaps(querygr, subjectgr, countOnlyBest = FALSE,
-  breakpointScoreColumn = "QUAL", maxgap = -1L, minoverlap = 0L,
-  ignore.strand = FALSE, sizemargin = NULL,
-  restrictMarginToSizeMultiple = NULL)
+countBreakpointOverlaps(
+  querygr,
+  subjectgr,
+  countOnlyBest = FALSE,
+  breakpointScoreColumn = "QUAL",
+  maxgap = -1L,
+  minoverlap = 0L,
+  ignore.strand = FALSE,
+  sizemargin = NULL,
+  restrictMarginToSizeMultiple = NULL
+)
 }
 \arguments{
 \item{querygr, subjectgr, maxgap, minoverlap, ignore.strand, sizemargin, restrictMarginToSizeMultiple}{See \code{findBreakpointOverlaps()}.}

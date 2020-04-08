@@ -166,7 +166,7 @@ ggplot(as.data.frame(svgr) %>%
   dplyr::select(QUAL, caller, truth_matches) %>%
   dplyr::group_by(caller, QUAL) %>%
   dplyr::summarise(
-    calls=n(),
+    calls=dplyr::n(),
     tp=sum(truth_matches > 0)) %>%
   dplyr::group_by(caller) %>%
   dplyr::arrange(dplyr::desc(QUAL)) %>%

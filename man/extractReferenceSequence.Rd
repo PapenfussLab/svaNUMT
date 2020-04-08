@@ -4,8 +4,12 @@
 \alias{extractReferenceSequence}
 \title{Returns the reference sequence around the breakpoint position}
 \usage{
-extractReferenceSequence(gr, ref, anchoredBases,
-  followingBases = anchoredBases)
+extractReferenceSequence(
+  gr,
+  ref,
+  anchoredBases,
+  followingBases = anchoredBases
+)
 }
 \arguments{
 \item{gr}{breakpoint GRanges}

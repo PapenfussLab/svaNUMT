@@ -3,7 +3,6 @@
 \docType{package}
 \name{StructuralVariantAnnotation}
 \alias{StructuralVariantAnnotation}
-\alias{StructuralVariantAnnotation-package}
 \title{StructuralVariantAnnotation: a package for SV annotation}
 \description{
 StructuralVariantAnnotation contains useful helper functions for reading

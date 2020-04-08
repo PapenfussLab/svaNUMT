@@ -247,9 +247,55 @@ test_that("single_breakends_valididity", {
 # 	pgr = partner(gr)
 # 	tictoc::toc()
 # })
-
-
-
+test_that("simpleEventLength", {
+	expect_equal(simpleEventLength(breakpointRanges(.testrecord(c(
+			"chr1	100000	a	N	]chr1:100009]N	.	.	SVTYPE=BND;PARID=b",
+			"chr1	100009	b	N	N[chr1:100000[	.	.	SVTYPE=BND;PARID=a",
+			"chr1	100000	c	N	NNNNNNNNNNN[chr1:100001[	.	.	SVTYPE=BND;PARID=d",
+			"chr1	100001	d	N	]chr1:100000]NNNNNNNNNNN	.	.	SVTYPE=BND;PARID=c")))),
+		c(10, 10, 10, 10))
+	expect_equal(simpleEventLength(breakpointRanges(.testrecord(c(
+		"chr1	100000	a	N	N[chr1:100002[	.	.	SVTYPE=BND;PARID=b",
+		"chr1	100002	b	N	]chr1:100000]N	.	.	SVTYPE=BND;PARID=a")))),
+		c(-1, -1))
+})
+test_that("simpleEventType", {
+	expect_equal(simpleEventType(breakpointRanges(.testrecord(c(
+		"chr1	100000	a	N	N[chr1:100100[	.	.	SVTYPE=BND;PARID=b",
+		"chr1	100100	b	N	]chr1:100000]N	.	.	SVTYPE=BND;PARID=a"
+	)))), c("DEL", "DEL"))
+	expect_equal(simpleEventType(breakpointRanges(.testrecord(c(
+		"chr1	100000	a	N	]chr1:100100]N	.	.	SVTYPE=BND;PARID=b",
+		"chr1	100100	b	N	N[chr1:100000[	.	.	SVTYPE=BND;PARID=a"
+	)))), c("DUP", "DUP"))
+	expect_equal(simpleEventType(breakpointRanges(.testrecord(c(
+		"chr1	100000	a	N	NNNNNNNNNNNNNNNNNNNNNNNN[chr1:100001[	.	.	SVTYPE=BND;PARID=b",
+		"chr1	100001	b	N	]chr1:100000]NNNNNNNNNNNNNNNNNNNNNNNN	.	.	SVTYPE=BND;PARID=a"
+	)))), c("INS", "INS"))
+	expect_equal(simpleEventType(breakpointRanges(.testrecord(c(
+		"chr1	100000	a	N	NNNNNNNNNNNNNNNNNNNNNNNN[chr2:100001[	.	.	SVTYPE=BND;PARID=b",
+		"chr2	100001	b	N	]chr1:100000]NNNNNNNNNNNNNNNNNNNNNNNN	.	.	SVTYPE=BND;PARID=a"
+	)))), c("CTX", "CTX"))
+})
+test_that("findInsDupOverlaps", {
+	gr1 = breakpointRanges(.testrecord(c(
+		"chr1	100000	a	N	]chr1:100009]N	.	.	SVTYPE=BND;PARID=b",
+		"chr1	100009	b	N	N[chr1:100000[	.	.	SVTYPE=BND;PARID=a",
+		"chr1	100000	c	N	NNNNNNNNNNN[chr1:100001[	.	.	SVTYPE=BND;PARID=d",
+		"chr1	100001	d	N	]chr1:100000]NNNNNNNNNNN	.	.	SVTYPE=BND;PARID=c")))
+	gr2 = breakpointRanges(.testrecord(c(
+		"chr1	100000	a	N	N[chr1:100100[	.	.	SVTYPE=BND;PARID=b",
+		"chr1	100100	b	N	]chr1:100000]N	.	.	SVTYPE=BND;PARID=a",
+		"chr1	100000	c	N	NNNNNNNNNNN[chr1:100001[	.	.	SVTYPE=BND;PARID=d",
+		"chr1	100001	d	N	]chr1:100000]NNNNNNNNNNN	.	.	SVTYPE=BND;PARID=c")))
+	hits12 = findInsDupOverlaps(gr1, gr2, maxgap=1)
+	hits21 = findInsDupOverlaps(gr2, gr1, maxgap=1)
+	expect_equal(queryHits(hits12), c(1,2))
+	expect_equal(subjectHits(hits12), c(3,4))
+	# symmetrical
+	expect_equal(subjectHits(hits12), queryHits(hits21))
+	expect_equal(subjectHits(hits21), queryHits(hits12))
+})
 
 
 

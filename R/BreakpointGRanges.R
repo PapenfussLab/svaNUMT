@@ -166,7 +166,7 @@ countBreakpointOverlaps <- function(querygr, subjectgr, countOnlyBest=FALSE,
     # assign supporting evidence to the call with the highest QUAL
     hits$QUAL <- S4Vectors::mcols(querygr)[[breakpointScoreColumn]][hits$queryHits]
     hits <- hits %>%
-      dplyr::arrange(desc(.data$QUAL), .data$queryHits) %>%
+      dplyr::arrange(dplyr::desc(.data$QUAL), .data$queryHits) %>%
       dplyr::distinct(.data$subjectHits, .keep_all=TRUE) %>%
       dplyr::group_by(.data$queryHits) %>%
       dplyr::summarise(n=dplyr::n())
@@ -452,10 +452,10 @@ calculateReferenceHomology <- function(gr, ref,
 #' @param ref reference sequence of the GRanges.
 #' @return breakendAlt or breakpointAlt depending on whether the variant is partnered.
 .toVcfBreakendNotationAlt = function(gr, insSeq=gr$insSeq, ref=gr$REF) {
-	assert_that(all(width(gr) == 1))
-	assert_that(!is.null(insSeq))
-	assert_that(all(insSeq != ""))
-	assert_that(!is.null(gr$partner))
+	assertthat::assert_that(all(width(gr) == 1))
+	assertthat::assert_that(!is.null(insSeq))
+	assertthat::assert_that(all(insSeq != ""))
+	assertthat::assert_that(!is.null(gr$partner))
 	isBreakpoint = !is.na(gr$partner)
 	breakendAlt = ifelse(as.character(strand(gr)) == "+", paste0(gr$insSeq, "."), paste0(".", gr$insSeq))
 	gr$partner[isBreakpoint] = names(gr)[isBreakpoint] # self partner to prevent errors
@@ -507,4 +507,93 @@ breakpointGRangesToVCF <- function(gr, ...) {
 	    verbose = FALSE)
 
 }
-
+#' Type of simplest explaination of event. Possible types are:
+#' | Type | Description |
+#' | BND | Single breakend |
+#' | CTX | Interchromosomal translocation |
+#' | INV | Inversion. Note that both ++ and -- breakpoint will be classified as inversion regardless of whether the matching breakpoint actually exists |
+#' | DUP | Tandem duplication |
+#' | INS | Insertion |
+#' | DEL | Deletion |
+#' 
+#' @param gr breakpoint GRanges object
+#' @param insertionLengthThreshold portion of inserted bases compared to total event size to be classified as an insertion. For example, a 5bp deletion with 5 inserted bases will be classified as an INS event.
+#' @return Type of simplest explaination of event
+#' @export
+simpleEventType <- function(gr, insertionLengthThreshold=0.5) {
+	pgr = partner(gr, selfPartnerSingleBreakends=TRUE)
+	return(
+		ifelse(is.na(gr$partner), "BND", 
+			ifelse(seqnames(gr) != seqnames(pgr), "CTX", # inter-chromosomosal
+				ifelse(strand(gr) == strand(pgr), "INV",
+					ifelse(gr$insLen >= abs(simpleEventLength(gr)) * insertionLengthThreshold, "INS", # TODO: improve classification of complex events
+						ifelse(xor(start(gr) < start(pgr), strand(gr) == "-"), "DEL",
+							"DUP"))))))
+}
+#' Length of event if interpreted as an isolated breakpoint.
+#' @param gr breakpoint GRanges object
+#' @return Length of the simplest explaination of this breakpoint/breakend.
+#' @export
+simpleEventLength <- function(gr) {
+	pgr = partner(gr, selfPartnerSingleBreakends=TRUE)
+	return(
+		ifelse(seqnames(gr) != seqnames(pgr) | as.logical(strand(gr) == strand(pgr) | is.na(gr$partner)), NA_integer_,
+			gr$insLen + 1 + ifelse(as.logical(strand(gr) == "+"), start(gr) - start(pgr), start(pgr) - start(gr))))
+}
+#' Finds duplication events that are reported as inserts.
+#' As sequence alignment algorithms do no allow backtracking, long read-based
+#' variant callers will frequently report small duplication as insertion events.
+#' Whilst both the duplication and insertion representations result in the same
+#' sequence, this representational difference is problematic when comparing
+#' variant call sets.
+#' 
+#' WARNING: this method does not yet check that the inserted sequence actually matched the duplicated sequence.
+#' @param query a breakpoint GRanges object
+#' @param subject a breakpoint GRanges object
+#' @param maxgap maximum distance between the insertion position and the duplication
+#' @param maxsizedifference maximum size difference between the duplication and insertion.
+#' @return Hits object containing the ordinals of the matching breakends
+#' in the query and subject 
+#' @export
+findInsDupOverlaps <- function(query, subject, maxgap=-1L, maxsizedifference=0L) {
+	.assertValidBreakpointGRanges(query)
+	.assertValidBreakpointGRanges(subject)
+	query$ordinal = seq_len(length(query))
+	subject$ordinal = seq_len(length(subject))
+	query$set = simpleEventType(query)
+	query$sel = simpleEventLength(query)
+	subject$set = simpleEventType(subject)
+	subject$sel = simpleEventLength(subject)
+	pquery = partner(query)
+	psubject = partner(subject)
+	query$isLowBreakend = start(query) < start(pquery) | (start(query) == start(pquery) & query$ordinal < pquery$ordinal)
+	subject$isLowBreakend = start(subject) < start(pquery) | (start(subject) == start(psubject) & subject$ordinal < psubject$ordinal)
+	
+	qins_to_sdup = .findOverlaps_queryIns_subjectDup(query, subject, psubject, maxgap=maxgap, maxsizedifference=maxsizedifference)
+	sins_to_qdup = .findOverlaps_queryIns_subjectDup(subject, query, pquery, maxgap=maxgap, maxsizedifference=maxsizedifference)
+	lowhits = data.frame(
+		qhits=c(qins_to_sdup$queryHits, sins_to_qdup$subjectHits),
+		shits=c(qins_to_sdup$subjectHits, sins_to_qdup$queryHits))
+	# add upper to upper match
+	bothhits = Hits(
+		from=c(lowhits$qhits, pquery$ordinal[lowhits$qhits]),
+		to=c(lowhits$shits, psubject$ordinal[lowhits$shits]),
+		nLnode=length(query),
+		nRnode=length(subject))
+	return(bothhits)
+}
+.findOverlaps_queryIns_subjectDup <- function(query, subject, psubject , maxgap=-1L, maxsizedifference=0L) {
+	subject$HighEndPosition = end(psubject)
+	subject = subject[subject$set == "DUP" & subject$isLowBreakend]
+	end(subject) = subject$HighEndPosition
+	# expand by one since insertion can preceed, succeed, or be in the middle of the dup
+	start(subject) = start(subject) - 1
+	query = query[query$set == "INS" & query$isLowBreakend]
+	hits = findOverlaps(query, subject, maxgap=maxgap, ignore.strand=TRUE)
+	hits = hits[abs(query$sel[queryHits(hits)] - subject$sel[subjectHits(hits)]) <= maxsizedifference]
+	# TODO: filter by 
+	# Translate back to ordinals of what was passed in to us
+	return(data.frame(
+		queryHits=query$ordinal[queryHits(hits)],
+		subjectHits=subject$ordinal[subjectHits(hits)]))
+}

@@ -5,12 +5,22 @@
 \alias{pairs2breakpointgr}
 \title{Converts a breakpoint GRanges object to a Pairs object}
 \usage{
-breakpointgr2pairs(bpgr, writeQualAsScore = TRUE, writeName = TRUE,
-  bedpeName = NULL, firstInPair = NULL)
+breakpointgr2pairs(
+  bpgr,
+  writeQualAsScore = TRUE,
+  writeName = TRUE,
+  bedpeName = NULL,
+  firstInPair = NULL
+)
 
-pairs2breakpointgr(pairs, placeholderName = "bedpe",
-  firstSuffix = "_1", secondSuffix = "_2", nameField = "name",
-  renameScoreToQUAL = TRUE)
+pairs2breakpointgr(
+  pairs,
+  placeholderName = "bedpe",
+  firstSuffix = "_1",
+  secondSuffix = "_2",
+  nameField = "name",
+  renameScoreToQUAL = TRUE
+)
 }
 \arguments{
 \item{bpgr}{breakpoint GRanges object}

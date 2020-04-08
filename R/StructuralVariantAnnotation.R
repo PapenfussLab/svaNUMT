@@ -17,14 +17,12 @@
 #'
 #' @docType package
 #' @name StructuralVariantAnnotation
-#' @import assertthat
 #' @import BiocGenerics
 #' @import VariantAnnotation
 #' @import rtracklayer
 #' @import Biostrings
 #' @import GenomicRanges
-#' @importFrom dplyr group_by summarise n arrange distinct bind_rows filter 
-#' lead %>% desc
+#' @importFrom dplyr %>%
 #' @importFrom methods as is setMethod setGeneric
 #' @importFrom rlang .data
 NULL

@@ -4,8 +4,11 @@
 \alias{align_breakpoints}
 \title{Adjusting the nominal position of a pair of partnered breakpoint.}
 \usage{
-align_breakpoints(vcf, align = c("centre"),
-  is_higher_breakend = names(vcf) < info(vcf)$PARID)
+align_breakpoints(
+  vcf,
+  align = c("centre"),
+  is_higher_breakend = names(vcf) < info(vcf)$PARID
+)
 }
 \arguments{
 \item{vcf}{A VCF object.}

@@ -4,8 +4,7 @@
 \alias{extractBreakpointSequence}
 \title{Extracts the breakpoint sequence.}
 \usage{
-extractBreakpointSequence(gr, ref, anchoredBases,
-  remoteBases = anchoredBases)
+extractBreakpointSequence(gr, ref, anchoredBases, remoteBases = anchoredBases)
 }
 \arguments{
 \item{gr}{breakpoint GRanges}

@@ -5,8 +5,16 @@
 \title{Calculates the length of inexact homology between the breakpoint sequence
 and the reference}
 \usage{
-calculateReferenceHomology(gr, ref, anchorLength = 300, margin = 5,
-  match = 2, mismatch = -6, gapOpening = 5, gapExtension = 3)
+calculateReferenceHomology(
+  gr,
+  ref,
+  anchorLength = 300,
+  margin = 5,
+  match = 2,
+  mismatch = -6,
+  gapOpening = 5,
+  gapExtension = 3
+)
 }
 \arguments{
 \item{gr}{reakpoint GRanges}
