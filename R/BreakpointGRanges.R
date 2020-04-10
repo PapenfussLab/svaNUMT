@@ -479,7 +479,6 @@ calculateReferenceHomology <- function(gr, ref,
 #' ... are additional arguments passed to methods. See VCF class in 
 #' VariantAnnotation for more details.
 #' @return A VCF object.
-#' @export
 breakpointGRangesToVCF <- function(gr, ...) {
 	if (is.null(gr$insSeq)) {
 		gr$insSeq = rep("", length(gr))
