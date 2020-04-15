@@ -134,7 +134,7 @@ setMethod("isStructural", "VCF",
 #' Structural variants are converted to breakend notation.
 #' Due to ambiguities in the VCF specifications, structural variants
 #' with multiple alt alleles are not supported.
-#' The CIPOS tag describes the uncertainty interval of the around the postition
+#' The CIPOS tag describes the uncertainty interval around the position
 #' of the breakend. See Section 5.4.8 of
 #' \url{https://samtools.github.io/hts-specs/VCFv4.3.pdf} for details of CIPOS.
 #' If HOMLEN or HOMSEQ is defined without CIPOS, it is assumed that
@@ -171,9 +171,9 @@ setMethod("breakpointRanges", "VCF",
 #' nominal VCF position, or to call the confidence interval (incorporating
 #' any homology present). Default value is set to FALSE, where the interval is
 #' called based on the CIPOS tag. When set to TRUE, the ranges field contains
-#' the nomimal variant position only.
+#' the nominal variant position only.
 #' @param placeholderName Variant name prefix to assign to unnamed variants.
-#' @param suffix The suffix to append to varaint names.
+#' @param suffix The suffix to append to variant names.
 #' @param info_columns VCF INFO columns to include in the GRanges object.
 #' @param unpartneredBreakends Determining whether to report unpartnered 
 #' breakends. Default is set to FALSE.
