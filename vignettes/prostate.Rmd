@@ -1,0 +1,45 @@
+---
+title: "prostate"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+devtools::load_all()
+library(plyranges)
+```
+#home/Papenfuss_lab/projects/prostate/prostate_project/CombiMet/data/gridss_SVs/somaticSVs/'
+```{r}
+path <- '~/Papenfuss_lab/projects/prostate/prostate_project/CombiMet/data/gridss_SVs/somaticSVs/'
+files <- list.files(path = path, pattern = "CMHP.*.sv.somatic*")
+files
+```
+
+```{r}
+read_vcf <- function(path, file){
+  vcf_name <- paste0(path,file)
+  vcf <- readVcf(vcf_name)
+  gr <- breakpointRanges(vcf)
+  return(gr)
+}
+```
+
+```{r}
+gr.list <- mapply(read_vcf, path, files)
+gr.list[[1]]
+```
+
+```{r}
+rt.list <- GRangesList()
+for(i in 1:36){
+    #print(i)
+    rt.list[[i]] <- rtDetec(gr.list[[i]], hg19.genes, maxgap=200, minscore=0.3)
+}
+
+#mapply(rtDetec, gr.list, hg19.genes, maxgap=200, minscore=0.3)
+rtDetec(gr.list[[2]], hg19.genes, maxgap=200, minscore=0.3)
+```
+

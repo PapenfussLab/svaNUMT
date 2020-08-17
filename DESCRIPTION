@@ -25,12 +25,14 @@ Imports:
     stringr,
     dplyr,
     methods,
-    rlang
+    rlang,
+    GenomicFeatures
 Suggests:
     BSgenome.Hsapiens.UCSC.hg19,
+    TxDb.Hsapiens.UCSC.hg19.knownGene,
     ggplot2,
     devtools,
-    testthat,
+    testthat (>= 2.1.0),
     roxygen2,
     covr,
     knitr,
@@ -43,7 +45,7 @@ Suggests:
     IRanges,
     S4Vectors,
     SummarizedExperiment
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
 Encoding: UTF-8
 VignetteBuilder: knitr
 biocViews: DataImport, Sequencing, Annotation, Genetics, VariantAnnotation

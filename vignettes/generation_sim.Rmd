@@ -1,0 +1,111 @@
+---
+title: "simSV"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+generating insertion site randomly
+```{r}
+library(BSgenome.Hsapiens.UCSC.hg19)
+library(tidyverse)
+genome <- BSgenome.Hsapiens.UCSC.hg19
+#keepStandardChromosomes(genome, pruning.mode = "coarse")
+seqlengths(genome) %>% as.data.frame()
+```
+
+```{r}
+seqlevelsStyle(genome) = "NCBI"
+rr  = data.frame(chr=sample(seqlevels(genome)[1:22], 50, replace=T))
+rr$start = apply(rr, 1, function(x) { 
+         round(runif(1, 10000, seqlengths(genome)[x][[1]]), 0) }
+         )
+#rr$end = rr$start + runif(50, 10000, 20000)  # random intervals of 1-1000 bases
+rr <- rr %>% mutate(end = start+50000,
+                    type = 'INS')
+                    
+
+#rr$strand = sample(c("+", "-"))
+#rr.gr = makeGRangesFromDataFrame(rr)
+
+#write.csv(as.data.frame(rr.gr), file = "simsv_region.csv")
+```
+
+```{cmd}
+awk '/>/ {print $0}' bamsurgeon/simGene_transcripts.fa | sed 's/>//' > bamsurgeon/simGene_txnames.txt
+```
+
+```{r read tx names}
+simGene_txnames <- read.table("/stornext/Bioinf/data/bioinf-data/Papenfuss_lab/projects/StructuralVariantAnnotation/bamsurgeon/simGene_txnames.txt", quote="", comment.char="")
+```
+
+```{r generate varfile}
+rr <- rr %>% mutate(seq = paste("INSLIB", sample(simGene_txnames$V1, 50), sep = ":"),
+                    tsd = sample(7:20, 50, replace = TRUE),
+                    polyA = replicate(50,paste(paste(rep(c('A'), sample(5:10,1)), collapse = ''), c('^'),paste(rep(c('T'), sample(2:5,1)), collapse = ''), sep = '')))
+
+write_delim(rr, path = "/stornext/Bioinf/data/bioinf-data/Papenfuss_lab/projects/StructuralVariantAnnotation/bamsurgeon/simsv_region.csv", delim=" ", col_names = FALSE)
+```
+
+```{r}
+sim.gr <- breakpointRanges(readVcf('/stornext/Bioinf/data/bioinf-data/Papenfuss_lab/projects/StructuralVariantAnnotation/bamsurgeon/HG002_sim_sv.sorted.vcf'))
+```
+```{r}
+sim.rt <- rtDetec(sim.gr, hg19.genes, maxgap = 50, minscore = 0.3)
+
+write_csv2(as_tibble(sim.rt$insSite), 
+           path = '/stornext/Bioinf/data/bioinf-data/Papenfuss_lab/projects/StructuralVariantAnnotation/bamsurgeon/simRT_insSite.csv', 
+           col_names = TRUE)
+write_csv2(as_tibble(sim.rt$rt), 
+           path = '/stornext/Bioinf/data/bioinf-data/Papenfuss_lab/projects/StructuralVariantAnnotation/bamsurgeon/simRT_rt.csv', 
+           col_names = TRUE)
+```
+
+
+```{r}
+library(VariantAnnotation)
+library(plyranges)
+truth.gr <- readVcf("../bamsurgeon/HG002_sim_sv_truth.vcf") %>% rowRanges()
+simrt.gr <- simRT_insSite %>% as_granges()
+hits <- simrt.gr %>% findOverlaps(truth.gr, ., maxgap = 100)#minimum maxgap is 19 for 60 hits (56 unique hits)
+```
+
+## Results
+
+1. 34 out of 35 RTs are detected with at least one insertion site
+```{r}
+length(unique(queryHits(hits))) #34/35 RT is detected
+```
+
+2. 24 out of 35 RTs are detected with both insertion sites
+```{r}
+length(unique(queryHits(hits[duplicated(queryHits(hits))])))
+```
+ZIC5.0.2799|4597 has only one-sided insertion site detected
+```{r}
+truth.gr[1]
+```
+```{r}
+simrt.gr %>% filter(txs=='uc001vom.1') 
+#is it due to TSD that the breakpoint location is 20 bases different?
+```
+On the other side, the only exon-exon fusion is detected.
+```{r}
+txs.gr %>% filter(txs == 'uc001vom.1')
+```
+
+3. looking into the one RT not detected
+```{r}
+truth.gr[-queryHits(hits)] #undetected
+```
+The transcript `AFAP1-AS1` is located at chr4:7755817-7780655 [here](https://www.ncbi.nlm.nih.gov/gene?term=NR_026892).
+
+```{r}
+txs.gr <- simRT_rt %>% as_granges()
+txs.gr %>% filter(seqnames==4, start > 7755000, end < 7780700)
+```
+rtDetec found other transcripts in the same region. This transcript is not reported because there is only 1 exon and therefore filtered out by the minimum exon-exon fusion threshold.
+
+

@@ -31,11 +31,11 @@ breakpointRanges(x, ...)
 nominal VCF position, or to call the confidence interval (incorporating
 any homology present). Default value is set to FALSE, where the interval is
 called based on the CIPOS tag. When set to TRUE, the ranges field contains
-the nomimal variant position only.}
+the nominal variant position only.}
 
 \item{placeholderName}{Variant name prefix to assign to unnamed variants.}
 
-\item{suffix}{The suffix to append to varaint names.}
+\item{suffix}{The suffix to append to variant names.}
 
 \item{info_columns}{VCF INFO columns to include in the GRanges object.}
 
@@ -57,7 +57,7 @@ variants as GRanges.
 Structural variants are converted to breakend notation.
 Due to ambiguities in the VCF specifications, structural variants
 with multiple alt alleles are not supported.
-The CIPOS tag describes the uncertainty interval of the around the postition
+The CIPOS tag describes the uncertainty interval around the position
 of the breakend. See Section 5.4.8 of
 \url{https://samtools.github.io/hts-specs/VCFv4.3.pdf} for details of CIPOS.
 If HOMLEN or HOMSEQ is defined without CIPOS, it is assumed that

@@ -1,0 +1,75 @@
+---
+title: "gnomadSV"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(plyranges)
+library(dplyr)
+gnomad <- readVcf("/stornext/Bioinf/data/bioinf-data/Papenfuss_lab/projects/SVEnsemble/SVEnsemble/gnomad_v2_sv.sites.vcf.gz")
+#check whether metadata(info) and granges align
+table(info(gnomad) %>% rownames() == rowRanges(gnomad) %>% names)
+
+gnomad.gr <- rowRanges(gnomad)
+mcols(gnomad.gr) <- mcols(gnomad.gr) %>% 
+    cbind(., as.data.frame(info(gnomad)) %>% 
+              dplyr::select(AF, ALGORITHMS, CHR2, CPX_INTERVALS, CPX_TYPE, END, SOURCE, STRANDS, SVLEN, SVTYPE, UNRESOLVED_TYPE))
+
+head(gnomad.gr)
+#rm(gnomad.gr)
+#names(gnomad.gr) <- gnomad.gr$NAME
+#gnomad.gr %>% filter(FILTER=='PASS') %>% filter(CHR2!= seqnames, SVTYPE=='CTX') #%>% group_by(SVTYPE) %>% summarise(n=plyranges::n())
+#breakpointRanges(gnomad.gr)
+#head(gnomad.gr)
+```
+
+```{r}
+devtools::load_all()
+library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+hg19.genes <- TxDb.Hsapiens.UCSC.hg19.knownGene
+
+GenomeInfoDb::seqlevelsStyle(hg19.genes) <- GenomeInfoDb::seqlevelsStyle(gnomad.gr)[1]
+hg19.genes <- GenomeInfoDb::keepSeqlevels(hg19.genes, seqlevels(hg19.genes)[1:24], pruning.mode = "coarse")
+exons <- exons(hg19.genes, columns=c("exon_id", "tx_id", "tx_name","gene_id"))
+    
+  
+#rtDetec(gnomad.gr, hg19.genes, maxgap=200, minscore=0.3)
+```
+
+```{r}
+gnomad.gr %>% filter(SVTYPE=="DEL") %>% findOverlaps(., exons) -> hits1
+```
+
+```{r}
+data.frame(seqnames = gnomad.gr$CHR2, start = gnomad.gr$END, end = gnomad.gr$END) %>% as_granges() %>% 
+    findOverlaps(., exons) %>% as.data.frame(.) %>% 
+    inner_join(as.data.frame(hits1), ., by="queryHits")
+```
+```{r}
+bp2.gr <- data.frame(seqnames = gnomad.gr$CHR2, start = gnomad.gr$END, end = gnomad.gr$END) %>% 
+    cbind(., mcols(gnomad.gr)) %>% as_granges() %>% mutate(name = names(gnomad.gr), partner = paste0(name, '_bp1'))
+names(bp2.gr) <- paste0(bp2.gr$name, '_bp2')
+
+gnomad.gr <- gnomad.gr %>% mutate(name = names(gnomad.gr), partner = paste0(name, '_bp2')) %>% `names<-`(., paste0(names(.), '_bp1'))
+gnomad.gr <- c(gnomad.gr, bp2.gr)
+
+
+```
+```{r}
+gnomad.gr %>% filter()
+gnomad.rt <- rtDetec(gnomad.gr, hg19.genes, maxgap = 50, minscore = 0.3)
+```
+
+```{r}
+write_csv2(as_tibble(gnomad.rt$insSite), 
+           path = '/stornext/Bioinf/data/bioinf-data/Papenfuss_lab/projects/StructuralVariantAnnotation/bamsurgeon/gnomadSV_insSite.csv', 
+           col_names = TRUE)
+write_csv2(as_tibble(gnomad.rt$rt), 
+           path = '/stornext/Bioinf/data/bioinf-data/Papenfuss_lab/projects/StructuralVariantAnnotation/bamsurgeon/gnomadSV_rt.csv', 
+           col_names = TRUE)
+```
+

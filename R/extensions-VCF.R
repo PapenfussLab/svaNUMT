@@ -399,7 +399,7 @@ setMethod("breakpointRanges", "VCF",
 					remoteChrPos = stringr::str_split_fixed(remoteLocation, stringr::fixed(":"), n=2)
 					remoteChr = remoteChrPos[,1]
 					remotePos = as.numeric(remoteChrPos[,2])
-					ipgr = GRanges(seqnames=remoteChr, ranges=IRanges(start=remotePos, end=remotePos), strand=ifelse(bracket=="[", "-", "+"))
+					ipgr = GRanges(seqnames=remoteChr, ranges=IRanges::IRanges(start=remotePos, end=remotePos), strand=ifelse(bracket=="[", "-", "+"))
 					mcols(ipgr) = mcols(cgr)
 					ipgr$REF = "N"
 					ipgr$ALT = paste0(
