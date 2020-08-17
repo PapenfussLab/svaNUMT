@@ -53,7 +53,7 @@ write_delim(rr, path = "/stornext/Bioinf/data/bioinf-data/Papenfuss_lab/projects
 sim.gr <- breakpointRanges(readVcf('/stornext/Bioinf/data/bioinf-data/Papenfuss_lab/projects/StructuralVariantAnnotation/bamsurgeon/HG002_sim_sv.sorted.vcf'))
 ```
 ```{r}
-sim.rt <- rtDetec(sim.gr, hg19.genes, maxgap = 50, minscore = 0.3)
+sim.rt <- rtDetect(sim.gr, hg19.genes, maxgap = 50, minscore = 0.3)
 
 write_csv2(as_tibble(sim.rt$insSite), 
            path = '/stornext/Bioinf/data/bioinf-data/Papenfuss_lab/projects/StructuralVariantAnnotation/bamsurgeon/simRT_insSite.csv', 
@@ -106,6 +106,6 @@ The transcript `AFAP1-AS1` is located at chr4:7755817-7780655 [here](https://www
 txs.gr <- simRT_rt %>% as_granges()
 txs.gr %>% filter(seqnames==4, start > 7755000, end < 7780700)
 ```
-rtDetec found other transcripts in the same region. This transcript is not reported because there is only 1 exon and therefore filtered out by the minimum exon-exon fusion threshold.
+rtDetect found other transcripts in the same region. This transcript is not reported because there is only 1 exon and therefore filtered out by the minimum exon-exon fusion threshold.
 
 

@@ -36,10 +36,10 @@ gr.list[[1]]
 rt.list <- GRangesList()
 for(i in 1:36){
     #print(i)
-    rt.list[[i]] <- rtDetec(gr.list[[i]], hg19.genes, maxgap=200, minscore=0.3)
+    rt.list[[i]] <- rtDetect(gr.list[[i]], hg19.genes, maxgap=200, minscore=0.3)
 }
 
-#mapply(rtDetec, gr.list, hg19.genes, maxgap=200, minscore=0.3)
+#mapply(rtDetect, gr.list, hg19.genes, maxgap=200, minscore=0.3)
 rtDetec(gr.list[[2]], hg19.genes, maxgap=200, minscore=0.3)
 ```
 

@@ -37,7 +37,7 @@ hg19.genes <- GenomeInfoDb::keepSeqlevels(hg19.genes, seqlevels(hg19.genes)[1:24
 exons <- exons(hg19.genes, columns=c("exon_id", "tx_id", "tx_name","gene_id"))
     
   
-#rtDetec(gnomad.gr, hg19.genes, maxgap=200, minscore=0.3)
+#rtDetect(gnomad.gr, hg19.genes, maxgap=200, minscore=0.3)
 ```
 
 ```{r}
@@ -61,7 +61,7 @@ gnomad.gr <- c(gnomad.gr, bp2.gr)
 ```
 ```{r}
 gnomad.gr %>% filter()
-gnomad.rt <- rtDetec(gnomad.gr, hg19.genes, maxgap = 50, minscore = 0.3)
+gnomad.rt <- rtDetect(gnomad.gr, hg19.genes, maxgap = 50, minscore = 0.3)
 ```
 
 ```{r}

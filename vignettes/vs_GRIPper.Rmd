@@ -24,7 +24,7 @@ hg19.genes <- TxDb.Hsapiens.UCSC.hg19.knownGene
 ```
 
 ```{r}
-hg002.rt.gr <- rtDetec(HG002.gr, hg19.genes, maxgap=200, minscore=0.3)
+hg002.rt.gr <- rtDetect(HG002.gr, hg19.genes, maxgap=200, minscore=0.3)
 hg002.rt.gr$insSite %>% unique(.)
 ```
 
