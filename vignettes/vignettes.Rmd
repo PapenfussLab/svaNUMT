@@ -22,7 +22,7 @@ knitr::opts_chunk$set(#echo = TRUE,
 ```
 
 ## Introduction
-This vignette outlines a workflow of parsing and plotting structural variants from Variant Call Format (VCF) using the `StructuralVariantAnnotation` package. `StructuralVariantAnnotation` contains useful helper functions for reading and interpreting structural variant calls. The package contains functions for parsing VCFs from a number of popular callers as well as functions for dealing with breakpoints involving two separate genomic loci encoded as `GRanges` objects.
+This vignette outlines a workflow of parsing and plotting structural variants from Variant Call Format (VCF) using the `StructuralVariantAnnotation` package. `StructuralVariantAnnotation` contains useful helper functions for reading and interpreting structural variant calls. The package contains functions for parsing VCFs from a number of popular callers, dealing with breakpoints involving two separate genomic loci encoded as `GRanges` objects, as well as identifying various biological phenomena. Currently the identification of retroposed transcripts (RTs) and nuclear mitochondrial integrations (NUMTs) are supported.
 
 ## Installation
 
@@ -184,7 +184,7 @@ ggplot(as.data.frame(svgr) %>%
 
 ### Converting between BEDPE, Pairs, and breakpoint GRanges
 
-The package supports converting GRanges objects to BEDPE files. The BEDPE format is defined by [`bedtools`](https://bedtools.readthedocs.io/en/latest/content/general-usage.html). This is achieved using `breakpointgr2pairs` and `pairs2breakpointgr` functions to convert to and from the GRanges `Pairs` notation used by `rtracklayer`
+The package supports converting GRanges objects to BEDPE files. The BEDPE format is defined by [`bedtools`](https://bedtools.readthedocs.io/en/latest/content/general-usage.html). This is achieved using `breakpointgr2pairs` and `pairs2breakpointgr` functions to convert to and from the GRanges `Pairs` notation used by `rtracklayer`.
 
 ```{r}
 suppressPackageStartupMessages(require(rtracklayer))
@@ -196,6 +196,34 @@ bedpe.gr  <- pairs2breakpointgr(rtracklayer::import("gridss.bedpe"))
 
 ```
 
+### Identifying Retrotransposed Transcripts
+The package provides `rtDetect` to identify RTs using the provided SV calls. This is achieved by detecting intronic deletions, which are breakpoints at exon-intron (and intron-exon) boundaries of a transcript. Fusions consisting of an exon boundary and a second genomic location are reported as potential insertion sites. Due to the complexity of RT events, insertion sites can be discovered on both left and right sides, only one side, or none at all.
+
+The output is a `GRangesList` object consisting of two sets of `GRanges` calls, `insSite` and `rt`, containing candidate insertion sites and exon-exon junctions respectively. Candidate insertion sites are annotated by the source transcripts and whether exon-exon junctions are detected for the source transcripts. RT junction breakends are annotated by the UCSC exon IDs, corresponding transcripts, and NCBI gene symbols.
+
+```{r}
+suppressPackageStartupMessages(require(TxDb.Hsapiens.UCSC.hg19.knownGene))
+hg19.genes <- TxDb.Hsapiens.UCSC.hg19.knownGene
+RT_vcf <- readVcf(system.file("extdata", "diploidSV.vcf", package = "StructuralVariantAnnotation"))
+RT_gr <- breakpointRanges(RT_vcf, nominalPosition=TRUE)
+RT <- rtDetect(RT_gr, hg19.genes, maxgap=50, minscore=0.3)
+```
+```{r}
+head(RT$insSite)
+```
+```{r}
+head(RT$rt)
+```
+
+### Identifying Nuclear-mitochondrial Genome Fusion Events
+Function `numtDetect` searches for NUMT events by identifying breakends supporting the fusion of nuclear chromosome and mitochondrial genome. `numtDetect` allow insertion sites with a single-sided junction due to frequent combinations with other structural rearrangements. Candidate linked nuclear insertion sites are reported using SV IDs in the `candidatePartnerId` metadata column.
+
+```{r}
+NUMT_vcf <- readVcf(system.file("extdata", "MT.vcf", package = "StructuralVariantAnnotation"))
+NUMT_gr <- breakpointRanges(NUMT_vcf, nominalPosition=TRUE)
+NUMT <- numtDetect(NUMT_gr)
+NUMT
+```
 
 ## Visualising breakpoint pairs via circos plots
 
