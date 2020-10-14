@@ -119,7 +119,7 @@ numtDetect <- function(gr, nonStandardChromosomes=FALSE, max_ins_dist=1000){
 #' @export
 #' 
 rtDetect <- function(gr, genes, maxgap=100, minscore=0.3){
-    #message("26.01.2020")
+    #message("rtDetect")
     #check args
     assertthat::assert_that(class(gr)=="GRanges", msg = "gr should be a GRanges object")
     assertthat::assert_that(length(gr)>0, msg = "gr can't be empty")
