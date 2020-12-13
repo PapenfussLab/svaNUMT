@@ -1,0 +1,13 @@
+Meta
+doc
+.Rproj.user
+.Rhistory
+.RData
+inst/doc
+StructuralVariantAnnotation.Rproj
+.Rproj
+StructuralVariantAnnotation.Rcheck/
+SVA-Bioc.Rproj
+GRIPper
+.*bam*
+bamsurgeon/addsv.tmp/
