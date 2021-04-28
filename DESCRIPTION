@@ -20,10 +20,11 @@ Imports:
     stringr,
     dplyr,
     methods,
-    rlang,
+    rlang,    
+    GenomeInfoDb,
+    S4Vectors,
     GenomicFeatures
 Suggests:
-    BSgenome.Hsapiens.UCSC.hg19,
     TxDb.Hsapiens.UCSC.hg19.knownGene,
     ggplot2,
     devtools,
@@ -32,13 +33,9 @@ Suggests:
     covr,
     knitr,
     plyranges,
-    ggbio,
-    biovizBase,
     circlize,
     tictoc,
-    GenomeInfoDb,
     IRanges,
-    S4Vectors,
     SummarizedExperiment
 RoxygenNote: 7.1.1
 Encoding: UTF-8

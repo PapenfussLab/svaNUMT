@@ -4,19 +4,16 @@
 \alias{numtDetect}
 \title{Detecting nuclear mitochondria fusion events.}
 \usage{
-numtDetect(gr, nonStandardChromosomes = FALSE, max_ins_dist = 1000)
+numtDetect(gr, max_ins_dist = 10)
 }
 \arguments{
 \item{gr}{A GRanges object}
 
-\item{nonStandardChromosomes}{Whether to report insertion sites on non-standard reference 
-chromosomes. Default value is set to FALSE.}
-
-\item{max_ins_dist}{The maxium distance allowed on the reference genome between the paired insertion sites.
-Only intra-chromosomal NUMT events are supported. Default value is 1000.}
+\item{max_ins_dist}{The maximum distance allowed on the reference genome between the paired insertion sites.
+Only intra-chromosomal NUMT events are supported. Default value is 10.}
 }
 \value{
-A GRanges object of possible NUMT loci.
+A nested list of GRanges objects of candidate NUMTs.
 }
 \description{
 Detecting nuclear mitochondria fusion events.
@@ -25,11 +22,11 @@ Detecting nuclear mitochondria fusion events.
 Nuclear mitochondrial fusion (NUMT) is a common event found in human genomes.
 This function searches for NUMT events by identifying breakpoints supporting the fusion of
 nuclear chromosome and mitochondrial genome. Only BND notations are supported at the current stage.
-Possible linked nuclear insertion sites are reported using SV IDs in the candidatePartnerId metadata column.
+Possible linked nuclear insertion sites are reported by chromosome in GRanges format.
 }
 \examples{
 vcf.file <- system.file("extdata", "MT.vcf", package = "NUMTDetect")
 vcf <- VariantAnnotation::readVcf(vcf.file, "hg19")
 gr <- breakpointRanges(vcf, nominalPosition=TRUE)
-numt.gr <- numtDetect(gr)
+numt.gr <- numtDetect(gr, max_ins_dist=20)
 }

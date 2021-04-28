@@ -4,23 +4,19 @@
 #' Nuclear mitochondrial fusion (NUMT) is a common event found in human genomes.
 #' This function searches for NUMT events by identifying breakpoints supporting the fusion of
 #' nuclear chromosome and mitochondrial genome. Only BND notations are supported at the current stage.
-#' Possible linked nuclear insertion sites are reported using SV IDs in the candidatePartnerId metadata column.
+#' Possible linked nuclear insertion sites are reported by chromosome in GRanges format.
 #' @param gr A GRanges object
-#' @param nonStandardChromosomes Whether to report insertion sites on non-standard reference 
-#' chromosomes. Default value is set to FALSE.
-#' @param max_ins_dist The maxium distance allowed on the reference genome between the paired insertion sites.
-#' Only intra-chromosomal NUMT events are supported. Default value is 1000.
-#' @return A GRanges object of possible NUMT loci.
+#' @param max_ins_dist The maximum distance allowed on the reference genome between the paired insertion sites.
+#' Only intra-chromosomal NUMT events are supported. Default value is 10.
+#' @return A nested list of GRanges objects of candidate NUMTs.
 #' @examples
 #' vcf.file <- system.file("extdata", "MT.vcf", package = "NUMTDetect")
 #' vcf <- VariantAnnotation::readVcf(vcf.file, "hg19")
 #' gr <- breakpointRanges(vcf, nominalPosition=TRUE)
-#' numt.gr <- numtDetect(gr)
+#' numt.gr <- numtDetect(gr, max_ins_dist=20)
 #' @export
 #' 
 numtDetect <- function(gr, max_ins_dist=10){
-    # vcf <- readVcf("~/Documents/CombiMet/CMHP10.sv.vcf")
-    # gr <- breakpointRanges(vcf)
     assertthat::assert_that(class(gr)=="GRanges", msg = "gr should be a GRanges object")
     assertthat::assert_that(length(gr)>0, msg = "gr can't be empty")
     gr <- gr[seqnames(gr) %in% standardChromosomes(gr) & seqnames(partner(gr)) %in% standardChromosomes(gr)]

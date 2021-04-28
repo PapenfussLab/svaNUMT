@@ -13,6 +13,8 @@
 #' @import Biostrings
 #' @import GenomicRanges
 #' @import StructuralVariantAnnotation
+#' @import S4Vectors
+#' @import GenomeInfoDb
 #' @importFrom dplyr %>%
 #' @importFrom methods as is setMethod setGeneric
 #' @importFrom rlang .data
