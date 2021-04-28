@@ -1,22 +1,17 @@
-Package: StructuralVariantAnnotation
+Package: NUMTDetect
 Type: Package
-Title: Variant annotations for structural variants
-Version: 1.5.0
-Date: 2020-04-15
+Title: NUMT detection from structural variant calls
+Version: 0.99.0
+Date: 2021-03-09
 Authors@R: c(
-	person("Daniel", "Cameron", email="daniel.l.cameron@gmail.com", role=c("aut", "cre"), comment=c(ORCID = "0000-0002-0951-7116")),
-	person("Ruining", "Dong", email="dong.rn@wehi.edu.au", role=c("aut"), comment=c(ORCID = "0000-0003-1433-0484")))
-Description: StructuralVariantAnnotation contains useful helper
-	functions for dealing with structural variants in VCF format.
-	The packages contains functions for parsing VCFs from a number
-	of popular callers as well as functions for dealing with 
-	breakpoints involving two separate genomic loci encoded as
-	GRanges objects.
+	person("Ruining", "Dong", email="dong.rn@wehi.edu.au", role=c("aut", "cre"), comment=c(ORCID = "0000-0003-1433-0484")))
+Description: NUMTDetect contains functions for detecting NUMT events from structural variant calls.
 License: GPL-3
 Depends:
 	GenomicRanges,
 	rtracklayer,
     VariantAnnotation,
+    StructuralVariantAnnotation,
     BiocGenerics,
     R (>= 3.6.0)
 Imports:

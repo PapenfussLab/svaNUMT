@@ -1,5 +1,0 @@
-header.Type.Integer <- "Integer"
-header.Type.Float <- "Float"
-header.Type.Flag <- "Flag"
-header.Type.Character <- "Character"
-header.Type.String <- "String"

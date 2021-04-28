@@ -28,8 +28,8 @@ nuclear chromosome and mitochondrial genome. Only BND notations are supported at
 Possible linked nuclear insertion sites are reported using SV IDs in the candidatePartnerId metadata column.
 }
 \examples{
-vcf.file <- system.file("extdata", "MT.vcf", package = "StructuralVariantAnnotation")
+vcf.file <- system.file("extdata", "MT.vcf", package = "NUMTDetect")
 vcf <- VariantAnnotation::readVcf(vcf.file, "hg19")
 gr <- breakpointRanges(vcf, nominalPosition=TRUE)
-numt.gr <- numtDetec(gr)
+numt.gr <- numtDetect(gr)
 }

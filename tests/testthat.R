@@ -1,4 +1,4 @@
 library(testthat)
-library(StructuralVariantAnnotation)
+library(NUMTDetect)
 
-test_check("StructuralVariantAnnotation")
+test_check("NUMTDetect")
