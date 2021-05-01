@@ -29,8 +29,11 @@ numtDetect <- function(gr, max_ins_dist=10){
         first_MT <- seqnames(S4Vectors::first(numts)) %in% c("MT", "chrM")
         nus.gr <- S4Vectors::first(numts)
         nus.gr[first_MT] <- S4Vectors::second(numts)[first_MT]
+        names(nus.gr)[as.vector(first_MT)] <- names(S4Vectors::second(numts))[as.vector(first_MT)]
+        
         mts.gr <- S4Vectors::second(numts)
         mts.gr[first_MT] <- S4Vectors::first(numts)[first_MT]
+        names(mts.gr)[as.vector(first_MT)] <- names(S4Vectors::first(numts))[as.vector(first_MT)]
         
         #split NU and MT grs by chromosomes
         nus <- split(nus.gr, as.vector(seqnames(nus.gr)))
@@ -66,7 +69,6 @@ numtDetect <- function(gr, max_ins_dist=10){
                 list(NU=n, MT=m)
             }
         }
-        
     }
 }
 

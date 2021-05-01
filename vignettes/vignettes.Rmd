@@ -45,9 +45,7 @@ suppressPackageStartupMessages(require(NUMTDetect))
 # NUMT_vcf <- readVcf(system.file("extdata", "MT.vcf", package = "NUMTDetect"))
 # NUMT_gr <- StructuralVariantAnnotation::breakpointRanges(NUMT_vcf)
 # NUMT_gr
-
-#Need to make a small vcf out of this:
-vcf <- readVcf("~/Documents/CombiMet/CMHP10.sv.vcf")
+vcf <- readVcf(system.file("extdata", "MT.vcf", package = "NUMTDetect"))
 gr <- breakpointRanges(vcf)
 ```
 
@@ -59,7 +57,7 @@ Function `numtDetect` searches for NUMT events by identifying breakends supporti
 allow insertion sites with a single-sided junction due to frequent combinations with other structural rearrangements. Candidate linked nuclear insertion sites are reported using SV IDs in the `candidatePartnerId` metadata column.
 
 ```{r}
-NUMT <- numtDetect(gr)
+NUMT <- numtDetect(gr, max_ins_dist = 20)
 NUMT
 ```
 
@@ -84,8 +82,8 @@ To see supporting breakpoints clearly, we generate the circos plot according to 
 ```{r}
 circos.initializeWithIdeogram(
     data.frame(V1=c("chr11", "chrM"),
-               V2=c(4656330,1),
-               V3=c(4656360,16571),
+               V2=c(49883562,1),
+               V3=c(49883595,16571),
                V4=c("p15.4",NA),
                V5=c("gpos50",NA)),  sector.width = c(0.50614402, 0.49385598))
 #circos.initializeWithIdeogram()
@@ -116,10 +114,4 @@ sessionInfo()
 # sector.width = c(xrange[normal_chr_index] / sum(xrange[normal_chr_index]), 
 #                  xrange[zoomed_chr_index] / sum(xrange[zoomed_chr_index]))
 ```
-```{r}
-CMHP10.vcf <- readVcf("~/Documents/CombiMet/CMHP10.sv.vcf")
-CMHP10.gr <- breakpointRanges(CMHP10.vcf)
-geno(CMHP10.vcf)
-```
-
 
