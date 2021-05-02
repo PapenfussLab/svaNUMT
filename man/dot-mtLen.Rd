@@ -22,3 +22,4 @@ Calculating MT sequence length.
 \details{
 This function calculate the length of MT sequence length with BND notations.
 }
+\keyword{internal}
