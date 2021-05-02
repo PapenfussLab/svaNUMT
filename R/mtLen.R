@@ -5,6 +5,7 @@
 #' @param bnd.start starting breakend of the MT sequence.
 #' @param bnd.end ending breakend of the MT sequence.
 #' @param chrM.len length of the reference MT genome.
+#' @keywords internal
 #' @return The length of the MT sequence. When the candidate MT BNDs can't be linked as one sequence, the returned value is NA.
 .mtLen <- function(bnd.start, bnd.end, chrM.len){
     bnd.start.str <- stringr::str_match(bnd.start, "(.*)(\\[|])(.*)(:)(.+)(\\[|])(.*)")

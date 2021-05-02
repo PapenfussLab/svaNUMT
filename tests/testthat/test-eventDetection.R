@@ -1,7 +1,6 @@
 context('event detection functions')
 na12878 <- readVcf(system.file("extdata", "gridss-na12878.vcf", package = "NUMTDetect"))
 numt <- readVcf(system.file("extdata", "MT.vcf", package = "NUMTDetect"))
-#colo829 <- readVcf(system.file("extdata", "diploidSV.vcf", package = "NUMTDetect"))
 
 #NUMT detection
 test_that("numtDetect returns nothing with no nu-mt fusion", {

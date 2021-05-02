@@ -22,39 +22,52 @@ knitr::opts_chunk$set(#echo = TRUE,
 ```
 
 ## Introduction
-This vignette outlines a workflow of detecting nuclear-mitochondrial DNA fusions from Variant Call Format (VCF) using the `NUMTDetect` package. 
+This vignette outlines a workflow of detecting nuclear-mitochondrial DNA fusions 
+from Variant Call Format (VCF) using the `NUMTDetect` package. 
 
 
 ## Using GRanges for structural variants: a breakend-centric data structure
 
-This package uses a breakend-centric event notation adopted from the `StructuralVariantAnnotation` package. In short, breakends are stored in a GRanges object with strand used to indicate breakpoint orientation. where breakpoints are represented using a `partner` field containing the name of the breakend at the other side of the breakend. This notation was chosen as it simplifies the annotations of RTs which are detected at breakend-level.
+This package uses a breakend-centric event notation adopted from the 
+`StructuralVariantAnnotation` package. In short, breakends are stored in a 
+GRanges object with strand used to indicate breakpoint orientation. where 
+breakpoints are represented using a `partner` field containing the name of the 
+breakend at the other side of the breakend. This notation was chosen as it 
+simplifies the annotations of RTs which are detected at breakend-level.
 
 ## Workflow
 ### Loading data from VCF
 
 VCF data is parsed into a `VCF` object using the `readVCF` function from the
 Bioconductor package `VariantAnnotation`. Simple filters could be applied to a 
-`VCF` object to remove unwanted calls. The `VCF` object is then converted to a `GRanges` object with breakend-centric notations using `StructuralVariantAnnotation`. More information about `VCF` objects and breakend-centric GRanges object can be found by
-consulting the vignettes in the corresponding packages with `browseVignettes("VariantAnnotation")` and `browseVignettes("StructuralVariantAnnotation")`.
+`VCF` object to remove unwanted calls. The `VCF` object is then converted to a 
+`GRanges` object with breakend-centric notations using 
+`StructuralVariantAnnotation`. More information about `VCF` objects and 
+breakend-centric GRanges object can be found by consulting the vignettes in the 
+corresponding packages with `browseVignettes("VariantAnnotation")` and `browseVignettes("StructuralVariantAnnotation")`.
 
-```{r input, warning=FALSE, message=FALSE}
-suppressPackageStartupMessages(require(StructuralVariantAnnotation))
-suppressPackageStartupMessages(require(VariantAnnotation))
-suppressPackageStartupMessages(require(NUMTDetect))
+```{r input, include=TRUE,results="hide",message=FALSE,warning=FALSE}
+library(StructuralVariantAnnotation)
+library(VariantAnnotation)
+library(NUMTDetect)
 
-# NUMT_vcf <- readVcf(system.file("extdata", "MT.vcf", package = "NUMTDetect"))
-# NUMT_gr <- StructuralVariantAnnotation::breakpointRanges(NUMT_vcf)
-# NUMT_gr
 vcf <- readVcf(system.file("extdata", "MT.vcf", package = "NUMTDetect"))
 gr <- breakpointRanges(vcf)
 ```
 
-Note that `StructuralVariantAnnotation` requires the `GRanges` object to be composed entirely of valid breakpoints. Please consult the vignette of the `StructuralVariantAnnotation` package for ensuring breakpoint consistency.
+Note that `StructuralVariantAnnotation` requires the `GRanges` object to be 
+composed entirely of valid breakpoints. Please consult the vignette of the 
+`StructuralVariantAnnotation` package for ensuring breakpoint consistency.
 
 
 ### Identifying Nuclear-mitochondrial Genome Fusion Events
-Function `numtDetect` searches for NUMT events by identifying breakends supporting the fusion of nuclear chromosome and mitochondrial genome. `numtDetect` returns identified breakends supporting candidate NUMTs in 2 lists of list of GRanges, grouped by chromosome and insertion sites.
-allow insertion sites with a single-sided junction due to frequent combinations with other structural rearrangements. Candidate linked nuclear insertion sites are reported using SV IDs in the `candidatePartnerId` metadata column.
+Function `numtDetect` searches for NUMT events by identifying breakends 
+supporting the fusion of nuclear chromosome and mitochondrial genome. 
+`numtDetect` returns identified breakends supporting candidate NUMTs in 2 lists 
+of list of GRanges, grouped by chromosome and insertion sites.
+allow insertion sites with a single-sided junction due to frequent combinations 
+with other structural rearrangements. Candidate linked nuclear insertion sites 
+are reported using SV IDs in the `candidatePartnerId` metadata column.
 
 ```{r}
 NUMT <- numtDetect(gr, max_ins_dist = 20)
@@ -63,22 +76,23 @@ NUMT
 
 ## Visualising breakpoint pairs via circos plots
 
-One way of visualising paired breakpoints is by circos plots. Here we use the package
-[`circlize`](https://doi.org/10.1093/bioinformatics/btu393) to demonstrate 
-breakpoint visualisation. The `bedpe2circos` function takes BEDPE-formatted 
-dataframes (see `breakpointgr2bedpe()`) and plotting parameters for the
-`circos.initializeWithIdeogram()` and `circos.genomicLink()` functions 
-from `circlize`.
+One way of visualising paired breakpoints is by circos plots. Here we use the 
+package [`circlize`](https://doi.org/10.1093/bioinformatics/btu393) to 
+demonstrate breakpoint visualisation. The `bedpe2circos` function takes 
+BEDPE-formatted dataframes (see `breakpointgr2bedpe()`) and plotting 
+parameters for the `circos.initializeWithIdeogram()` and `circos.genomicLink()` 
+functions from `circlize`.
 
 To generate a simple circos plot of one candidate NUMT event:
-```{r}
-suppressPackageStartupMessages(require(circlize))
+```{r, include=TRUE,results="hide",message=FALSE,warning=FALSE}
+library(circlize)
 numt_chr_prefix <- c(NUMT$NU$`11`[[1]], NUMT$MT$`11`[[1]])
-seqlevelsStyle(numt_chr_prefix) <- "UCSC"
+GenomeInfoDb::seqlevelsStyle(numt_chr_prefix) <- "UCSC"
 pairs <- breakpointgr2pairs(numt_chr_prefix)
 pairs
 ```
-To see supporting breakpoints clearly, we generate the circos plot according to the loci of event.
+To see supporting breakpoints clearly, we generate the circos plot according to 
+the loci of event.
 ```{r}
 circos.initializeWithIdeogram(
     data.frame(V1=c("chr11", "chrM"),
@@ -87,7 +101,8 @@ circos.initializeWithIdeogram(
                V4=c("p15.4",NA),
                V5=c("gpos50",NA)),  sector.width = c(0.50614402, 0.49385598))
 #circos.initializeWithIdeogram()
-circos.genomicLink(as.data.frame(S4Vectors::first(pairs)), as.data.frame(S4Vectors::second(pairs)))
+circos.genomicLink(as.data.frame(S4Vectors::first(pairs)), 
+                   as.data.frame(S4Vectors::second(pairs)))
 circos.clear()
 ```
 
@@ -95,23 +110,5 @@ circos.clear()
 ## SessionInfo
 ```{r}
 sessionInfo()
-```
-
-
-
-
-
-```{r}
-# cytoband = read.cytoband()
-# cytoband_df = cytoband$df
-# chromosome = cytoband$chromosome
-# 
-# xrange = c(cytoband$chr.len, cytoband$chr.len[c("chr1", "chr2")])
-# normal_chr_index = 1:24
-# zoomed_chr_index = 25:26
-# 
-# # normalize in normal chromsomes and zoomed chromosomes separately
-# sector.width = c(xrange[normal_chr_index] / sum(xrange[normal_chr_index]), 
-#                  xrange[zoomed_chr_index] / sum(xrange[zoomed_chr_index]))
 ```
 
