@@ -6,7 +6,7 @@
       with import nixpkgs { inherit system; };
       with rPackages; {
         defaultPackage = (buildRPackage {
-          name = "NUMTDetect";
+          name = "svaNUMT";
           src = ./.;
           propagatedBuildInputs = [
             GenomicRanges
@@ -28,14 +28,14 @@
           checkInputs = [ BiocCheck ];
           script = writeText "bioc-check.r" ''
             library(BiocCheck)
-            BiocCheck(paste0(Sys.getenv("TMPDIR"), "/NUMTDetect")
+            BiocCheck(paste0(Sys.getenv("TMPDIR"), "/svaNUMT")
               , `no-check-deprecated`=T  # Requires net
               , `no-check-CRAN`=T        # Requires net
               , `no-check-version-num`=T # No idea why this fails
               , `quit-with-status`=T)
           '';
           checkPhase = ''
-            cp -r $PWD $TMPDIR/NUMTDetect
+            cp -r $PWD $TMPDIR/svaNUMT
             Rscript $script
           '';
         });
