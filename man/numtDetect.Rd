@@ -25,7 +25,7 @@ nuclear chromosome and mitochondrial genome. Only BND notations are supported at
 Possible linked nuclear insertion sites are reported by chromosome in GRanges format.
 }
 \examples{
-vcf.file <- system.file("extdata", "MT.vcf", package = "NUMTDetect")
+vcf.file <- system.file("extdata", "MT.vcf", package = "svaNUMT")
 vcf <- VariantAnnotation::readVcf(vcf.file, "hg19")
 gr <- breakpointRanges(vcf, nominalPosition=TRUE)
 numt.gr <- numtDetect(gr, max_ins_dist=20)

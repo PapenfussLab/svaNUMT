@@ -1,6 +1,6 @@
 context('event detection functions')
-na12878 <- readVcf(system.file("extdata", "gridss-na12878.vcf", package = "NUMTDetect"))
-numt <- readVcf(system.file("extdata", "MT.vcf", package = "NUMTDetect"))
+na12878 <- readVcf(system.file("extdata", "gridss-na12878.vcf", package = "svaNUMT"))
+numt <- readVcf(system.file("extdata", "MT.vcf", package = "svaNUMT"))
 
 #NUMT detection
 test_that("numtDetect returns nothing with no nu-mt fusion", {

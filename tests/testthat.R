@@ -1,4 +1,4 @@
 library(testthat)
-library(NUMTDetect)
+library(svaNUMT)
 
-test_check("NUMTDetect")
+test_check("svaNUMT")

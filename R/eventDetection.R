@@ -10,7 +10,7 @@
 #' Only intra-chromosomal NUMT events are supported. Default value is 10.
 #' @return A nested list of GRanges objects of candidate NUMTs.
 #' @examples
-#' vcf.file <- system.file("extdata", "MT.vcf", package = "NUMTDetect")
+#' vcf.file <- system.file("extdata", "MT.vcf", package = "svaNUMT")
 #' vcf <- VariantAnnotation::readVcf(vcf.file, "hg19")
 #' gr <- breakpointRanges(vcf, nominalPosition=TRUE)
 #' numt.gr <- numtDetect(gr, max_ins_dist=20)
@@ -24,6 +24,7 @@ numtDetect <- function(gr, max_ins_dist=10){
     pr <- breakpointgr2pairs(gr)
     numts <- pr[as.vector(xor(seqnames(S4Vectors::first(pr)) %in% c("MT", "chrM"), 
                               seqnames(S4Vectors::second(pr)) %in% c("MT", "chrM")))]
+    #isEmpty() is not defined for objects of class Pairs
     if (length(numts)==0) {
         message("There is no NUMT event detected. Check whether 'chrM' or 'MT' is present in the VCF.")
     }else{
@@ -48,7 +49,8 @@ numtDetect <- function(gr, max_ins_dist=10){
                                                            paste(queryHits,subjectHits,sep = "_"), 
                                                            paste(subjectHits,queryHits,sep = "_"))) %>% 
                         dplyr::filter(!duplicated(label)) %>% dplyr::select(-label))
-        if (length(unlist(l))==0){
+        #if (length(unlist(l))==0){
+        if (isEmpty(unlist(l))){
             #no chromosome reports candidate paired insertion sites
             message("There is no NUMT event detected. Paired candidate insertion site not found.")
         }else{
@@ -60,16 +62,17 @@ numtDetect <- function(gr, max_ins_dist=10){
                                               function(x) m[x]), l, mts, SIMPLIFY = FALSE)
             
             ##remove empty chromosomes
-            n <- n[sapply(n, function(x) length(x)>0)]
-            m <- m[sapply(m, function(x) length(x)>0)] 
+            n <- n[vapply(n, function(x) length(x)>0, FUN.VALUE = logical(1))] #isEmpty returns a value for each element of x
+            m <- m[vapply(m, function(x) length(x)>0, FUN.VALUE = logical(1))] 
             
-            if (sum(sapply(n, length))==0) {
+            #if (sum(vapply(n, length, numeric(1)))==0) {
+            if (sum(!isEmpty(n))==0) {
                 #no chromosome reports candidate paired insertion sites
                 message("There is no NUMT event detected. Paired candidate insertion site not found.")
             }else{
                 ##remove paired NU breakends with the same strand direction
                 ##strand info is irrelevant in MT breakends, using NU's instead.
-                l_strs <- lapply(n, function(x) sapply(x, function(y) as.vector(strand(y)[1]!=strand(y)[2])))
+                l_strs <- lapply(n, function(x) vapply(x, function(y) as.vector(strand(y)[1]!=strand(y)[2]), FUN.VALUE = logical(1)))
                 n <- mapply(function(x, y) x[y], n, l_strs, SIMPLIFY = FALSE)
                 m <- mapply(function(x, y) x[y], m, l_strs, SIMPLIFY = FALSE)
                 list(NU=n, MT=m)

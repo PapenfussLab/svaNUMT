@@ -1,5 +1,5 @@
 ---
-title: "NUMTDetect Quick Overview"
+title: "svaNUMT Quick Overview"
 author: "Ruining Dong"
 date: "`r Sys.Date()`"
 output:
@@ -9,7 +9,7 @@ output:
       collapsed: yes
       smooth_scroll: yes
 vignette: >
-  %\VignetteIndexEntry{NUMTDetect Package}
+  %\VignetteIndexEntry{svaNUMT Package}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -23,7 +23,7 @@ knitr::opts_chunk$set(#echo = TRUE,
 
 ## Introduction
 This vignette outlines a workflow of detecting nuclear-mitochondrial DNA fusions 
-from Variant Call Format (VCF) using the `NUMTDetect` package. 
+from Variant Call Format (VCF) using the `svaNUMT` package. 
 
 
 ## Using GRanges for structural variants: a breakend-centric data structure
@@ -44,14 +44,15 @@ Bioconductor package `VariantAnnotation`. Simple filters could be applied to a
 `GRanges` object with breakend-centric notations using 
 `StructuralVariantAnnotation`. More information about `VCF` objects and 
 breakend-centric GRanges object can be found by consulting the vignettes in the 
-corresponding packages with `browseVignettes("VariantAnnotation")` and `browseVignettes("StructuralVariantAnnotation")`.
+corresponding packages with `browseVignettes("VariantAnnotation")` and 
+`browseVignettes("StructuralVariantAnnotation")`.
 
 ```{r input, include=TRUE,results="hide",message=FALSE,warning=FALSE}
 library(StructuralVariantAnnotation)
 library(VariantAnnotation)
-library(NUMTDetect)
+library(svaNUMT)
 
-vcf <- readVcf(system.file("extdata", "MT.vcf", package = "NUMTDetect"))
+vcf <- readVcf(system.file("extdata", "MT.vcf", package = "svaNUMT"))
 gr <- breakpointRanges(vcf)
 ```
 
@@ -61,9 +62,9 @@ composed entirely of valid breakpoints. Please consult the vignette of the
 
 
 ### Identifying Nuclear-mitochondrial Genome Fusion Events
-Function `numtDetect` searches for NUMT events by identifying breakends 
+Function `svaNUMT` searches for NUMT events by identifying breakends 
 supporting the fusion of nuclear chromosome and mitochondrial genome. 
-`numtDetect` returns identified breakends supporting candidate NUMTs in 2 lists 
+`svaNUMT` returns identified breakends supporting candidate NUMTs in 2 lists 
 of list of GRanges, grouped by chromosome and insertion sites.
 allow insertion sites with a single-sided junction due to frequent combinations 
 with other structural rearrangements. Candidate linked nuclear insertion sites 
