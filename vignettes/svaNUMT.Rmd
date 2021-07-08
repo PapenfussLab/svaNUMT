@@ -52,7 +52,7 @@ library(StructuralVariantAnnotation)
 library(VariantAnnotation)
 library(svaNUMT)
 
-vcf <- readVcf(system.file("extdata", "MT.vcf", package = "svaNUMT"))
+vcf <- readVcf(system.file("extdata", "chr1_numt_pe_HS25.sv.vcf", package = "svaNUMT"))
 gr <- breakpointRanges(vcf)
 ```
 
@@ -65,15 +65,32 @@ composed entirely of valid breakpoints. Please consult the vignette of the
 Function `svaNUMT` searches for NUMT events by identifying breakends 
 supporting the fusion of nuclear chromosome and mitochondrial genome. 
 `svaNUMT` returns identified breakends supporting candidate NUMTs in 2 lists 
-of list of GRanges, grouped by chromosome and insertion sites.
-allow insertion sites with a single-sided junction due to frequent combinations 
-with other structural rearrangements. Candidate linked nuclear insertion sites 
-are reported using SV IDs in the `candidatePartnerId` metadata column.
+of list of GRanges, grouped by chromosome and insertion sites. 
 
 ```{r}
 NUMT <- numtDetect(gr, max_ins_dist = 20)
-NUMT
 ```
+
+The breakends supporting the insertion sites and the MT sequence are arranged by
+the order of events. Below is an example of a detected NUMT event, where 
+MT sequence `MT:15737-15836` followed by polyadenylation is inserted between 
+`chr1:1688363-1688364`.
+```{r}
+GRangesList(NU=NUMT$NU$`1`[[1]], MT=NUMT$MT$`1`[[1]])
+```
+Below is an example to subset the detected NUMTs by a genomic region 
+given `seqnames`, `start`, and `end`. For region `chr1:1000000-3000000`,
+there are 3 NUMTs detected.
+ 
+```{r}
+seqnames = 1
+start = 1000000
+end = 3000000
+i <- sapply(NUMT$NU[[seqnames]], function(x) 
+  sum(countOverlaps(x, GRanges(seqnames = seqnames, IRanges(start, end))))>0)
+list(NU=NUMT$NU[[seqnames]][i], MT=NUMT$MT[[seqnames]][i])
+```
+
 
 ## Visualising breakpoint pairs via circos plots
 
@@ -87,7 +104,7 @@ functions from `circlize`.
 To generate a simple circos plot of one candidate NUMT event:
 ```{r, include=TRUE,results="hide",message=FALSE,warning=FALSE}
 library(circlize)
-numt_chr_prefix <- c(NUMT$NU$`11`[[1]], NUMT$MT$`11`[[1]])
+numt_chr_prefix <- c(NUMT$NU$`1`[[2]], NUMT$MT$`1`[[2]])
 GenomeInfoDb::seqlevelsStyle(numt_chr_prefix) <- "UCSC"
 pairs <- breakpointgr2pairs(numt_chr_prefix)
 pairs
@@ -96,11 +113,11 @@ To see supporting breakpoints clearly, we generate the circos plot according to
 the loci of event.
 ```{r}
 circos.initializeWithIdeogram(
-    data.frame(V1=c("chr11", "chrM"),
-               V2=c(49883562,1),
-               V3=c(49883595,16571),
+    data.frame(V1=c("chr1", "chrM"),
+               V2=c(1791073,1),
+               V3=c(1791093,16571),
                V4=c("p15.4",NA),
-               V5=c("gpos50",NA)),  sector.width = c(0.50614402, 0.49385598))
+               V5=c("gpos50",NA)),  sector.width = c(0.2, 0.8))
 #circos.initializeWithIdeogram()
 circos.genomicLink(as.data.frame(S4Vectors::first(pairs)), 
                    as.data.frame(S4Vectors::second(pairs)))
