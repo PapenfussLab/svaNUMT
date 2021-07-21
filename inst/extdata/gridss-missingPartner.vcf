@@ -1,9 +1,0 @@
-##fileformat=VCFv4.2
-##INFO=<ID=MATEID,Number=.,Type=String,Description="ID of mate breakends">
-##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">
-##contig=<ID=chr1,length=249250621>
-##contig=<ID=chr12,length=133851895>
-#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
-chr1	18992158	gridss2o	C	C[chr12:84963533[	55	.	SVTYPE=BND
-chr12	84350	gridss39o	G	]chr12:4886681]G	627.96	.	EVENT=gridss39;MATEID=gridss39h;SVTYPE=BND
-chr12	4886681	gridss39h	T	T[chr12:84350[	627.96	.	EVENT=gridss39;MATEID=gridss39o;SVTYPE=BND
