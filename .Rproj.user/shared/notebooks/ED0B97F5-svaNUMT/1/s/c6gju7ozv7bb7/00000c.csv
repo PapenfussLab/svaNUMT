@@ -1,3 +1,0 @@
-"0","#circos.initializeWithIdeogram()"
-"0","circos.genomicLink(as.data.frame(S4Vectors::first(pairs)), "
-"0","                   as.data.frame(S4Vectors::second(pairs)))"

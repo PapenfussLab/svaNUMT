@@ -1,6 +1,0 @@
-Data description:
-1. MT.vcf is an example output of structural variant calls including breakends on the mitochondrial genome produced by GRIDSS*.
-2. gridss-na12878.vcf is an example output of structural variant calls on chromosome 1 produced by GRIDSS*.
-Both VCFs use hg19 as the reference genome.
-
-* Cameron, D. L. et al. GRIDSS: Sensitive and specific genomic rearrangement detection using positional de Bruijn graph assembly. Genome Res. (2017) doi:10.1101/gr.222109.117.

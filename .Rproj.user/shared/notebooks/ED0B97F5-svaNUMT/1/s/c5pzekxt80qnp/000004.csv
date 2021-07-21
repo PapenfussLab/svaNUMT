@@ -1,6 +1,0 @@
-"0","library(StructuralVariantAnnotation)"
-"0","library(VariantAnnotation)"
-"0","library(svaNUMT)"
-"0",""
-"0","vcf <- readVcf(system.file(""extdata"", ""chr1_numt_pe_HS25.sv.vcf"", package = ""svaNUMT""))"
-"0","gr <- breakpointRanges(vcf)"

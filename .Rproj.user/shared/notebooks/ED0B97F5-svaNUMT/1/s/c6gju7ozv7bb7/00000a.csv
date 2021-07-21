@@ -1,6 +1,0 @@
-"0","circos.initializeWithIdeogram("
-"0","    data.frame(V1=c(""chr1"", ""chrM""),"
-"0","               V2=c(1791073,1),"
-"0","               V3=c(1791093,16571),"
-"0","               V4=c(""p15.4"",NA),"
-"0","               V5=c(""gpos50"",NA)),  sector.width = c(0.2, 0.8))"
