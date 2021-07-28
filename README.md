@@ -40,6 +40,27 @@ The development version can be installed from GitHub:
 BiocManager::install("PapenfussLab/svaNUMT")
 ```
 
+<!-- # How to cite
+
+If you use svaNUMT, please cite `svaNUMT` [here](https://bioconductor.org/packages/svaNUMT)
+TBC for svaRetro.
+```
+@ARTICLE{svaNUMT,
+  title    = "",
+  author   = "",
+  journal  = "",
+  volume   = ,
+  number   = ,
+  pages    = ,
+  month    = ,
+  year     = ,
+  url      = ,
+  doi      = ,
+  pmc      = 
+}
+```
+-->
+
 # Workflow
 
 Below is a workflow example for detecting NUMTs from a simulated human
@@ -88,43 +109,19 @@ GRangesList(NU=NUMT$NU$`1`[[1]], MT=NUMT$MT$`1`[[1]])
 #> GRangesList object of length 2:
 #> $NU
 #> GRanges object with 2 ranges and 12 metadata columns:
-#>                seqnames    ranges strand | paramRangeID         REF
-#>                   <Rle> <IRanges>  <Rle> |     <factor> <character>
-#>   gridss1fb_4o        1   1688363      + |           NA           C
-#>   gridss1bf_1o        1   1688364      - |           NA           C
-#>                                     ALT      QUAL      FILTER     sourceId
-#>                             <character> <numeric> <character>  <character>
-#>   gridss1fb_4o              C[MT:15737[   3928.49        PASS gridss1fb_4o
-#>   gridss1bf_1o ]MT:15836]AAAAAAAAAAAAAC   3581.13        PASS gridss1bf_1o
-#>                     partner      svtype     svLen        insSeq    insLen
-#>                 <character> <character> <numeric>   <character> <integer>
-#>   gridss1fb_4o gridss1fb_4h         BND        NA                       0
-#>   gridss1bf_1o gridss1bf_1h         BND        NA AAAAAAAAAAAAA        13
-#>                   HOMLEN
-#>                <numeric>
-#>   gridss1fb_4o         0
-#>   gridss1bf_1o         0
+#>                seqnames    ranges strand | paramRangeID         REF                      ALT      QUAL      FILTER     sourceId      partner      svtype     svLen        insSeq    insLen    HOMLEN
+#>                   <Rle> <IRanges>  <Rle> |     <factor> <character>              <character> <numeric> <character>  <character>  <character> <character> <numeric>   <character> <integer> <numeric>
+#>   gridss1fb_4o        1   1688363      + |           NA           C              C[MT:15737[   3928.49        PASS gridss1fb_4o gridss1fb_4h         BND        NA                       0         0
+#>   gridss1bf_1o        1   1688364      - |           NA           C ]MT:15836]AAAAAAAAAAAAAC   3581.13        PASS gridss1bf_1o gridss1bf_1h         BND        NA AAAAAAAAAAAAA        13         0
 #>   -------
 #>   seqinfo: 86 sequences from an unspecified genome
 #> 
 #> $MT
 #> GRanges object with 2 ranges and 12 metadata columns:
-#>                seqnames    ranges strand | paramRangeID         REF
-#>                   <Rle> <IRanges>  <Rle> |     <factor> <character>
-#>   gridss1fb_4h       MT     15737      - |           NA           G
-#>   gridss1bf_1h       MT     15836      + |           NA           A
-#>                                      ALT      QUAL      FILTER     sourceId
-#>                              <character> <numeric> <character>  <character>
-#>   gridss1fb_4h              ]1:1688363]G   3928.49        PASS gridss1fb_4h
-#>   gridss1bf_1h AAAAAAAAAAAAAA[1:1688364[   3581.13        PASS gridss1bf_1h
-#>                     partner      svtype     svLen        insSeq    insLen
-#>                 <character> <character> <numeric>   <character> <integer>
-#>   gridss1fb_4h gridss1fb_4o         BND        NA                       0
-#>   gridss1bf_1h gridss1bf_1o         BND        NA AAAAAAAAAAAAA        13
-#>                   HOMLEN
-#>                <numeric>
-#>   gridss1fb_4h         0
-#>   gridss1bf_1h         0
+#>                seqnames    ranges strand | paramRangeID         REF                       ALT      QUAL      FILTER     sourceId      partner      svtype     svLen        insSeq    insLen    HOMLEN
+#>                   <Rle> <IRanges>  <Rle> |     <factor> <character>               <character> <numeric> <character>  <character>  <character> <character> <numeric>   <character> <integer> <numeric>
+#>   gridss1fb_4h       MT     15737      - |           NA           G              ]1:1688363]G   3928.49        PASS gridss1fb_4h gridss1fb_4o         BND        NA                       0         0
+#>   gridss1bf_1h       MT     15836      + |           NA           A AAAAAAAAAAAAAA[1:1688364[   3581.13        PASS gridss1bf_1h gridss1bf_1o         BND        NA AAAAAAAAAAAAA        13         0
 #>   -------
 #>   seqinfo: 86 sequences from an unspecified genome
 ```
@@ -143,64 +140,28 @@ list(NU=NUMT$NU[[seqnames]][i], MT=NUMT$MT[[seqnames]][i])
 #> $NU
 #> $NU[[1]]
 #> GRanges object with 2 ranges and 12 metadata columns:
-#>                seqnames    ranges strand | paramRangeID         REF
-#>                   <Rle> <IRanges>  <Rle> |     <factor> <character>
-#>   gridss1fb_4o        1   1688363      + |           NA           C
-#>   gridss1bf_1o        1   1688364      - |           NA           C
-#>                                     ALT      QUAL      FILTER     sourceId
-#>                             <character> <numeric> <character>  <character>
-#>   gridss1fb_4o              C[MT:15737[   3928.49        PASS gridss1fb_4o
-#>   gridss1bf_1o ]MT:15836]AAAAAAAAAAAAAC   3581.13        PASS gridss1bf_1o
-#>                     partner      svtype     svLen        insSeq    insLen
-#>                 <character> <character> <numeric>   <character> <integer>
-#>   gridss1fb_4o gridss1fb_4h         BND        NA                       0
-#>   gridss1bf_1o gridss1bf_1h         BND        NA AAAAAAAAAAAAA        13
-#>                   HOMLEN
-#>                <numeric>
-#>   gridss1fb_4o         0
-#>   gridss1bf_1o         0
+#>                seqnames    ranges strand | paramRangeID         REF                      ALT      QUAL      FILTER     sourceId      partner      svtype     svLen        insSeq    insLen    HOMLEN
+#>                   <Rle> <IRanges>  <Rle> |     <factor> <character>              <character> <numeric> <character>  <character>  <character> <character> <numeric>   <character> <integer> <numeric>
+#>   gridss1fb_4o        1   1688363      + |           NA           C              C[MT:15737[   3928.49        PASS gridss1fb_4o gridss1fb_4h         BND        NA                       0         0
+#>   gridss1bf_1o        1   1688364      - |           NA           C ]MT:15836]AAAAAAAAAAAAAC   3581.13        PASS gridss1bf_1o gridss1bf_1h         BND        NA AAAAAAAAAAAAA        13         0
 #>   -------
 #>   seqinfo: 86 sequences from an unspecified genome
 #> 
 #> $NU[[2]]
 #> GRanges object with 2 ranges and 12 metadata columns:
-#>                seqnames          ranges strand | paramRangeID         REF
-#>                   <Rle>       <IRanges>  <Rle> |     <factor> <character>
-#>   gridss1fb_5o        1 1791082-1791083      + |           NA           G
-#>   gridss1bf_2o        1         1791084      - |           NA           A
-#>                                  ALT      QUAL      FILTER     sourceId
-#>                          <character> <numeric> <character>  <character>
-#>   gridss1fb_5o            G[MT:2592[   1929.85        PASS gridss1fb_5o
-#>   gridss1bf_2o ]MT:3592]AAAAAAAAAAAA   2894.91        PASS gridss1bf_2o
-#>                     partner      svtype     svLen      insSeq    insLen
-#>                 <character> <character> <numeric> <character> <integer>
-#>   gridss1fb_5o gridss1fb_5h         BND        NA                     0
-#>   gridss1bf_2o gridss1bf_2h         BND        NA AAAAAAAAAAA        11
-#>                   HOMLEN
-#>                <numeric>
-#>   gridss1fb_5o         1
-#>   gridss1bf_2o         0
+#>                seqnames          ranges strand | paramRangeID         REF                   ALT      QUAL      FILTER     sourceId      partner      svtype     svLen      insSeq    insLen    HOMLEN
+#>                   <Rle>       <IRanges>  <Rle> |     <factor> <character>           <character> <numeric> <character>  <character>  <character> <character> <numeric> <character> <integer> <numeric>
+#>   gridss1fb_5o        1 1791082-1791083      + |           NA           G            G[MT:2592[   1929.85        PASS gridss1fb_5o gridss1fb_5h         BND        NA                     0         1
+#>   gridss1bf_2o        1         1791084      - |           NA           A ]MT:3592]AAAAAAAAAAAA   2894.91        PASS gridss1bf_2o gridss1bf_2h         BND        NA AAAAAAAAAAA        11         0
 #>   -------
 #>   seqinfo: 86 sequences from an unspecified genome
 #> 
 #> $NU[[3]]
 #> GRanges object with 2 ranges and 12 metadata columns:
-#>                seqnames    ranges strand | paramRangeID         REF
-#>                   <Rle> <IRanges>  <Rle> |     <factor> <character>
-#>   gridss2fb_3o        1   2869079      + |           NA           G
-#>   gridss2bf_2o        1   2869080      - |           NA           A
-#>                                      ALT      QUAL      FILTER     sourceId
-#>                              <character> <numeric> <character>  <character>
-#>   gridss2fb_3o                G[MT:2786[   2472.12        PASS gridss2fb_3o
-#>   gridss2bf_2o ]MT:2985]AAAAAAAAAAAAAAAA   2456.81        PASS gridss2bf_2o
-#>                     partner      svtype     svLen          insSeq    insLen
-#>                 <character> <character> <numeric>     <character> <integer>
-#>   gridss2fb_3o gridss2fb_3h         BND        NA                         0
-#>   gridss2bf_2o gridss2bf_2h         BND        NA AAAAAAAAAAAAAAA        15
-#>                   HOMLEN
-#>                <numeric>
-#>   gridss2fb_3o         0
-#>   gridss2bf_2o         0
+#>                seqnames    ranges strand | paramRangeID         REF                       ALT      QUAL      FILTER     sourceId      partner      svtype     svLen          insSeq    insLen    HOMLEN
+#>                   <Rle> <IRanges>  <Rle> |     <factor> <character>               <character> <numeric> <character>  <character>  <character> <character> <numeric>     <character> <integer> <numeric>
+#>   gridss2fb_3o        1   2869079      + |           NA           G                G[MT:2786[   2472.12        PASS gridss2fb_3o gridss2fb_3h         BND        NA                         0         0
+#>   gridss2bf_2o        1   2869080      - |           NA           A ]MT:2985]AAAAAAAAAAAAAAAA   2456.81        PASS gridss2bf_2o gridss2bf_2h         BND        NA AAAAAAAAAAAAAAA        15         0
 #>   -------
 #>   seqinfo: 86 sequences from an unspecified genome
 #> 
@@ -208,64 +169,28 @@ list(NU=NUMT$NU[[seqnames]][i], MT=NUMT$MT[[seqnames]][i])
 #> $MT
 #> $MT[[1]]
 #> GRanges object with 2 ranges and 12 metadata columns:
-#>                seqnames    ranges strand | paramRangeID         REF
-#>                   <Rle> <IRanges>  <Rle> |     <factor> <character>
-#>   gridss1fb_4h       MT     15737      - |           NA           G
-#>   gridss1bf_1h       MT     15836      + |           NA           A
-#>                                      ALT      QUAL      FILTER     sourceId
-#>                              <character> <numeric> <character>  <character>
-#>   gridss1fb_4h              ]1:1688363]G   3928.49        PASS gridss1fb_4h
-#>   gridss1bf_1h AAAAAAAAAAAAAA[1:1688364[   3581.13        PASS gridss1bf_1h
-#>                     partner      svtype     svLen        insSeq    insLen
-#>                 <character> <character> <numeric>   <character> <integer>
-#>   gridss1fb_4h gridss1fb_4o         BND        NA                       0
-#>   gridss1bf_1h gridss1bf_1o         BND        NA AAAAAAAAAAAAA        13
-#>                   HOMLEN
-#>                <numeric>
-#>   gridss1fb_4h         0
-#>   gridss1bf_1h         0
+#>                seqnames    ranges strand | paramRangeID         REF                       ALT      QUAL      FILTER     sourceId      partner      svtype     svLen        insSeq    insLen    HOMLEN
+#>                   <Rle> <IRanges>  <Rle> |     <factor> <character>               <character> <numeric> <character>  <character>  <character> <character> <numeric>   <character> <integer> <numeric>
+#>   gridss1fb_4h       MT     15737      - |           NA           G              ]1:1688363]G   3928.49        PASS gridss1fb_4h gridss1fb_4o         BND        NA                       0         0
+#>   gridss1bf_1h       MT     15836      + |           NA           A AAAAAAAAAAAAAA[1:1688364[   3581.13        PASS gridss1bf_1h gridss1bf_1o         BND        NA AAAAAAAAAAAAA        13         0
 #>   -------
 #>   seqinfo: 86 sequences from an unspecified genome
 #> 
 #> $MT[[2]]
 #> GRanges object with 2 ranges and 12 metadata columns:
-#>                seqnames    ranges strand | paramRangeID         REF
-#>                   <Rle> <IRanges>  <Rle> |     <factor> <character>
-#>   gridss1fb_5h       MT 2592-2593      - |           NA           G
-#>   gridss1bf_2h       MT      3592      + |           NA           G
-#>                                    ALT      QUAL      FILTER     sourceId
-#>                            <character> <numeric> <character>  <character>
-#>   gridss1fb_5h            ]1:1791082]G   1929.85        PASS gridss1fb_5h
-#>   gridss1bf_2h GAAAAAAAAAAA[1:1791084[   2894.91        PASS gridss1bf_2h
-#>                     partner      svtype     svLen      insSeq    insLen
-#>                 <character> <character> <numeric> <character> <integer>
-#>   gridss1fb_5h gridss1fb_5o         BND        NA                     0
-#>   gridss1bf_2h gridss1bf_2o         BND        NA AAAAAAAAAAA        11
-#>                   HOMLEN
-#>                <numeric>
-#>   gridss1fb_5h         1
-#>   gridss1bf_2h         0
+#>                seqnames    ranges strand | paramRangeID         REF                     ALT      QUAL      FILTER     sourceId      partner      svtype     svLen      insSeq    insLen    HOMLEN
+#>                   <Rle> <IRanges>  <Rle> |     <factor> <character>             <character> <numeric> <character>  <character>  <character> <character> <numeric> <character> <integer> <numeric>
+#>   gridss1fb_5h       MT 2592-2593      - |           NA           G            ]1:1791082]G   1929.85        PASS gridss1fb_5h gridss1fb_5o         BND        NA                     0         1
+#>   gridss1bf_2h       MT      3592      + |           NA           G GAAAAAAAAAAA[1:1791084[   2894.91        PASS gridss1bf_2h gridss1bf_2o         BND        NA AAAAAAAAAAA        11         0
 #>   -------
 #>   seqinfo: 86 sequences from an unspecified genome
 #> 
 #> $MT[[3]]
 #> GRanges object with 2 ranges and 12 metadata columns:
-#>                seqnames    ranges strand | paramRangeID         REF
-#>                   <Rle> <IRanges>  <Rle> |     <factor> <character>
-#>   gridss2fb_3h       MT      2786      - |           NA           T
-#>   gridss2bf_2h       MT      2985      + |           NA           C
-#>                                        ALT      QUAL      FILTER     sourceId
-#>                                <character> <numeric> <character>  <character>
-#>   gridss2fb_3h                ]1:2869079]T   2472.12        PASS gridss2fb_3h
-#>   gridss2bf_2h CAAAAAAAAAAAAAAA[1:2869080[   2456.81        PASS gridss2bf_2h
-#>                     partner      svtype     svLen          insSeq    insLen
-#>                 <character> <character> <numeric>     <character> <integer>
-#>   gridss2fb_3h gridss2fb_3o         BND        NA                         0
-#>   gridss2bf_2h gridss2bf_2o         BND        NA AAAAAAAAAAAAAAA        15
-#>                   HOMLEN
-#>                <numeric>
-#>   gridss2fb_3h         0
-#>   gridss2bf_2h         0
+#>                seqnames    ranges strand | paramRangeID         REF                         ALT      QUAL      FILTER     sourceId      partner      svtype     svLen          insSeq    insLen    HOMLEN
+#>                   <Rle> <IRanges>  <Rle> |     <factor> <character>                 <character> <numeric> <character>  <character>  <character> <character> <numeric>     <character> <integer> <numeric>
+#>   gridss2fb_3h       MT      2786      - |           NA           T                ]1:2869079]T   2472.12        PASS gridss2fb_3h gridss2fb_3o         BND        NA                         0         0
+#>   gridss2bf_2h       MT      2985      + |           NA           C CAAAAAAAAAAAAAAA[1:2869080[   2456.81        PASS gridss2bf_2h gridss2bf_2o         BND        NA AAAAAAAAAAAAAAA        15         0
 #>   -------
 #>   seqinfo: 86 sequences from an unspecified genome
 ```
@@ -310,24 +235,3 @@ circos.genomicLink(as.data.frame(S4Vectors::first(pairs)),
 ``` r
 circos.clear()
 ```
-
-<!-- # Citation
-
-You can cite `svaNUMT` [here]()
-
-```
-@ARTICLE{svaNUMT,
-  title    = "",
-  author   = "",
-  journal  = "",
-  volume   = ,
-  number   = ,
-  pages    = ,
-  month    = ,
-  year     = ,
-  url      = ,
-  doi      = ,
-  pmc      = 
-}
-```
--->
