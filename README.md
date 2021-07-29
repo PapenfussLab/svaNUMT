@@ -10,7 +10,7 @@ v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/li
 
 <!-- badges: end -->
 
-`svaNUMT` contains functions for detecting NUMT events from structural
+`svaNUMT` contains functions for detecting Nuclear Mitochondrial integration events (NUMT) from structural
 variant calls. It takes structural variant calls in GRanges of breakend
 notation and identifies NUMTs by nuclear-mitochondrial breakend
 junctions. The main function reports candidate NUMTs if there is a pair
