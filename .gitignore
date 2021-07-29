@@ -5,3 +5,5 @@
 svaNUMT.Rproj
 .DS_Store
 .Rproj.user/
+flake.lock
+flake.nix

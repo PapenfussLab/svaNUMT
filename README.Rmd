@@ -51,6 +51,7 @@ BiocManager::install("PapenfussLab/svaNUMT")
 # How to cite
 
 If you use svaNUMT, please cite `svaNUMT` [here](https://bioconductor.org/packages/svaNUMT).
+
 <!-- 
 ```
 @ARTICLE{svaNUMT,
