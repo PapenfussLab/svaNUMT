@@ -17,6 +17,7 @@ Depends:
     VariantAnnotation,
     StructuralVariantAnnotation,
     BiocGenerics,
+    Biostrings,
     R (>= 4.0)
 Imports:
     assertthat,
@@ -41,7 +42,7 @@ Suggests:
     IRanges,
     SummarizedExperiment,
     rmarkdown
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Encoding: UTF-8
 VignetteBuilder: knitr
 biocViews: DataImport, Sequencing, Annotation, Genetics, VariantAnnotation
