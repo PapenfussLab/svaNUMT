@@ -66,17 +66,29 @@ Function `svaNUMT` searches for NUMT events by identifying breakends
 supporting the fusion of nuclear chromosome and mitochondrial genome. 
 `svaNUMT` returns identified breakends supporting candidate NUMTs in 2 lists 
 of list of GRanges, grouped by chromosome and insertion sites. 
+```{r, include=TRUE,results="hide",message=FALSE,warning=FALSE}
+library(readr)
+numtS <- read_table(system.file("extdata", "numtS.txt", package = "svaNUMT"), 
+    col_names = FALSE)
+colnames(numtS) <- c("bin", "seqnames", "start", "end", "name", "score", "strand")
+numtS <- `seqlevelsStyle<-`(GRanges(numtS), "NCBI")
+
+library(BSgenome.Hsapiens.UCSC.hg19)
+genome <- BSgenome.Hsapiens.UCSC.hg19
+genomeMT <- genome$chrMT
+```
 
 ```{r}
-NUMT <- numtDetect(gr, max_ins_dist = 20)
+NUMT <- numtDetect(gr, numtS, genomeMT, max_ins_dist = 20)
 ```
+
 
 The breakends supporting the insertion sites and the MT sequence are arranged by
 the order of events. Below is an example of a detected NUMT event, where 
 MT sequence `MT:15737-15836` followed by polyadenylation is inserted between 
 `chr1:1688363-1688364`.
 ```{r}
-GRangesList(NU=NUMT$NU$`1`[[1]], MT=NUMT$MT$`1`[[1]])
+GRangesList(NU=NUMT$MT$NU$`1`[[1]], MT=NUMT$MT$MT$`1`[[1]])
 ```
 Below is an example to subset the detected NUMTs by a genomic region 
 given `seqnames`, `start`, and `end`. For region `chr1:1000000-3000000`,
@@ -104,7 +116,7 @@ functions from `circlize`.
 To generate a simple circos plot of one candidate NUMT event:
 ```{r, include=TRUE,results="hide",message=FALSE,warning=FALSE}
 library(circlize)
-numt_chr_prefix <- c(NUMT$NU$`1`[[2]], NUMT$MT$`1`[[2]])
+numt_chr_prefix <- c(NUMT$MT$NU$`1`[[2]], NUMT$MT$MT$`1`[[2]])
 GenomeInfoDb::seqlevelsStyle(numt_chr_prefix) <- "UCSC"
 pairs <- breakpointgr2pairs(numt_chr_prefix)
 pairs

@@ -4,7 +4,15 @@
 \alias{numtDetect}
 \title{Detecting nuclear mitochondria fusion events.}
 \usage{
-numtDetect(gr, max_ins_dist = 10)
+numtDetect(
+  gr,
+  numtS,
+  genomeMT,
+  max_ins_dist = 10,
+  maxgap_numtS = 10,
+  min_len = 20,
+  min.Align = 0.8
+)
 }
 \arguments{
 \item{gr}{A GRanges object}
@@ -28,5 +36,8 @@ Possible linked nuclear insertion sites are reported by chromosome in GRanges fo
 vcf.file <- system.file("extdata", "MT.vcf", package = "svaNUMT")
 vcf <- VariantAnnotation::readVcf(vcf.file, "hg19")
 gr <- breakpointRanges(vcf, nominalPosition=TRUE)
-numt.gr <- numtDetect(gr, max_ins_dist=20)
+library(BSgenome.Hsapiens.UCSC.hg19)
+genome <- BSgenome.Hsapiens.UCSC.hg19
+genomeMT <- genome$chrMT
+numt.gr <- numtDetect(gr, numtS, genomeMT, max_ins_dist=20)
 }

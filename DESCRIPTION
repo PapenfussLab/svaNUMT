@@ -1,7 +1,7 @@
 Package: svaNUMT
 Type: Package
 Title: NUMT detection from structural variant calls
-Version: 0.99.13
+Version: 0.99.14
 Date: 2021-03-09
 Authors@R: c(
 	person("Ruining", "Dong", email="lnyidrn@gmail.com", role=c("aut", "cre"), comment=c(ORCID = "0000-0003-1433-0484")))
@@ -31,11 +31,13 @@ Imports:
     GenomicFeatures
 Suggests:
     TxDb.Hsapiens.UCSC.hg19.knownGene,
+    BSgenome.Hsapiens.UCSC.hg19,
     ggplot2,
     devtools,
     testthat (>= 2.1.0),
     roxygen2,
     knitr,
+    readr,
     plyranges,
     circlize,
     tictoc,
