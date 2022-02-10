@@ -35,7 +35,7 @@ corresponding packages with `browseVignettes("VariantAnnotation")` and
 
 # Installation
 
-[svaNUMT](https://bioconductor.org/packages/svaNUMT) is currently available for download in the 'Devel' version of Bioconductor:
+[svaNUMT](https://doi.org/doi:10.18129/B9.bioc.svaNUMT) is currently available for download in Bioconductor:
 
 ```{r, eval=FALSE}
 # install.packages("BiocManager")
@@ -52,23 +52,21 @@ BiocManager::install("PapenfussLab/svaNUMT")
 
 If you use svaNUMT, please cite `svaNUMT` [here](https://bioconductor.org/packages/svaNUMT).
 
-<!-- 
 ```
-@ARTICLE{svaNUMT,
-  title    = "",
-  author   = "",
-  journal  = "",
-  volume   = ,
-  number   = ,
-  pages    = ,
-  month    = ,
-  year     = ,
-  url      = ,
-  doi      = ,
-  pmc      = 
+@article {Dong2021.08.18.456578,
+	author = {Dong, Ruining and Cameron, Daniel and Bedo, Justin and Papenfuss, Anthony T},
+	title = {svaRetro and svaNUMT: Modular packages for annotation of retrotransposed transcripts and nuclear integration of mitochondrial DNA in genome sequencing data},
+	elocation-id = {2021.08.18.456578},
+	year = {2021},
+	doi = {10.1101/2021.08.18.456578},
+	publisher = {Cold Spring Harbor Laboratory},
+	abstract = {Background The biological significance of structural variation is now more widely recognized. However, due to the lack of available tools for downstream analysis, including processing and annotating, interpretation of structural variant calls remains a challenge.Findings Here we present svaRetro and svaNUMT, R packages that provide functions for annotating novel genomic events such as non-reference retro-copied transcripts and nuclear integration of mitochondrial DNA. We evaluate the performance of these packages to detect events using simulations and public benchmarking datasets, and annotate processed transcripts in a public structural variant database.Conclusions svaRetro and svaNUMT provide efficient, modular tools for downstream identification and annotation of structural variant calls.Competing Interest StatementThe authors have declared no competing interest.SVstructural variantNUMTnuclear mitochondrial integrationRTretroposed transcriptTSDtarget site duplicationmtDNAmitochondrial DNA},
+	URL = {https://www.biorxiv.org/content/early/2021/08/19/2021.08.18.456578},
+	eprint = {https://www.biorxiv.org/content/early/2021/08/19/2021.08.18.456578.full.pdf},
+	journal = {bioRxiv}
 }
 ```
--->
+
 
 # Workflow
 Below is a workflow example for detecting NUMTs from a simulated human genome sample.
@@ -100,8 +98,19 @@ supporting the fusion of nuclear chromosome and mitochondrial genome.
 `svaNUMT` returns identified breakends supporting candidate NUMTs in 2 lists 
 of list of GRanges, grouped by chromosome and insertion sites. 
 
+```{r, include=TRUE,results="hide",message=FALSE,warning=FALSE}
+library(readr)
+numtS <- read_table(system.file("extdata", "numtS.txt", package = "svaNUMT"), 
+    col_names = FALSE)
+colnames(numtS) <- c("bin", "seqnames", "start", "end", "name", "score", "strand")
+numtS <- `seqlevelsStyle<-`(GRanges(numtS), "NCBI")
+
+library(BSgenome.Hsapiens.UCSC.hg19)
+genome <- BSgenome.Hsapiens.UCSC.hg19
+genomeMT <- genome$chrMT
+```
 ```{r}
-NUMT <- numtDetect(gr, max_ins_dist = 20)
+NUMT <- numtDetect(gr, numtS, genomeMT, max_ins_dist = 20)
 ```
 
 The breakends supporting the insertion sites and the MT sequence are arranged by
@@ -109,7 +118,7 @@ the order of events. Below is an example of a detected NUMT event, where
 MT sequence `MT:15737-15836` followed by polyadenylation is inserted between 
 `chr1:1688363-1688364`.
 ```{r}
-GRangesList(NU=NUMT$NU$`1`[[1]], MT=NUMT$MT$`1`[[1]])
+GRangesList(NU=NUMT$MT$NU$`1`[[1]], MT=NUMT$MT$MT$`1`[[1]])
 ```
 
 Below is an example to subset the detected NUMTs by a genomic region 
@@ -120,9 +129,9 @@ there are 3 NUMTs detected.
 seqnames = 1
 start = 1000000
 end = 3000000
-i <- sapply(NUMT$NU[[seqnames]], function(x) 
+i <- sapply(NUMT$MT$NU[[seqnames]], function(x) 
   sum(countOverlaps(x, GRanges(seqnames = seqnames, IRanges(start, end))))>0)
-list(NU=NUMT$NU[[seqnames]][i], MT=NUMT$MT[[seqnames]][i])
+list(NU=NUMT$MT$NU[[seqnames]][i], MT=NUMT$MT$MT[[seqnames]][i])
 ```
 
 ## Visualising breakpoint pairs via circos plots
@@ -137,7 +146,7 @@ functions from `circlize`.
 To generate a simple circos plot of one candidate NUMT event:
 ```{r, include=TRUE,results="hide",message=FALSE,warning=FALSE}
 library(circlize)
-numt_chr_prefix <- c(NUMT$NU$`1`[[2]], NUMT$MT$`1`[[2]])
+numt_chr_prefix <- c(NUMT$MT$NU$`1`[[2]], NUMT$MT$MT$`1`[[2]])
 GenomeInfoDb::seqlevelsStyle(numt_chr_prefix) <- "UCSC"
 pairs <- breakpointgr2pairs(numt_chr_prefix)
 pairs
