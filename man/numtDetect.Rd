@@ -17,8 +17,20 @@ numtDetect(
 \arguments{
 \item{gr}{A GRanges object}
 
+\item{numtS}{A GRanges object of known NUMT sites.}
+
+\item{genomeMT}{A genome object of the mitochondria.}
+
 \item{max_ins_dist}{The maximum distance allowed on the reference genome between the paired insertion sites.
 Only intra-chromosomal NUMT events are supported. Default value is 10.}
+
+\item{maxgap_numtS}{The maximum distance allowed betweeen the insertion sequence loci and known NUMTs.}
+
+\item{min_len}{The minimum length allowed of the insertion sequences.
+Default value is 20.}
+
+\item{min.Align}{The minimum alignment score allowed between the insertion 
+sequence and MT genome.}
 }
 \value{
 A nested list of GRanges objects of candidate NUMTs.
@@ -36,8 +48,10 @@ Possible linked nuclear insertion sites are reported by chromosome in GRanges fo
 vcf.file <- system.file("extdata", "MT.vcf", package = "svaNUMT")
 vcf <- VariantAnnotation::readVcf(vcf.file, "hg19")
 gr <- breakpointRanges(vcf, nominalPosition=TRUE)
-library(BSgenome.Hsapiens.UCSC.hg19)
-genome <- BSgenome.Hsapiens.UCSC.hg19
+numtS <- readr::read_table(system.file("extdata", "numtS.txt", package = "svaNUMT"), col_names = FALSE)
+colnames(numtS) <- c("bin", "seqnames", "start", "end", "name", "score", "strand")
+numtS <- `seqlevelsStyle<-`(GRanges(numtS), "NCBI")
+genome <- BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19
 genomeMT <- genome$chrMT
 numt.gr <- numtDetect(gr, numtS, genomeMT, max_ins_dist=20)
 }

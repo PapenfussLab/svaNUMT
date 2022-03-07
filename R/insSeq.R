@@ -13,7 +13,6 @@
 #' @return A nested list of GRanges objects of candidate NUMTs.
 numtDetect_insseq <- function(gr, genomeMT, min_len=20, min.Align=0.8){
     assertthat::assert_that(is(gr, "GRanges"), msg = "gr should be a GRanges object")
-    assertthat::assert_that(is(numtS, "GRanges"), msg = "numtS should be a GRanges object")
     assertthat::assert_that(!isEmpty(gr), msg = "gr can't be empty")
     gr <- gr[seqnames(gr) %in% standardChromosomes(gr) & 
                  seqnames(partner(gr)) %in% standardChromosomes(gr)]

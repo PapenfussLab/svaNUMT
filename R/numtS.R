@@ -6,7 +6,7 @@
 #' @param numtS A GRanges object of known NUMT sites.
 #' @param max_ins_dist The maximum distance allowed on the reference genome between the paired insertion sites.
 #' Only intra-chromosomal NUMT events are supported. Default value is 10.
-#' @param gaxgap_numtS The maximum distance allowed betweeen the insertion sequence loci and known NUMTs.
+#' @param maxgap_numtS The maximum distance allowed betweeen the insertion sequence loci and known NUMTs.
 #' @keywords internal
 #' @return A nested list of GRanges objects of candidate NUMTs.
 numtDetect_known <- function(gr, numtS, max_ins_dist=10, maxgap_numtS=10){

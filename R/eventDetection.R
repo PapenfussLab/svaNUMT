@@ -6,15 +6,18 @@
 #' nuclear chromosome and mitochondrial genome. Only BND notations are supported at the current stage.
 #' Possible linked nuclear insertion sites are reported by chromosome in GRanges format.
 #' @param gr A GRanges object
-#' @param max_ins_dist The maximum distance allowed on the reference genome between the paired insertion sites.
-#' Only intra-chromosomal NUMT events are supported. Default value is 10.
+#' @inheritParams numtDetect_MT
+#' @inheritParams numtDetect_insseq
+#' @inheritParams numtDetect_known
 #' @return A nested list of GRanges objects of candidate NUMTs.
 #' @examples
 #' vcf.file <- system.file("extdata", "MT.vcf", package = "svaNUMT")
 #' vcf <- VariantAnnotation::readVcf(vcf.file, "hg19")
 #' gr <- breakpointRanges(vcf, nominalPosition=TRUE)
-#' library(BSgenome.Hsapiens.UCSC.hg19)
-#' genome <- BSgenome.Hsapiens.UCSC.hg19
+#' numtS <- readr::read_table(system.file("extdata", "numtS.txt", package = "svaNUMT"), col_names = FALSE)
+#' colnames(numtS) <- c("bin", "seqnames", "start", "end", "name", "score", "strand")
+#' numtS <- `seqlevelsStyle<-`(GRanges(numtS), "NCBI")
+#' genome <- BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19
 #' genomeMT <- genome$chrMT
 #' numt.gr <- numtDetect(gr, numtS, genomeMT, max_ins_dist=20)
 #' @export

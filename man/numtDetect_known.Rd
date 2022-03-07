@@ -14,7 +14,7 @@ numtDetect_known(gr, numtS, max_ins_dist = 10, maxgap_numtS = 10)
 \item{max_ins_dist}{The maximum distance allowed on the reference genome between the paired insertion sites.
 Only intra-chromosomal NUMT events are supported. Default value is 10.}
 
-\item{gaxgap_numtS}{The maximum distance allowed betweeen the insertion sequence loci and known NUMTs.}
+\item{maxgap_numtS}{The maximum distance allowed betweeen the insertion sequence loci and known NUMTs.}
 }
 \value{
 A nested list of GRanges objects of candidate NUMTs.
