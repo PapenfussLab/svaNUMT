@@ -27,7 +27,7 @@ corresponding packages with `browseVignettes("VariantAnnotation")` and
 # Installation
 
 [svaNUMT](https://doi.org/doi:10.18129/B9.bioc.svaNUMT) is currently
-available for download in Bioconductor:
+available for download in Bioconductor (since BioC 3.14 & R 4.1):
 
 ``` r
 # install.packages("BiocManager")
@@ -120,7 +120,7 @@ GRangesList(NU=NUMT$MT$NU$`1`[[1]], MT=NUMT$MT$MT$`1`[[1]])
 #> $NU
 #> GRanges object with 2 ranges and 13 metadata columns:
 #>                seqnames    ranges strand | paramRangeID         REF                    ALT      QUAL      FILTER     sourceId      partner      svtype     svLen        insSeq    insLen       event    HOMLEN
-#>                   <Rle> <IRanges>  <Rle> |     <factor> <character>            <character> <numeric> <character>  <character>  <character> <character> <numeric>   <character> <numeric> <character> <numeric>
+#>                   <Rle> <IRanges>  <Rle> |     <factor> <character>            <character> <numeric> <character>  <character>  <character> <character> <numeric>   <character> <integer> <character> <numeric>
 #>   gridss1fb_4o        1   1688363      + |           NA           C            C[MT:15737[   3928.49        PASS gridss1fb_4o gridss1fb_4h         BND        NA                       0 gridss1fb_4         0
 #>   gridss1bf_1o        1   1688364      - |           NA           C ]MT:15836]AAAAAAAAAA..   3581.13        PASS gridss1bf_1o gridss1bf_1h         BND        NA AAAAAAAAAAAAA        13 gridss1bf_1         0
 #>   -------
@@ -129,7 +129,7 @@ GRangesList(NU=NUMT$MT$NU$`1`[[1]], MT=NUMT$MT$MT$`1`[[1]])
 #> $MT
 #> GRanges object with 2 ranges and 13 metadata columns:
 #>                seqnames    ranges strand | paramRangeID         REF                    ALT      QUAL      FILTER     sourceId      partner      svtype     svLen        insSeq    insLen       event    HOMLEN
-#>                   <Rle> <IRanges>  <Rle> |     <factor> <character>            <character> <numeric> <character>  <character>  <character> <character> <numeric>   <character> <numeric> <character> <numeric>
+#>                   <Rle> <IRanges>  <Rle> |     <factor> <character>            <character> <numeric> <character>  <character>  <character> <character> <numeric>   <character> <integer> <character> <numeric>
 #>   gridss1fb_4h       MT     15737      - |           NA           G           ]1:1688363]G   3928.49        PASS gridss1fb_4h gridss1fb_4o         BND        NA                       0 gridss1fb_4         0
 #>   gridss1bf_1h       MT     15836      + |           NA           A AAAAAAAAAAAAAA[1:168..   3581.13        PASS gridss1bf_1h gridss1bf_1o         BND        NA AAAAAAAAAAAAA        13 gridss1bf_1         0
 #>   -------
@@ -151,7 +151,7 @@ list(NU=NUMT$MT$NU[[seqnames]][i], MT=NUMT$MT$MT[[seqnames]][i])
 #> $NU[[1]]
 #> GRanges object with 2 ranges and 13 metadata columns:
 #>                seqnames    ranges strand | paramRangeID         REF                    ALT      QUAL      FILTER     sourceId      partner      svtype     svLen        insSeq    insLen       event    HOMLEN
-#>                   <Rle> <IRanges>  <Rle> |     <factor> <character>            <character> <numeric> <character>  <character>  <character> <character> <numeric>   <character> <numeric> <character> <numeric>
+#>                   <Rle> <IRanges>  <Rle> |     <factor> <character>            <character> <numeric> <character>  <character>  <character> <character> <numeric>   <character> <integer> <character> <numeric>
 #>   gridss1fb_4o        1   1688363      + |           NA           C            C[MT:15737[   3928.49        PASS gridss1fb_4o gridss1fb_4h         BND        NA                       0 gridss1fb_4         0
 #>   gridss1bf_1o        1   1688364      - |           NA           C ]MT:15836]AAAAAAAAAA..   3581.13        PASS gridss1bf_1o gridss1bf_1h         BND        NA AAAAAAAAAAAAA        13 gridss1bf_1         0
 #>   -------
@@ -160,7 +160,7 @@ list(NU=NUMT$MT$NU[[seqnames]][i], MT=NUMT$MT$MT[[seqnames]][i])
 #> $NU[[2]]
 #> GRanges object with 2 ranges and 13 metadata columns:
 #>                seqnames          ranges strand | paramRangeID         REF                   ALT      QUAL      FILTER     sourceId      partner      svtype     svLen      insSeq    insLen       event    HOMLEN
-#>                   <Rle>       <IRanges>  <Rle> |     <factor> <character>           <character> <numeric> <character>  <character>  <character> <character> <numeric> <character> <numeric> <character> <numeric>
+#>                   <Rle>       <IRanges>  <Rle> |     <factor> <character>           <character> <numeric> <character>  <character>  <character> <character> <numeric> <character> <integer> <character> <numeric>
 #>   gridss1fb_5o        1 1791082-1791083      + |           NA           G            G[MT:2592[   1929.85        PASS gridss1fb_5o gridss1fb_5h         BND        NA                     0 gridss1fb_5         1
 #>   gridss1bf_2o        1         1791084      - |           NA           A ]MT:3592]AAAAAAAAAAAA   2894.91        PASS gridss1bf_2o gridss1bf_2h         BND        NA AAAAAAAAAAA        11 gridss1bf_2         0
 #>   -------
@@ -169,7 +169,7 @@ list(NU=NUMT$MT$NU[[seqnames]][i], MT=NUMT$MT$MT[[seqnames]][i])
 #> $NU[[3]]
 #> GRanges object with 2 ranges and 13 metadata columns:
 #>                seqnames    ranges strand | paramRangeID         REF                    ALT      QUAL      FILTER     sourceId      partner      svtype     svLen          insSeq    insLen       event    HOMLEN
-#>                   <Rle> <IRanges>  <Rle> |     <factor> <character>            <character> <numeric> <character>  <character>  <character> <character> <numeric>     <character> <numeric> <character> <numeric>
+#>                   <Rle> <IRanges>  <Rle> |     <factor> <character>            <character> <numeric> <character>  <character>  <character> <character> <numeric>     <character> <integer> <character> <numeric>
 #>   gridss2fb_3o        1   2869079      + |           NA           G             G[MT:2786[   2472.12        PASS gridss2fb_3o gridss2fb_3h         BND        NA                         0 gridss2fb_3         0
 #>   gridss2bf_2o        1   2869080      - |           NA           A ]MT:2985]AAAAAAAAAAA..   2456.81        PASS gridss2bf_2o gridss2bf_2h         BND        NA AAAAAAAAAAAAAAA        15 gridss2bf_2         0
 #>   -------
@@ -180,7 +180,7 @@ list(NU=NUMT$MT$NU[[seqnames]][i], MT=NUMT$MT$MT[[seqnames]][i])
 #> $MT[[1]]
 #> GRanges object with 2 ranges and 13 metadata columns:
 #>                seqnames    ranges strand | paramRangeID         REF                    ALT      QUAL      FILTER     sourceId      partner      svtype     svLen        insSeq    insLen       event    HOMLEN
-#>                   <Rle> <IRanges>  <Rle> |     <factor> <character>            <character> <numeric> <character>  <character>  <character> <character> <numeric>   <character> <numeric> <character> <numeric>
+#>                   <Rle> <IRanges>  <Rle> |     <factor> <character>            <character> <numeric> <character>  <character>  <character> <character> <numeric>   <character> <integer> <character> <numeric>
 #>   gridss1fb_4h       MT     15737      - |           NA           G           ]1:1688363]G   3928.49        PASS gridss1fb_4h gridss1fb_4o         BND        NA                       0 gridss1fb_4         0
 #>   gridss1bf_1h       MT     15836      + |           NA           A AAAAAAAAAAAAAA[1:168..   3581.13        PASS gridss1bf_1h gridss1bf_1o         BND        NA AAAAAAAAAAAAA        13 gridss1bf_1         0
 #>   -------
@@ -189,7 +189,7 @@ list(NU=NUMT$MT$NU[[seqnames]][i], MT=NUMT$MT$MT[[seqnames]][i])
 #> $MT[[2]]
 #> GRanges object with 2 ranges and 13 metadata columns:
 #>                seqnames    ranges strand | paramRangeID         REF                    ALT      QUAL      FILTER     sourceId      partner      svtype     svLen      insSeq    insLen       event    HOMLEN
-#>                   <Rle> <IRanges>  <Rle> |     <factor> <character>            <character> <numeric> <character>  <character>  <character> <character> <numeric> <character> <numeric> <character> <numeric>
+#>                   <Rle> <IRanges>  <Rle> |     <factor> <character>            <character> <numeric> <character>  <character>  <character> <character> <numeric> <character> <integer> <character> <numeric>
 #>   gridss1fb_5h       MT 2592-2593      - |           NA           G           ]1:1791082]G   1929.85        PASS gridss1fb_5h gridss1fb_5o         BND        NA                     0 gridss1fb_5         1
 #>   gridss1bf_2h       MT      3592      + |           NA           G GAAAAAAAAAAA[1:17910..   2894.91        PASS gridss1bf_2h gridss1bf_2o         BND        NA AAAAAAAAAAA        11 gridss1bf_2         0
 #>   -------
@@ -198,7 +198,7 @@ list(NU=NUMT$MT$NU[[seqnames]][i], MT=NUMT$MT$MT[[seqnames]][i])
 #> $MT[[3]]
 #> GRanges object with 2 ranges and 13 metadata columns:
 #>                seqnames    ranges strand | paramRangeID         REF                    ALT      QUAL      FILTER     sourceId      partner      svtype     svLen          insSeq    insLen       event    HOMLEN
-#>                   <Rle> <IRanges>  <Rle> |     <factor> <character>            <character> <numeric> <character>  <character>  <character> <character> <numeric>     <character> <numeric> <character> <numeric>
+#>                   <Rle> <IRanges>  <Rle> |     <factor> <character>            <character> <numeric> <character>  <character>  <character> <character> <numeric>     <character> <integer> <character> <numeric>
 #>   gridss2fb_3h       MT      2786      - |           NA           T           ]1:2869079]T   2472.12        PASS gridss2fb_3h gridss2fb_3o         BND        NA                         0 gridss2fb_3         0
 #>   gridss2bf_2h       MT      2985      + |           NA           C CAAAAAAAAAAAAAAA[1:2..   2456.81        PASS gridss2bf_2h gridss2bf_2o         BND        NA AAAAAAAAAAAAAAA        15 gridss2bf_2         0
 #>   -------
